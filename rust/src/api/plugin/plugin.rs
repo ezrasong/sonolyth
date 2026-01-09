@@ -125,7 +125,7 @@ pub struct SpotubePlugin {
     pub track: PluginTrackSender,
     pub user: PluginUserSender,
     event_tx: Sender<AuthEventObject>,
-    event_rx: Option<Receiver<AuthEventObject>>,
+    pub event_rx: Option<Receiver<AuthEventObject>>,
 }
 
 impl SpotubePlugin {
