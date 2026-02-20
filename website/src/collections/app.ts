@@ -22,6 +22,8 @@ export const routes: Record<string, [string, IconType | null]> = {
 
 const releasesUrl =
   "https://github.com/KRTirtho/Spotube/releases/latest/download";
+const releasesNightlyUrl =
+  "https://github.com/KRTirtho/Spotube/releases/download/nightly";
 
 export const downloadLinks: Record<string, [string, IconType[]]> = {
   "Android Apk": [`${releasesUrl}/Spotube-android-all-arch.apk`, [FaAndroid]],
@@ -87,39 +89,47 @@ export const extendedNightlyDownloadLinks: Record<
   string,
   [string, IconType[], string]
 > = {
-  Android: [`${releasesUrl}/Spotube-android-all-arch.apk`, [FaAndroid], "apk"],
+  Android: [
+    `${releasesNightlyUrl}/Spotube-android-all-arch.apk`,
+    [FaAndroid],
+    "apk",
+  ],
   Windows: [
-    `${releasesUrl}/Spotube-windows-x86_64-setup.exe`,
+    `${releasesNightlyUrl}/Spotube-windows-x86_64-setup.exe`,
     [FaWindows],
     "exe",
   ],
-  macOS: [`${releasesUrl}/Spotube-macos-universal.dmg`, [FaApple], "dmg"],
+  macOS: [
+    `${releasesNightlyUrl}/Spotube-macos-universal.dmg`,
+    [FaApple],
+    "dmg",
+  ],
   "Ubuntu, Debian (x64)": [
-    `${releasesUrl}/Spotube-linux-x86_64.deb`,
+    `${releasesNightlyUrl}/Spotube-linux-x86_64.deb`,
     [FaUbuntu, FaDebian],
     "deb",
   ],
   "Ubuntu, Debian (arm64)": [
-    `${releasesUrl}/Spotube-linux-aarch64.deb`,
+    `${releasesNightlyUrl}/Spotube-linux-aarch64.deb`,
     [FaUbuntu, FaDebian],
     "deb",
   ],
   "Fedora, Redhat, Opensuse": [
-    `${releasesUrl}/Spotube-linux-x86_64.rpm`,
+    `${releasesNightlyUrl}/Spotube-linux-x86_64.rpm`,
     [FaFedora, FaRedhat, FaOpensuse],
     "rpm",
   ],
   "Linux AppImage (x64)": [
-    `${releasesUrl}/Spotube-linux-x86_64.AppImage`,
+    `${releasesNightlyUrl}/Spotube-linux-x86_64.AppImage`,
     [FaLinux],
     "AppImage",
   ],
   "Linux AppImage (arm64)": [
-    `${releasesUrl}/Spotube-linux-aarch64.AppImage`,
+    `${releasesNightlyUrl}/Spotube-linux-aarch64.AppImage`,
     [FaLinux],
     "AppImage",
   ],
-  iPhone: [`${releasesUrl}/Spotube-iOS.ipa`, [FaApple], "ipa"],
+  iPhone: [`${releasesNightlyUrl}/Spotube-iOS.ipa`, [FaApple], "ipa"],
 };
 
 export const ADS_SLOTS = Object.freeze({
