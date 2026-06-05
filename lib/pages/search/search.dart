@@ -134,7 +134,6 @@ class SearchPage extends HookConsumerWidget {
                                         ...suggestions,
                                         "Twenty One Pilots",
                                         "Linkin Park",
-                                        "d4vd"
                                       ]
                                     : suggestions,
                                 completer: (suggestion) => suggestion,
@@ -157,8 +156,7 @@ class SearchPage extends HookConsumerWidget {
                                                 : CrossFadeState.showSecond,
                                         firstChild: IconButton.ghost(
                                           size: ButtonSize.small,
-                                          icon:
-                                              const Icon(SpotubeIcons.close),
+                                          icon: const Icon(SpotubeIcons.close),
                                           onPressed: () {
                                             controller.clear();
                                           },
