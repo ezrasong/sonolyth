@@ -88,8 +88,17 @@ class SpotifyAuthEndpoint {
 
   fun getLatestNuance() -> Future { // Future<{v: int, s: string}>
     return client.get_req(
-      "https://api.github.com/gists/22ed9c6ba463899e933427f7de1f0eef"
+      "https://api.github.com/gists/22ed9c6ba463899e933427f7de1f0eef",
+      options: RequestOptions(
+        headers: {
+          // GitHub's API returns 403 without a User-Agent, which made the gist
+          // fetch fail and silently broke the whole login. Always send one.
+          "User-Agent": "Sonolyth",
+          "Accept": "application/vnd.github+json",
+        }.toJson(),
+      )
     ).then((res) {
+      print("[auth] nuance status=${res.statusCode}");
       var outer
       try { outer = JSON.decode(res.data) } catch (e) { outer = res.data }
       var content = outer["files"]["nuances.json"]["content"]
@@ -225,8 +234,10 @@ class SpotifyAuthEndpoint {
         return
       }
       // Don't rely on matching a specific redirect URL (Spotify changes the
-      // post-login destination). Instead, on every navigation read the cookies
-      // from accounts.spotify.com and complete login as soon as sp_dc exists.
+      // post-login destination). On every navigation read the cookies from
+      // accounts.spotify.com and try to complete login once sp_dc exists.
+      // Only lock in (close) when login actually SUCCEEDS — an early sp_dc can
+      // be a stale cookie, so failed attempts must allow a retry.
       return webview.getCookies("https://accounts.spotify.com/").then((cookies){
         var cookieMaps = cookies.map((cookie) => cookie.toJson()).toList()
         var spDc = cookieMaps.where((c) => c["name"] == "sp_dc").toList()
@@ -234,8 +245,11 @@ class SpotifyAuthEndpoint {
         if (spDc.isEmpty) {
           return
         }
-        captured = true
         return login(cookieMaps).then(() {
+          if (captured) {
+            return
+          }
+          captured = true
           print("[auth] login complete, closing webview")
           return webview.close()
         })
