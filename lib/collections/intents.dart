@@ -53,7 +53,6 @@ enum HomeTabs {
   userPlaylists,
   userArtists,
   userAlbums,
-  userLocalLibrary,
   userDownloads,
 }
 
@@ -85,9 +84,6 @@ class HomeTabAction extends Action<HomeTabIntent> {
         break;
       case HomeTabs.userAlbums:
         router.navigate(const UserAlbumsRoute());
-        break;
-      case HomeTabs.userLocalLibrary:
-        router.navigate(const UserLocalLibraryRoute());
         break;
       case HomeTabs.userDownloads:
         router.navigate(const UserDownloadsRoute());

@@ -73,13 +73,6 @@ List<SideBarTiles> getSidebarLibraryTileList(AppLocalizations l10n) => [
         route: const UserAlbumsRoute(),
         icon: SpotubeIcons.album,
       ),
-      SideBarTiles(
-        id: "local_library",
-        pathPrefix: "/library/local",
-        title: l10n.local_library,
-        route: const UserLocalLibraryRoute(),
-        icon: SpotubeIcons.device,
-      ),
     ];
 
 List<SideBarTiles> getNavbarTileList(AppLocalizations l10n) => [

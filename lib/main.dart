@@ -331,11 +331,6 @@ class SonolythApp extends HookConsumerWidget {
           LogicalKeyboardKey.digit7,
           LogicalKeyboardKey.control,
           LogicalKeyboardKey.shift,
-        ): HomeTabIntent(router, tab: HomeTabs.userLocalLibrary),
-        LogicalKeySet(
-          LogicalKeyboardKey.digit8,
-          LogicalKeyboardKey.control,
-          LogicalKeyboardKey.shift,
         ): HomeTabIntent(router, tab: HomeTabs.userDownloads),
         LogicalKeySet(
           LogicalKeyboardKey.keyW,
