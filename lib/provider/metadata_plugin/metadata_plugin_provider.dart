@@ -215,7 +215,9 @@ class MetadataPluginNotifier extends AsyncNotifier<MetadataPluginState> {
           final isDefaultAudioSource =
               oldConfig == pluginState.defaultAudioSourcePluginConfig;
 
-          await removePlugin(pluginConfig);
+          // Remove the OLD version (its own extraction dir + db row); the new
+          // version's files were already extracted above and must survive.
+          await removePlugin(oldConfig);
           await addPlugin(pluginConfig);
 
           if (isDefaultMetadata) {
@@ -509,10 +511,25 @@ class MetadataPluginNotifier extends AsyncNotifier<MetadataPluginState> {
     }
 
     final oldPlugin = pluginRes.first;
-    final oldPluginApiVersion = Version.parse(oldPlugin.pluginApiVersion);
-    final newPluginApiVersion = Version.parse(newPlugin.pluginApiVersion);
 
-    return newPluginApiVersion > oldPluginApiVersion;
+    // An update is available when either the plugin's own version or its
+    // plugin-API version is newer than what's installed. Previously only the
+    // API version was compared, so bundled-plugin version bumps (e.g. a shipped
+    // bug-fix build) never replaced an already-installed copy.
+    try {
+      if (Version.parse(newPlugin.version) > Version.parse(oldPlugin.version)) {
+        return true;
+      }
+    } catch (_) {
+      // fall through to the API-version comparison on unparseable versions
+    }
+
+    try {
+      return Version.parse(newPlugin.pluginApiVersion) >
+          Version.parse(oldPlugin.pluginApiVersion);
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> updatePlugin(

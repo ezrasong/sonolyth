@@ -5,8 +5,8 @@ var HttpClient = std.HttpClient
 var HttpResponse = std.HttpResponse
 
 class SpotifyAlbumEndpoint {
-  var apiClient: HttpClient
-  var gqlClient: HttpClient
+  var apiClient
+  var gqlClient
 
   construct (this.apiClient, this.gqlClient)
 

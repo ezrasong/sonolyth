@@ -10,10 +10,66 @@ import { generateRandomUserAgent } from "utils.ht"
 
 var HttpClient = std.HttpClient
 var HttpBaseOptions = std.HttpBaseOptions
+var FutureUtils = std.FutureUtils
+var Duration = std.Duration
+
+// Retries requests that fail with HTTP 429 (Spotify rate-limit) using
+// exponential backoff. Opening album/artist pages fires several requests at
+// once and trips Spotify's limit; without this the page just errors out.
+class RetryHttpClient {
+  var _client
+  var _maxRetries
+
+  construct (client, {maxRetries}) {
+    this._client = client
+    this._maxRetries = maxRetries ?? 4
+  }
+
+  fun _send(makeReq, attempt) {
+    var self = this
+    return makeReq().then((res) {
+      if (res.statusCode == 429 && attempt < self._maxRetries) {
+        var delays = [1, 3, 6, 10]
+        return FutureUtils.delayed(Duration(seconds: delays[attempt]), () {
+          return self._send(makeReq, attempt + 1)
+        })
+      }
+      return res
+    })
+  }
+
+  fun get_req(path, {url, options, queryParameters}) {
+    var self = this
+    return self._send(() {
+      return self._client.get_req(path, url: url, options: options, queryParameters: queryParameters)
+    }, 0)
+  }
+
+  fun post(path, {url, data, options, queryParameters}) {
+    var self = this
+    return self._send(() {
+      return self._client.post(path, url: url, data: data, options: options, queryParameters: queryParameters)
+    }, 0)
+  }
+
+  fun put(path, {url, data, options, queryParameters}) {
+    var self = this
+    return self._send(() {
+      return self._client.put(path, url: url, data: data, options: options, queryParameters: queryParameters)
+    }, 0)
+  }
+
+  fun delete_req(path, {url, data, options, queryParameters}) {
+    var self = this
+    return self._send(() {
+      return self._client.delete_req(path, url: url, data: data, options: options, queryParameters: queryParameters)
+    }, 0)
+  }
+}
 
 class SpotifyGqlApi {
-  var apiClient: HttpClient
-  var gqlClient: HttpClient
+  var apiClient
+  var gqlClient
 
   var album: SpotifyAlbumEndpoint
   var artist: SpotifyArtistEndpoint
@@ -32,18 +88,24 @@ class SpotifyGqlApi {
     headers["Authorization"] = "Bearer ${accessToken}"
     headers["User-Agent"] =  generateRandomUserAgent()
     
-    this.apiClient = HttpClient(
+    var acceptRetryable = (status) {
+      return status != null && ((status >= 200 && status < 300) || status == 429)
+    }
+
+    this.apiClient = RetryHttpClient(HttpClient(
       HttpBaseOptions(
         baseUrl: "https://api.spotify.com/v1",
-        headers: headers
+        headers: headers,
+        validateStatus: acceptRetryable
       )
-    )
-    this.gqlClient = HttpClient(
+    ))
+    this.gqlClient = RetryHttpClient(HttpClient(
       HttpBaseOptions(
         baseUrl: "https://api-partner.spotify.com/pathfinder/v2/query",
-        headers: headers
+        headers: headers,
+        validateStatus: acceptRetryable
       )
-    )
+    ))
 
     this.album = SpotifyAlbumEndpoint(this.apiClient, this.gqlClient)
     this.artist = SpotifyArtistEndpoint(this.apiClient, this.gqlClient)
