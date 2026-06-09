@@ -99,13 +99,14 @@ class SpotifyAuthEndpoint {
       )
     ).then((res) {
       print("[auth] nuance status=${res.statusCode}");
-      var outer
-      try { outer = JSON.decode(res.data) } catch (e) { outer = res.data }
-      var content = outer["files"]["nuances.json"]["content"]
-      var data
-      try { data = JSON.decode(content) } catch (e) { data = content }
+      // The auth HttpClient auto-decodes JSON responses to a Map (server-time
+      // reads res.data["serverTime"] directly), so DON'T JSON.decode it again.
+      var content = res.data["files"]["nuances.json"]["content"]
+      print("[auth] n1 contentLen=${content?.length}");
+      var data = JSON.decode(content)
+      print("[auth] n2 dataLen=${data.length}");
       data.sort((a, b) => b["v"].compareTo(a["v"]))
-      print("[auth] nuance fetched entries=${data.length}");
+      print("[auth] nuance fetched v=${data.first["v"]}");
       return data.first
     })
   }
