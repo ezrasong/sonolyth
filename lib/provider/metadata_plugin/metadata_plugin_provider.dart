@@ -178,6 +178,9 @@ class MetadataPluginNotifier extends AsyncNotifier<MetadataPluginState> {
 
   Future<void> _loadDefaultPlugins(MetadataPluginState pluginState) async {
     const plugins = [
+      // Sonolyth fork: bundle the patched Spotify metadata plugin so it's
+      // always preloaded (see assets/plugins/spotube-plugin-spotify).
+      "spotube-plugin-spotify",
       "spotube-plugin-musicbrainz-listenbrainz",
       "spotube-plugin-youtube-audio",
     ];
