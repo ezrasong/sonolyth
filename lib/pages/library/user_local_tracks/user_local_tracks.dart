@@ -1,15 +1,18 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:path/path.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import 'package:spotube/collections/spotube_icons.dart';
 import 'package:spotube/components/inter_scrollbar/inter_scrollbar.dart';
+import 'package:spotube/components/playbutton_view/playbutton_view.dart';
 import 'package:spotube/modules/library/local_folder/local_folder_item.dart';
-import 'package:spotube/extensions/constrains.dart';
 import 'package:spotube/extensions/context.dart';
 import 'package:spotube/provider/local_tracks/local_tracks_provider.dart';
 import 'package:spotube/provider/user_preferences/user_preferences_provider.dart';
@@ -38,6 +41,8 @@ class UserLocalLibraryPage extends HookConsumerWidget {
     final preferences = ref.watch(userPreferencesProvider);
     final controller = useScrollController();
 
+    final searchText = useState('');
+
     final addLocalLibraryLocation = useCallback(() async {
       if (kIsMobile || kIsMacOS) {
         final dirStr = await FilePicker.platform.getDirectoryPath(
@@ -58,15 +63,29 @@ class UserLocalLibraryPage extends HookConsumerWidget {
       }
     }, [preferences.localLibraryLocation]);
 
-    // This is just to pre-load the tracks.
-    // For now, this gets all of them.
-    ref.watch(localTracksProvider);
+    final tracksSnapshot = ref.watch(localTracksProvider);
 
-    final locations = [
+    final locations = useMemoized(() {
+      final all = [
+        preferences.downloadLocation,
+        if (cacheDir.hasData) cacheDir.data!,
+        ...preferences.localLibraryLocation,
+      ];
+      if (searchText.value.isEmpty) {
+        return all;
+      }
+      return all
+          .map((e) => (weightedRatio(basename(e), searchText.value), e))
+          .sorted((a, b) => b.$1.compareTo(a.$1))
+          .where((e) => e.$1 > 50)
+          .map((e) => e.$2)
+          .toList();
+    }, [
       preferences.downloadLocation,
-      if (cacheDir.hasData) cacheDir.data!,
-      ...preferences.localLibraryLocation,
-    ];
+      preferences.localLibraryLocation,
+      cacheDir.data,
+      searchText.value,
+    ]);
 
     return SafeArea(
       bottom: false,
@@ -77,45 +96,57 @@ class UserLocalLibraryPage extends HookConsumerWidget {
           },
           child: InterScrollbar(
             controller: controller,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: CustomScrollView(
-                controller: controller,
-                slivers: [
-                  SliverAppBar(
-                    automaticallyImplyLeading: false,
-                    backgroundColor: Theme.of(context).colorScheme.background,
-                    floating: true,
-                    flexibleSpace: SizedBox(
+            child: CustomScrollView(
+              controller: controller,
+              slivers: [
+                SliverAppBar(
+                  automaticallyImplyLeading: false,
+                  backgroundColor: Theme.of(context).colorScheme.background,
+                  floating: true,
+                  flexibleSpace: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: SizedBox(
                       height: 48,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Button.secondary(
-                          leading: const Icon(SpotubeIcons.folderAdd),
-                          onPressed: addLocalLibraryLocation,
-                          child: Text(context.l10n.add_library_location),
-                        ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              onChanged: (value) => searchText.value = value,
+                              features: const [
+                                InputFeature.leading(
+                                    Icon(SpotubeIcons.filter)),
+                              ],
+                              placeholder: Text(context.l10n.search),
+                            ),
+                          ),
+                          const Gap(8),
+                          Button.secondary(
+                            leading: const Icon(SpotubeIcons.folderAdd),
+                            onPressed: addLocalLibraryLocation,
+                            child: Text(context.l10n.add_library_location),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  const SliverGap(10),
-                  SliverLayoutBuilder(builder: (context, constrains) {
-                    return SliverGrid.builder(
-                      itemCount: locations.length,
-                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 200,
-                        mainAxisExtent: constrains.smAndDown ? 240 : 250,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                      ),
-                      itemBuilder: (context, index) {
-                        return LocalFolderItem(folder: locations[index]);
-                      },
-                    );
-                  }),
-                  const SliverSafeArea(sliver: SliverGap(10)),
-                ],
-              ),
+                ),
+                const SliverGap(10),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  sliver: PlaybuttonView(
+                    controller: controller,
+                    itemCount: locations.length,
+                    hasMore: false,
+                    isLoading: tracksSnapshot.isLoading,
+                    onRequestMore: () {},
+                    gridItemBuilder: (context, index) =>
+                        LocalFolderItem(folder: locations[index]),
+                    listItemBuilder: (context, index) =>
+                        LocalFolderItem.tile(folder: locations[index]),
+                  ),
+                ),
+                const SliverSafeArea(sliver: SliverGap(10)),
+              ],
             ),
           ),
         ),

@@ -19,7 +19,10 @@ var Cookie = spotube.Cookie
 
 class SpotifyAuthEndpoint {
   final controller: StreamController
-  var _timer: Timer
+  // Generation counter for the refresh timer. A raw Dart Timer can't be
+  // stored and cancelled through hetu (its private _Timer runtime type never
+  // resolves), so stale timers cancel themselves when they next fire.
+  var _timerGeneration: int
   /// Map of:
   /// - `cookies`: Map of cookies from <Cookie>.toJson()
   /// - `accessToken`: The access token string
@@ -38,8 +41,13 @@ class SpotifyAuthEndpoint {
         onEvent(event)
       }
       if(event["type"] == "recovered" || event["type"] == "login") {
-        _timer?.cancel()
-        _timer = Timer.periodic(getExpirationDuration(), (cancel){
+        _timerGeneration = (_timerGeneration ?? 0) + 1
+        var generation = _timerGeneration
+        Timer.periodic(getExpirationDuration(), (cancel){
+          if (generation != _timerGeneration) {
+            cancel()
+            return
+          }
           refreshCredentials()
         })
       }
@@ -215,7 +223,7 @@ class SpotifyAuthEndpoint {
 	}
 
 	fun refreshCredentials() -> Future {
-		if (credentials["cookies"] == null) {
+		if (credentials == null || credentials["cookies"] == null) {
 			print(
 				"[refreshCredentials] No cookie found. Cannot refresh credentials.",
 			);
@@ -265,6 +273,8 @@ class SpotifyAuthEndpoint {
 
 	fun logout() {
 		credentials = null;
+		// Retire any running refresh timer (it self-cancels on next fire).
+		_timerGeneration = (_timerGeneration ?? 0) + 1
 		LocalStorage.remove("credentials");
 		controller.add({type: "logout"}.toJson());
 	}
