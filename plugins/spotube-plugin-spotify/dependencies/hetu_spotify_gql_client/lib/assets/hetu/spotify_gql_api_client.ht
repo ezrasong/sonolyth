@@ -12,6 +12,11 @@ var HttpClient = std.HttpClient
 var HttpBaseOptions = std.HttpBaseOptions
 var FutureUtils = std.FutureUtils
 var Duration = std.Duration
+// Required: hetu encapsulates Dart response objects by looking up the class
+// name in the CURRENT module's scope chain (and a hetu_script bug makes that
+// lookup throw instead of failing soft). Without this, res.statusCode below
+// dies with "Undefined identifier [HttpResponse]".
+var HttpResponse = std.HttpResponse
 
 // Retries requests that fail with HTTP 429 (Spotify rate-limit) using
 // exponential backoff. Opening album/artist pages fires several requests at

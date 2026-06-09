@@ -23,7 +23,7 @@ class SpotifyUserEndpoint {
           }
         }
       }.toJson()
-    ).then((res: HttpResponse){
+    ).then((res){
       var user = res.data["data"]["me"]["profile"]
       var userId = user["uri"].split(":").last
       return {
@@ -67,7 +67,7 @@ class SpotifyUserEndpoint {
             }
         }
       }.toJson()
-    ).then((res: HttpResponse) {
+    ).then((res) {
       var data = res.data
       
       if(SpotifyError.isError(data)) {
@@ -159,7 +159,7 @@ class SpotifyUserEndpoint {
             }
         }
       }.toJson()
-    ).then((res: HttpResponse){
+    ).then((res){
       var data = res.data
 
       if (SpotifyError.isError(data)) {
@@ -242,7 +242,7 @@ class SpotifyUserEndpoint {
             }
         }
       }.toJson()
-    ).then((res: HttpResponse){
+    ).then((res){
       var data = res.data
 
       if (SpotifyError.isError(data)) {
@@ -272,7 +272,7 @@ class SpotifyUserEndpoint {
       return this.apiClient.get_req(
         "/albums",
         queryParameters: {ids: ids.join(",")}.toJson()
-      ).then((res: HttpResponse) {
+      ).then((res) {
         var data = res.data
 
         if (SpotifyError.isError(data)) {
@@ -320,7 +320,7 @@ class SpotifyUserEndpoint {
             }
         }
       }.toJson()
-    ).then((res: HttpResponse){
+    ).then((res){
       var data = res.data
 
       if (SpotifyError.isError(data)) {
@@ -350,7 +350,7 @@ class SpotifyUserEndpoint {
       return this.apiClient.get_req(
         "/artists",
         queryParameters: {ids: ids.join(",")}.toJson()
-      ).then((res: HttpResponse) {
+      ).then((res) {
         var data = res.data
 
         if (SpotifyError.isError(data)) {
@@ -383,7 +383,7 @@ class SpotifyUserEndpoint {
           },
         },
       }.toJson()
-    ).then((res: HttpResponse){
+    ).then((res){
       var data = res.data
 
       if (SpotifyError.isError(data)) {
@@ -417,7 +417,7 @@ class SpotifyUserEndpoint {
           },
         },
       }.toJson()
-    ).then((res: HttpResponse){
+    ).then((res){
       var data = res.data
 
       if (SpotifyError.isError(data)) {
@@ -435,7 +435,7 @@ class SpotifyUserEndpoint {
   
   fun isPlaylistSaved(playlistId: string) {
     return this.apiClient.get_req("/playlists/${playlistId}/followers/contains")
-    .then((res: HttpResponse) {
+    .then((res) {
       var data = res.data
 
       if (SpotifyError.isError(data)) {

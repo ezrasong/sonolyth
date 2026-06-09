@@ -24,7 +24,7 @@ class SpotifyArtistEndpoint {
         }
       }.toJson()
     )
-      .then((res: HttpResponse){
+      .then((res){
         var data = res.data
 
         if(SpotifyError.isError(data)) {
@@ -67,7 +67,7 @@ class SpotifyArtistEndpoint {
         }
       }.toJson()
     )
-      .then((res: HttpResponse){
+      .then((res){
         var data = res.data
 
         if(SpotifyError.isError(data)) {
@@ -131,7 +131,7 @@ class SpotifyArtistEndpoint {
         }
       }.toJson()
     )
-      .then((res: HttpResponse){
+      .then((res){
         var data = res.data
 
         if(SpotifyError.isError(data)) {
@@ -196,7 +196,7 @@ class SpotifyArtistEndpoint {
             }
         }
       }.toJson()
-    ).then((res: HttpResponse){
+    ).then((res){
       var data = res.data
 
       if (SpotifyError.isError(data)) {
@@ -222,7 +222,7 @@ class SpotifyArtistEndpoint {
             }
         }
       }.toJson()
-    ).then((res: HttpResponse){
+    ).then((res){
       var data = res.data
 
       if (SpotifyError.isError(data)) {
@@ -235,7 +235,7 @@ class SpotifyArtistEndpoint {
 
   fun related(artistId: string) {
     return this.apiClient.get_req("/artists/${artistId}/related-artists")
-      .then((res: HttpResponse){
+      .then((res){
         var data = res.data
 
         if(SpotifyError.isError(data)) {

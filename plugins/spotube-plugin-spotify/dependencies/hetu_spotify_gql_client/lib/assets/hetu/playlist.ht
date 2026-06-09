@@ -28,7 +28,7 @@ class SpotifyPlaylistEndpoint {
           }
         }
       }.toJson()
-    ).then((res: HttpResponse) {
+    ).then((res) {
       var data = res.data
 
       if (SpotifyError.isError(data)) {
@@ -80,7 +80,7 @@ class SpotifyPlaylistEndpoint {
           }
         }
       }.toJson()
-    ).then((res: HttpResponse) {
+    ).then((res) {
       var data = res.data
 
       if (SpotifyError.isError(data)) {
@@ -155,7 +155,7 @@ class SpotifyPlaylistEndpoint {
         public: public ?? false,
         collaborative: collaborative ?? false
       }.toJson()
-    ).then((res: HttpResponse) {
+    ).then((res) {
       var data = res.data
 
       if (SpotifyError.isError(data)) {
@@ -194,7 +194,7 @@ class SpotifyPlaylistEndpoint {
     return this.apiClient.put(
       "/playlists/${playlistId}",
       data: data
-    ).then((res: HttpResponse) {
+    ).then((res) {
       var data = res.data
 
       if (SpotifyError.isError(data)) {
@@ -212,7 +212,7 @@ class SpotifyPlaylistEndpoint {
         uris: uris,
         position: position ?? 0
       }.toJson()
-    ).then((res: HttpResponse) {
+    ).then((res) {
       var data = res.data
 
       if (SpotifyError.isError(data)) {
@@ -231,7 +231,7 @@ class SpotifyPlaylistEndpoint {
       data: {
         tracks: uris.map((uri)=>{uri: uri}).toList()
       }.toJson()
-    ).then((res: HttpResponse) {
+    ).then((res) {
       var data = res.data
 
       if (SpotifyError.isError(data)) {
@@ -248,7 +248,7 @@ class SpotifyPlaylistEndpoint {
       data: {
         public: false
       }.toJson()
-    ).then((res: HttpResponse){
+    ).then((res){
       var data = res.data
       if(SpotifyError.isError(data)) {
         throw SpotifyError(data)
@@ -259,7 +259,7 @@ class SpotifyPlaylistEndpoint {
 
   fun unfollow(playlistId: string) {
     return this.apiClient.delete_req("/playlists/${playlistId}/followers")
-    .then((res: HttpResponse){
+    .then((res){
       var data = res.data
       if(SpotifyError.isError(data)) {
         throw SpotifyError(data)

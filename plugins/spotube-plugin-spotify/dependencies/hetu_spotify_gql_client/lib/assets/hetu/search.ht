@@ -170,7 +170,7 @@ class SpotifySearchEndpoint {
           }
         }
       }.toJson()
-    ).then((res: HttpResponse) {
+    ).then((res) {
       var data = res.data
 
       if(SpotifyError.isError(data)) {
@@ -214,7 +214,7 @@ class SpotifySearchEndpoint {
           },
         },
       }.toJson()
-    ).then((res: HttpResponse){
+    ).then((res){
       var data = res.data
 
       if(SpotifyError.isError(data)) {
@@ -258,7 +258,7 @@ class SpotifySearchEndpoint {
           },
         },
       }.toJson()
-    ).then((res: HttpResponse){
+    ).then((res){
       var data = res.data
 
       if(SpotifyError.isError(data)) {
@@ -302,7 +302,7 @@ class SpotifySearchEndpoint {
           },
         },
       }.toJson()
-    ).then((res: HttpResponse){
+    ).then((res){
       var data = res.data
 
       if(SpotifyError.isError(data)) {
@@ -346,7 +346,7 @@ class SpotifySearchEndpoint {
           },
         },
       }.toJson()
-    ).then((res: HttpResponse){
+    ).then((res){
       var data = res.data
 
       if(SpotifyError.isError(data)) {
