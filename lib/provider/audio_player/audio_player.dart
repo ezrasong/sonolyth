@@ -11,6 +11,7 @@ import 'package:spotube/provider/audio_player/state.dart';
 import 'package:spotube/provider/blacklist_provider.dart';
 import 'package:spotube/provider/database/database.dart';
 import 'package:spotube/provider/discord_provider.dart';
+import 'package:spotube/provider/server/server.dart';
 import 'package:spotube/provider/server/sourced_track_provider.dart';
 import 'package:spotube/services/audio_player/audio_player.dart';
 import 'package:spotube/services/logger/logger.dart';
@@ -72,6 +73,11 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
         ),
       );
     } else if (tracks.isNotEmpty) {
+      // Media URIs embed the local playback server's port — wait for the
+      // server to be up before building them, or every restored track points
+      // at port 0 and can never play.
+      await ref.read(serverProvider.future);
+
       state = state.copyWith(
         tracks: tracks,
         currentIndex: currentIndex,
@@ -81,6 +87,11 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
         initialIndex: currentIndex,
         autoPlay: false,
       );
+
+      // Opening a playlist resets mpv's modes; re-apply the saved ones so
+      // shuffle/repeat survive an app restart.
+      await audioPlayer.setLoopMode(playerState.loopMode);
+      await audioPlayer.setShuffle(playerState.shuffled);
     }
 
     if (playerState.collections.isNotEmpty) {

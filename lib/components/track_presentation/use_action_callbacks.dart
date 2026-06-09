@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -12,7 +13,7 @@ import 'package:spotube/models/metadata/metadata.dart';
 import 'package:spotube/provider/audio_player/audio_player.dart';
 import 'package:spotube/provider/connect/connect.dart';
 import 'package:spotube/provider/history/history.dart';
-import 'package:spotube/services/audio_player/audio_player.dart';
+import 'package:spotube/provider/server/sourced_track_provider.dart';
 import 'package:spotube/services/logger/logger.dart';
 
 typedef UseActionCallbacks = ({
@@ -35,6 +36,22 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
     () => playlist.collections.contains(options.collectionId),
     [playlist.collections, options.collectionId],
   );
+
+  // Warm up the first track's audio source as soon as the page has tracks so
+  // pressing play doesn't wait on the YouTube search + manifest round trip.
+  final firstTrack = options.tracks.firstOrNull;
+  useEffect(() {
+    if (firstTrack is SpotubeFullTrackObject) {
+      Future(() async {
+        try {
+          await ref.read(sourcedTrackProvider(firstTrack).future);
+        } catch (e, stack) {
+          AppLogger.reportError(e, stack);
+        }
+      });
+    }
+    return null;
+  }, [firstTrack?.id]);
 
   final onShuffle = useCallback(() async {
     try {
@@ -62,12 +79,15 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
         );
         await remotePlayback.setShuffle(true);
       } else {
+        // Shuffle the track list in Dart instead of using mpv's shuffle:
+        // playback starts instantly on a deterministic index, so the player
+        // modal always shows the track that's actually playing (mpv's
+        // playlist shuffle reorders out from under the reported index).
+        final shuffledTracks = [...initialTracks]..shuffle();
         await playlistNotifier.load(
-          initialTracks,
+          shuffledTracks,
           autoPlay: true,
-          initialIndex: Random().nextInt(initialTracks.length),
         );
-        await audioPlayer.setShuffle(true);
         playlistNotifier.addCollection(options.collectionId);
         if (options.collection is SpotubeSimpleAlbumObject) {
           historyNotifier
@@ -80,7 +100,7 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
         final allTracks = await options.pagination.onFetchAll();
 
         await playlistNotifier.addTracks(
-          allTracks.sublist(initialTracks.length),
+          allTracks.sublist(initialTracks.length)..shuffle(),
         );
       }
     } catch (e, stack) {
