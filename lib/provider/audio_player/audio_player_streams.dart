@@ -30,6 +30,7 @@ class AudioPlayerStreamListeners {
       subscribeToSkipSponsor(),
       subscribeToScrobbleChanged(),
       subscribeToPosition(),
+      subscribeToNextTrackPrefetch(),
       subscribeToPlayerError(),
     ];
 
@@ -159,6 +160,36 @@ class AudioPlayerStreamListeners {
           );
         } finally {
           lastTrack = nextTrack.id;
+        }
+      } catch (e, stack) {
+        AppLogger.reportError(e, stack);
+      }
+    });
+  }
+
+  /// Resolves the audio sources of the next couple of tracks as soon as the
+  /// active track changes, so manual skips don't wait on a YouTube
+  /// search + stream-manifest round trip. (subscribeToPosition only warms the
+  /// next track at 80% progress, which never helps early skips.)
+  StreamSubscription subscribeToNextTrackPrefetch() {
+    String lastPrefetchedFor = "";
+    return audioPlayer.playlistStream.listen((event) async {
+      try {
+        final activeId = audioPlayerState.activeTrack?.id;
+        if (activeId == null || activeId == lastPrefetchedFor) return;
+        lastPrefetchedFor = activeId;
+
+        // Give the active track's own sourcing a head start.
+        await Future.delayed(const Duration(seconds: 2));
+
+        // Re-read the state — the user may have skipped again meanwhile.
+        final upcoming = audioPlayerState.tracks
+            .skip(audioPlayerState.currentIndex + 1)
+            .whereType<SpotubeFullTrackObject>()
+            .take(2);
+
+        for (final track in upcoming) {
+          await ref.read(sourcedTrackProvider(track).future);
         }
       } catch (e, stack) {
         AppLogger.reportError(e, stack);
