@@ -90,8 +90,13 @@ class SpotifyAuthEndpoint {
     return client.get_req(
       "https://api.github.com/gists/22ed9c6ba463899e933427f7de1f0eef"
     ).then((res) {
-      var data = JSON.decode(JSON.decode(res.data)["files"]["nuances.json"]["content"]);
+      var outer
+      try { outer = JSON.decode(res.data) } catch (e) { outer = res.data }
+      var content = outer["files"]["nuances.json"]["content"]
+      var data
+      try { data = JSON.decode(content) } catch (e) { data = content }
       data.sort((a, b) => b["v"].compareTo(a["v"]))
+      print("[auth] nuance fetched entries=${data.length}");
       return data.first
     })
   }
@@ -99,7 +104,10 @@ class SpotifyAuthEndpoint {
   fun generateTimedOnTimePassword(secret: string) -> Future {
 		return client.get_req("https://open.spotify.com/api/server-time")
     .then((res) {
-      final timestampSeconds = res.data["serverTime"]
+      var sd
+      try { sd = JSON.decode(res.data) } catch (e) { sd = res.data }
+      print("[auth] server-time ok");
+      final timestampSeconds = sd["serverTime"]
 
       final totp = TOTP(
         secret: secret,
