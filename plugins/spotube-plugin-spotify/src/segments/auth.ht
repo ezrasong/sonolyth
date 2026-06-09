@@ -112,11 +112,16 @@ class SpotifyAuthEndpoint {
   }
 
   fun generateTimedOnTimePassword(secret: string) -> Future {
-		return client.get_req("https://open.spotify.com/api/server-time")
+    print("[auth] totp start secret=${secret != null}");
+		return client.get_req(
+      "https://open.spotify.com/api/server-time",
+      options: RequestOptions(headers: { "User-Agent": "Mozilla/5.0" }.toJson())
+    )
     .then((res) {
+      print("[auth] server-time status=${res.statusCode}");
       var sd
       try { sd = JSON.decode(res.data) } catch (e) { sd = res.data }
-      print("[auth] server-time ok");
+      print("[auth] server-time ok serverTime=${sd["serverTime"]}");
       final timestampSeconds = sd["serverTime"]
 
       final totp = TOTP(
