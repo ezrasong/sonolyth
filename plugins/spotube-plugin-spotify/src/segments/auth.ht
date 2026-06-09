@@ -119,10 +119,8 @@ class SpotifyAuthEndpoint {
     )
     .then((res) {
       print("[auth] server-time status=${res.statusCode}");
-      var sd
-      try { sd = JSON.decode(res.data) } catch (e) { sd = res.data }
-      print("[auth] server-time ok serverTime=${sd["serverTime"]}");
-      final timestampSeconds = sd["serverTime"]
+      final timestampSeconds = res.data["serverTime"]
+      print("[auth] server-time ok serverTime=${timestampSeconds}");
 
       final totp = TOTP(
         secret: secret,
