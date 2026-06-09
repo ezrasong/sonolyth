@@ -212,24 +212,26 @@ class SpotifyAuthEndpoint {
     var captured = false
 
     var sub: StreamSubscription = webview.onUrlRequestStream.listen((url){
+      print("[auth] webview url: ${url}")
       if (captured) {
         return
       }
-      var safeUrl = url.endsWith("/") ? url.substring(0, url.length - 1) : url
-      var statusExp = Regex("https:\\/\\/accounts.spotify.com\\/.+\\/status")
-      // After a successful login Spotify often redirects straight to the web
-      // player (open.spotify.com) without surfacing the .../status page, so
-      // treat landing on the web player as logged-in too. The sp_dc cookie is
-      // set on accounts.spotify.com, so always read cookies from there.
-      var loggedIn = statusExp.hasMatch(safeUrl) || safeUrl.startsWith("https://open.spotify.com")
-      if(loggedIn) {
+      // Don't rely on matching a specific redirect URL (Spotify changes the
+      // post-login destination). Instead, on every navigation read the cookies
+      // from accounts.spotify.com and complete login as soon as sp_dc exists.
+      return webview.getCookies("https://accounts.spotify.com/").then((cookies){
+        var cookieMaps = cookies.map((cookie) => cookie.toJson()).toList()
+        var spDc = cookieMaps.where((c) => c["name"] == "sp_dc").toList()
+        print("[auth] cookies=${cookieMaps.length} sp_dc=${!spDc.isEmpty}")
+        if (spDc.isEmpty) {
+          return
+        }
         captured = true
-        return webview.getCookies("https://accounts.spotify.com/").then((cookies){
-          return login(cookies.map((cookie)=> cookie.toJson()).toList()).then(() {
-            return webview.close()
-          })
+        return login(cookieMaps).then(() {
+          print("[auth] login complete, closing webview")
+          return webview.close()
         })
-      }
+      })
     })
 
     return webview.open()
