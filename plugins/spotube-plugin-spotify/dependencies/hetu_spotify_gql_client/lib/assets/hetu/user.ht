@@ -146,7 +146,7 @@ class SpotifyUserEndpoint {
             ],
             "limit": limit ?? 20,
             "offset": offset ?? 0,
-            "flatten": false,
+            "flatten": true,
             "expandedFolders": [],
             "folderUri": null,
             "includeFoldersWhenFlattening": true
@@ -229,7 +229,7 @@ class SpotifyUserEndpoint {
             ],
             "limit": limit ?? 20,
             "offset": offset ?? 0,
-            "flatten": false,
+            "flatten": true,
             "expandedFolders": [],
             "folderUri": null,
             "includeFoldersWhenFlattening": true
@@ -307,7 +307,7 @@ class SpotifyUserEndpoint {
             ],
             "limit": limit ?? 20,
             "offset": offset ?? 0,
-            "flatten": false,
+            "flatten": true,
             "expandedFolders": [],
             "folderUri": null,
             "includeFoldersWhenFlattening": true
