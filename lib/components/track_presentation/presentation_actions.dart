@@ -78,6 +78,7 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
       required BuildContext context,
       required List<SpotubeTrackObject> tracks,
       required String action,
+      String? collectionUrl,
     }) async {
       final fullTrackObjects =
           tracks.whereType<SpotubeFullTrackObject>().toList();
@@ -89,7 +90,10 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
           ) ??
           false;
       if (confirmed != true) return;
-      downloader.addAllToQueue(fullTrackObjects);
+      downloader.addAllToQueue(
+        fullTrackObjects,
+        collectionUrl: collectionUrl,
+      );
       notifier.deselectAllTracks();
       if (!context.mounted) return;
       showToastForAction(context, action, fullTrackObjects.length);
@@ -105,8 +109,9 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
       ],
       onSelected: (action) async {
         var tracks = selectedTracks;
+        final isWholeCollectionAction = selectedTracks.isEmpty;
 
-        if (selectedTracks.isEmpty) {
+        if (isWholeCollectionAction) {
           tracks = await options.pagination.onFetchAll();
 
           notifier.selectAllTracks();
@@ -120,6 +125,7 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
               context: context,
               tracks: tracks,
               action: action,
+              collectionUrl: isWholeCollectionAction ? options.shareUrl : null,
             );
             break;
           case "add-to-playlist":

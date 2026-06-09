@@ -67,14 +67,19 @@ class UserPreferencesNotifier extends Notifier<PreferencesTableData> {
   }
 
   Future<String> _getDefaultDownloadDirectory() async {
-    if (kIsAndroid) return "/storage/emulated/0/Download/Spotube";
+    if (kIsAndroid) {
+      final dir = await paths.getExternalStorageDirectory();
+      return join(
+          dir?.path ?? (await paths.getApplicationDocumentsDirectory()).path,
+          "Downloads");
+    }
 
     if (kIsMacOS) {
       return join((await paths.getLibraryDirectory()).path, "Caches");
     }
 
     return paths.getDownloadsDirectory().then((dir) {
-      return join(dir!.path, "Spotube");
+      return join(dir!.path, "Sonolyth");
     });
   }
 
@@ -83,7 +88,16 @@ class UserPreferencesNotifier extends Notifier<PreferencesTableData> {
 
     final query = db.update(db.preferencesTable)..where((t) => t.id.equals(0));
 
-    await query.write(data);
+    final previous = state;
+    state = state.copyWithCompanion(data);
+
+    try {
+      await query.write(data);
+    } catch (e, stack) {
+      state = previous;
+      AppLogger.reportError(e, stack);
+      rethrow;
+    }
   }
 
   Future<void> reset() async {
@@ -118,20 +132,20 @@ class UserPreferencesNotifier extends Notifier<PreferencesTableData> {
     }
   }
 
-  void setThemeMode(ThemeMode mode) {
-    setData(PreferencesTableCompanion(themeMode: Value(mode)));
+  Future<void> setThemeMode(ThemeMode mode) {
+    return setData(PreferencesTableCompanion(themeMode: Value(mode)));
   }
 
-  void setRecommendationMarket(Market country) {
-    setData(PreferencesTableCompanion(market: Value(country)));
+  Future<void> setRecommendationMarket(Market country) {
+    return setData(PreferencesTableCompanion(market: Value(country)));
   }
 
-  void setAccentColorScheme(SpotubeColor color) {
-    setData(PreferencesTableCompanion(accentColorScheme: Value(color)));
+  Future<void> setAccentColorScheme(SpotubeColor color) {
+    return setData(PreferencesTableCompanion(accentColorScheme: Value(color)));
   }
 
-  void setAlbumColorSync(bool sync) {
-    setData(PreferencesTableCompanion(albumColorSync: Value(sync)));
+  Future<void> setAlbumColorSync(bool sync) {
+    return setData(PreferencesTableCompanion(albumColorSync: Value(sync)));
 
     // if (!sync) {
     //   ref.read(paletteProvider.notifier).state = null;
@@ -140,91 +154,100 @@ class UserPreferencesNotifier extends Notifier<PreferencesTableData> {
     // }
   }
 
-  void setCheckUpdate(bool check) {
-    setData(PreferencesTableCompanion(checkUpdate: Value(check)));
+  Future<void> setCheckUpdate(bool check) {
+    return setData(PreferencesTableCompanion(checkUpdate: Value(check)));
   }
 
-  void setDownloadLocation(String downloadDir) {
-    if (downloadDir.isEmpty) return;
-    setData(PreferencesTableCompanion(downloadLocation: Value(downloadDir)));
+  Future<void> setDownloadLocation(String downloadDir) {
+    if (downloadDir.isEmpty) return Future.value();
+    return setData(
+      PreferencesTableCompanion(downloadLocation: Value(downloadDir)),
+    );
   }
 
-  void setLocalLibraryLocation(List<String> localLibraryDirs) {
+  Future<void> setLocalLibraryLocation(List<String> localLibraryDirs) {
     //if (localLibraryDir.isEmpty) return;
-    setData(
+    return setData(
       PreferencesTableCompanion(
         localLibraryLocation: Value(localLibraryDirs),
       ),
     );
   }
 
-  void setLayoutMode(LayoutMode mode) {
-    setData(PreferencesTableCompanion(layoutMode: Value(mode)));
+  Future<void> setLayoutMode(LayoutMode mode) {
+    return setData(PreferencesTableCompanion(layoutMode: Value(mode)));
   }
 
-  void setCloseBehavior(CloseBehavior behavior) {
-    setData(PreferencesTableCompanion(closeBehavior: Value(behavior)));
+  Future<void> setCloseBehavior(CloseBehavior behavior) {
+    return setData(PreferencesTableCompanion(closeBehavior: Value(behavior)));
   }
 
-  void setShowSystemTrayIcon(bool show) {
-    setData(PreferencesTableCompanion(showSystemTrayIcon: Value(show)));
+  Future<void> setShowSystemTrayIcon(bool show) {
+    return setData(PreferencesTableCompanion(showSystemTrayIcon: Value(show)));
   }
 
-  void setLocale(Locale locale) {
-    setData(PreferencesTableCompanion(locale: Value(locale)));
+  Future<void> setLocale(Locale locale) {
+    return setData(PreferencesTableCompanion(locale: Value(locale)));
   }
 
-  void setSearchMode(SearchMode mode) {
-    setData(PreferencesTableCompanion(searchMode: Value(mode)));
+  Future<void> setSearchMode(SearchMode mode) {
+    return setData(PreferencesTableCompanion(searchMode: Value(mode)));
   }
 
-  void setSkipNonMusic(bool skip) {
-    setData(PreferencesTableCompanion(skipNonMusic: Value(skip)));
+  Future<void> setSkipNonMusic(bool skip) {
+    return setData(PreferencesTableCompanion(skipNonMusic: Value(skip)));
   }
 
-  void setYoutubeClientEngine(YoutubeClientEngine engine) {
-    setData(PreferencesTableCompanion(youtubeClientEngine: Value(engine)));
+  Future<void> setYoutubeClientEngine(YoutubeClientEngine engine) {
+    return setData(
+      PreferencesTableCompanion(youtubeClientEngine: Value(engine)),
+    );
   }
 
-  void setSystemTitleBar(bool isSystemTitleBar) {
-    setData(
+  Future<void> setSystemTitleBar(bool isSystemTitleBar) {
+    return setData(
       PreferencesTableCompanion(
         systemTitleBar: Value(isSystemTitleBar),
       ),
     );
   }
 
-  void setDiscordPresence(bool discordPresence) {
-    setData(PreferencesTableCompanion(discordPresence: Value(discordPresence)));
+  Future<void> setDiscordPresence(bool discordPresence) {
+    return setData(
+      PreferencesTableCompanion(discordPresence: Value(discordPresence)),
+    );
   }
 
-  void setAmoledDarkTheme(bool isAmoled) {
-    setData(PreferencesTableCompanion(amoledDarkTheme: Value(isAmoled)));
+  Future<void> setAmoledDarkTheme(bool isAmoled) {
+    return setData(PreferencesTableCompanion(amoledDarkTheme: Value(isAmoled)));
   }
 
-  void setNormalizeAudio(bool normalize) {
-    setData(PreferencesTableCompanion(normalizeAudio: Value(normalize)));
+  Future<void> setNormalizeAudio(bool normalize) {
+    final result = setData(
+      PreferencesTableCompanion(normalizeAudio: Value(normalize)),
+    );
     audioPlayer.setAudioNormalization(normalize);
+    return result;
   }
 
-  void setEndlessPlayback(bool endless) {
-    setData(PreferencesTableCompanion(endlessPlayback: Value(endless)));
+  Future<void> setEndlessPlayback(bool endless) {
+    return setData(PreferencesTableCompanion(endlessPlayback: Value(endless)));
   }
 
-  void setEnableConnect(bool enable) {
-    setData(PreferencesTableCompanion(enableConnect: Value(enable)));
+  Future<void> setEnableConnect(bool enable) {
+    return setData(PreferencesTableCompanion(enableConnect: Value(enable)));
   }
 
-  void setConnectPort(int port) {
+  Future<void> setConnectPort(int port) {
     assert(
       port >= -1 && port <= 65535,
       "Port must be between -1 and 65535, got $port",
     );
-    setData(PreferencesTableCompanion(connectPort: Value(port)));
+    return setData(PreferencesTableCompanion(connectPort: Value(port)));
   }
 
-  void setCacheMusic(bool cache) {
-    setData(PreferencesTableCompanion(cacheMusic: Value(cache)));
+  Future<void> setCacheMusic(bool cache) {
+    return setData(PreferencesTableCompanion(cacheMusic: Value(cache)));
   }
 }
 

@@ -16,11 +16,13 @@ import 'package:spotube/components/links/link_text.dart';
 import 'package:spotube/components/track_tile/track_options_button.dart';
 import 'package:spotube/components/ui/button_tile.dart';
 import 'package:spotube/extensions/constrains.dart';
+import 'package:spotube/extensions/context.dart';
 import 'package:spotube/extensions/duration.dart';
 import 'package:spotube/models/metadata/metadata.dart';
 import 'package:spotube/provider/audio_player/querying_track_info.dart';
 import 'package:spotube/provider/audio_player/state.dart';
 import 'package:spotube/provider/blacklist_provider.dart';
+import 'package:spotube/provider/download_manager_provider.dart';
 import 'package:spotube/utils/platform.dart';
 
 final isBlacklistedProvider =
@@ -75,6 +77,16 @@ class TrackTile extends HookConsumerWidget {
     final isPlaying = playlist.activeTrack?.id == track.id;
 
     final isSelected = isPlaying || isLoading.value;
+    ref.watch(downloadManagerProvider);
+    final downloadManager = ref.read(downloadManagerProvider.notifier);
+    final downloadTask = track is SpotubeFullTrackObject
+        ? downloadManager.getTaskByTrackId(track.id)
+        : null;
+    final isDownloading = const [
+      DownloadStatus.queued,
+      DownloadStatus.downloading,
+    ].contains(downloadTask?.status);
+    final isDownloaded = downloadTask?.status == DownloadStatus.completed;
 
     final imageProvider = useMemoized(
       () => UniversalImage.imageProvider(
@@ -233,36 +245,42 @@ class TrackTile extends HookConsumerWidget {
                   child: AbsorbPointer(
                     absorbing: selectionMode,
                     child: switch (track) {
-                    SpotubeLocalTrackObject() => Text(
-                        track.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    _ => Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(
-                child: Button(
-                style: ButtonVariance.link.copyWith(
-                padding: (context, states, value) =>
-                  EdgeInsets.zero,
-                ),
-                onPressed: effectiveSelection
-                  ? null
-                  : () {
-                    context
-                      .navigateTo(TrackRoute(trackId: track.id));
-                  },
-                              child: Text(
-                                track.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                      SpotubeLocalTrackObject() => Text(
+                          track.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      _ => Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Button(
+                                style: ButtonVariance.link.copyWith(
+                                  padding: (context, states, value) =>
+                                      EdgeInsets.zero,
+                                ),
+                                onPressed: effectiveSelection
+                                    ? null
+                                    : () {
+                                        context.navigateTo(
+                                            TrackRoute(trackId: track.id));
+                                      },
+                                child: Text(
+                                  track.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: isPlaying
+                                      ? TextStyle(
+                                          color: theme.colorScheme.primary,
+                                          fontWeight: FontWeight.w600,
+                                        )
+                                      : null,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                  },
+                          ],
+                        ),
+                    },
                   ),
                 ),
                 if (constrains.mdAndUp) ...[
@@ -294,14 +312,14 @@ class TrackTile extends HookConsumerWidget {
             ),
             subtitle: Align(
               alignment: Alignment.centerLeft,
-                    child: track is SpotubeLocalTrackObject
+              child: track is SpotubeLocalTrackObject
                   ? Text(
                       track.artists.asString(),
                     )
                   : ClipRect(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxHeight: 40),
-                          child: AbsorbPointer(
+                        child: AbsorbPointer(
                           absorbing: effectiveSelection,
                           child: ArtistLink(
                             artists: track.artists,
@@ -321,6 +339,46 @@ class TrackTile extends HookConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(width: 8),
+                if (track is SpotubeFullTrackObject)
+                  Tooltip(
+                    tooltip: TooltipContainer(
+                      child: Text(context.l10n.download_track),
+                    ).call,
+                    child: IconButton.ghost(
+                      size: ButtonSize.small,
+                      enabled: !isDownloading && !isDownloaded,
+                      icon: isDownloading
+                          ? SizedBox.square(
+                              dimension: 18,
+                              child: StreamBuilder(
+                                stream: downloadTask?.downloadedBytesStream,
+                                builder: (context, snapshot) {
+                                  final total = downloadTask?.totalSizeBytes;
+                                  final progress = total == null || total == 0
+                                      ? null
+                                      : (snapshot.data ?? 0) / total;
+                                  return CircularProgressIndicator(
+                                    value: progress?.toDouble(),
+                                    strokeWidth: 2,
+                                  );
+                                },
+                              ),
+                            )
+                          : Icon(
+                              isDownloaded
+                                  ? SpotubeIcons.done
+                                  : SpotubeIcons.download,
+                              color: isDownloaded
+                                  ? theme.colorScheme.primary
+                                  : null,
+                            ),
+                      onPressed: () {
+                        downloadManager.addToQueue(
+                          track as SpotubeFullTrackObject,
+                        );
+                      },
+                    ),
+                  ),
                 Text(
                   Duration(milliseconds: track.durationMs)
                       .toHumanReadableString(padZero: false),

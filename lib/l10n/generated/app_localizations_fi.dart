@@ -489,13 +489,13 @@ class AppLocalizationsFi extends AppLocalizations {
   String get about => 'Tietoa';
 
   @override
-  String get u_love_spotube => 'Tiedämme että rakastat Spotubea';
+  String get u_love_spotube => 'Tiedämme että rakastat Sonolytha';
 
   @override
   String get check_for_updates => 'Tarkista päivitykset';
 
   @override
-  String get about_spotube => 'Tietoa Spotube:sta';
+  String get about_spotube => 'Tietoa Sonolyth:sta';
 
   @override
   String get blacklist => 'Mustalista';
@@ -505,7 +505,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get spotube_description =>
-      'Spotube, kevyt, cross-platform, vapaa-kaikille spotify clientti';
+      'Sonolyth, kevyt, cross-platform, vapaa-kaikille spotify clientti';
 
   @override
   String get version => 'Versio';
@@ -523,14 +523,14 @@ class AppLocalizationsFi extends AppLocalizations {
   String get bug_issues => 'Bugit+Ongelmat';
 
   @override
-  String get made_with => 'Tehty ❤️ Bangladeshista 🇧🇩';
+  String get made_with => 'Made with ❤️';
 
   @override
-  String get kingkor_roy_tirtho => 'Kingkor Roy Tirtho';
+  String get kingkor_roy_tirtho => 'Ezra Song';
 
   @override
   String copyright(Object current_year) {
-    return '© 2021-$current_year Kingkor Roy Tirtho';
+    return '© $current_year Ezra Song';
   }
 
   @override
@@ -727,7 +727,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get download_ip_ban_warning =>
-      'BTW, YouTube voi estää IP-Osoitteesi tavallista liiallisten latauspyyntöjen takia. IP-Osoitteen esto tarkoittaa sitä, ettet voi käyttää YouTubea (vaikka olisit kirjautunut) vähintään 2-3kk aikana kyseiseltä laitteelta. Spotube ei kanna yhtään vastuuta jos se tapahtuu.';
+      'BTW, YouTube voi estää IP-Osoitteesi tavallista liiallisten latauspyyntöjen takia. IP-Osoitteen esto tarkoittaa sitä, ettet voi käyttää YouTubea (vaikka olisit kirjautunut) vähintään 2-3kk aikana kyseiseltä laitteelta. Sonolyth ei kanna yhtään vastuuta jos se tapahtuu.';
 
   @override
   String get by_clicking_accept_terms =>
@@ -743,7 +743,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get download_agreement_3 =>
-      'Ymmärrän että minun YouTube voi estää IP-Osoitteeni ja en pidä Spotubea tai omistajiinsa/avustajia vastuullisena mistään omista teoistsani';
+      'Ymmärrän että minun YouTube voi estää IP-Osoitteeni ja en pidä Sonolytha tai omistajiinsa/avustajia vastuullisena mistään omista teoistsani';
 
   @override
   String get decline => 'Hylkää';
@@ -825,7 +825,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get encryption_failed_warning =>
-      'Spotube käyttää salausta tallentaakseen tietosi, mutta epäonnistui, joten se palaa epäturvalliseen tallennukseen\nJos käytät Linuxia, varmista että sinulla on turvallisuuspalvelu (gnome-keyring, kde-wallet, keepassxc jne) asennettu';
+      'Sonolyth käyttää salausta tallentaakseen tietosi, mutta epäonnistui, joten se palaa epäturvalliseen tallennukseen\nJos käytät Linuxia, varmista että sinulla on turvallisuuspalvelu (gnome-keyring, kde-wallet, keepassxc jne) asennettu';
 
   @override
   String get querying_info => 'Hankitaan tietoa...';
@@ -1004,7 +1004,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get choose_your_region_description =>
-      'Tämä auttaa Spotube näyttämään sinulle oikeaa sisältöä\nsijaintiasi varten.';
+      'Tämä auttaa Sonolyth näyttämään sinulle oikeaa sisältöä\nsijaintiasi varten.';
 
   @override
   String get choose_your_language => 'Valitse kielesi';
@@ -1014,7 +1014,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get help_project_grow_description =>
-      'Spotube projekti minkä lähdekoodi on julkisesti saatavilla. Voit autta tätä projektia kasvamaan muutoksilla, ilmoittamalla bugeista, tai ehdottamalla uusia ominaisuuksia.';
+      'Sonolyth projekti minkä lähdekoodi on julkisesti saatavilla. Voit autta tätä projektia kasvamaan muutoksilla, ilmoittamalla bugeista, tai ehdottamalla uusia ominaisuuksia.';
 
   @override
   String get contribute_on_github => 'Auta GitHub:ssa';
@@ -1029,7 +1029,8 @@ class AppLocalizationsFi extends AppLocalizations {
   String get enable_connect => 'Ota käyttöön yhdistäminen';
 
   @override
-  String get enable_connect_description => 'Ohjaa Spotubea toiselta laitteelta';
+  String get enable_connect_description =>
+      'Ohjaa Sonolytha toiselta laitteelta';
 
   @override
   String get devices => 'Laitteet';
@@ -1077,19 +1078,19 @@ class AppLocalizationsFi extends AppLocalizations {
   }
 
   @override
-  String get spotube_has_an_update => 'Spotubella on päivitys';
+  String get spotube_has_an_update => 'Sonolythlla on päivitys';
 
   @override
   String get download_now => 'Lataa nyt';
 
   @override
   String nightly_version(Object nightlyBuildNum) {
-    return 'Spotube Nightly $nightlyBuildNum on julkaistu';
+    return 'Sonolyth Nightly $nightlyBuildNum on julkaistu';
   }
 
   @override
   String release_version(Object version) {
-    return 'Spotube v$version on julkaistu';
+    return 'Sonolyth v$version on julkaistu';
   }
 
   @override
@@ -1512,7 +1513,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get third_party_plugin_dmca_notice =>
-      'Spotube-tiimi ei ota mitään vastuuta (mukaan lukien oikeudellinen) mistään \"kolmannen osapuolen\" lisäosista.\nKäytä niitä omalla vastuullasi. Ilmoita kaikista virheistä/ongelmista lisäosan arkistoon.\n\nJos jokin \"kolmannen osapuolen\" lisäosa rikkoo jonkin palvelun/oikeushenkilön käyttöehtoja/DMCA:ta, pyydä \"kolmannen osapuolen\" lisäosan tekijää tai isännöintialustaa, esim. GitHubia/Codebergiä, ryhtymään toimiin. Yllä luetellut (\"kolmannen osapuolen\" merkityt) ovat kaikki julkisia/yhteisön ylläpitämiä lisäosia. Emme kuratoi niitä, joten emme voi ryhtyä niihin toimiin.\n\n';
+      'Sonolyth-tiimi ei ota mitään vastuuta (mukaan lukien oikeudellinen) mistään \"kolmannen osapuolen\" lisäosista.\nKäytä niitä omalla vastuullasi. Ilmoita kaikista virheistä/ongelmista lisäosan arkistoon.\n\nJos jokin \"kolmannen osapuolen\" lisäosa rikkoo jonkin palvelun/oikeushenkilön käyttöehtoja/DMCA:ta, pyydä \"kolmannen osapuolen\" lisäosan tekijää tai isännöintialustaa, esim. GitHubia/Codebergiä, ryhtymään toimiin. Yllä luetellut (\"kolmannen osapuolen\" merkityt) ovat kaikki julkisia/yhteisön ylläpitämiä lisäosia. Emme kuratoi niitä, joten emme voi ryhtyä niihin toimiin.\n\n';
 
   @override
   String get input_does_not_match_format => 'Syöte ei vastaa vaadittua muotoa';

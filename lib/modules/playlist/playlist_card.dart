@@ -34,17 +34,14 @@ class PlaylistCard extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final playlistQueue = ref.watch(audioPlayerProvider);
-    final playlistNotifier = ref.watch(audioPlayerProvider.notifier);
+    final playlistNotifier = ref.read(audioPlayerProvider.notifier);
     final isFetchingActiveTrack = ref.watch(queryingTrackInfoProvider);
     final historyNotifier = ref.read(playbackHistoryActionsProvider);
 
-    final playing =
-        useStream(audioPlayer.playingStream).data ?? audioPlayer.isPlaying;
-
-    final isPlaylistPlaying = useMemoized<bool>(
-      () => playlistQueue.containsCollection(playlist.id),
-      [playlistQueue, playlist.id],
+    // Only rebuild this card when *its* collection's playing status flips,
+    // not on every track change / play-pause across the whole queue.
+    final isPlaylistPlaying = ref.watch(
+      audioPlayerProvider.select((s) => s.containsCollection(playlist.id)),
     );
 
     final updating = useState(false);
@@ -81,9 +78,9 @@ class PlaylistCard extends HookConsumerWidget {
     final onPlaybuttonPressed = useCallback(() async {
       try {
         updating.value = true;
-        if (isPlaylistPlaying && playing) {
+        if (isPlaylistPlaying && audioPlayer.isPlaying) {
           return audioPlayer.pause();
-        } else if (isPlaylistPlaying && !playing) {
+        } else if (isPlaylistPlaying && !audioPlayer.isPlaying) {
           return audioPlayer.resume();
         }
 
@@ -119,7 +116,6 @@ class PlaylistCard extends HookConsumerWidget {
       }
     }, [
       isPlaylistPlaying,
-      playing,
       fetchInitialTracks,
       context,
       showSelectDeviceDialog,

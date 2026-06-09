@@ -26,6 +26,8 @@ class SpotubeColor extends Color {
 }
 
 final Set<SpotubeColor> colorsMap = {
+  const SpotubeColor(0xff6750a4, name: "android"),
+  const SpotubeColor(0xff1db954, name: "spotify"),
   SpotubeColor(Colors.slate.value, name: "slate"),
   SpotubeColor(Colors.gray.value, name: "gray"),
   SpotubeColor(Colors.zinc.value, name: "zinc"),
@@ -41,6 +43,8 @@ final Set<SpotubeColor> colorsMap = {
 };
 
 final colorSchemeMap = {
+  "android": LegacyColorSchemes.violet,
+  "spotify": LegacyColorSchemes.green,
   "slate": LegacyColorSchemes.slate,
   "gray": LegacyColorSchemes.gray,
   "zinc": LegacyColorSchemes.zinc,

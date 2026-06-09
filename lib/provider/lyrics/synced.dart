@@ -37,7 +37,7 @@ class SyncedLyricsNotifier
       options: Options(
         headers: {
           "User-Agent":
-              "Spotube v${packageInfo.version} (https://github.com/KRTirtho/spotube)"
+              "Sonolyth v${packageInfo.version} (https://github.com/ezrasong/sonolyth)"
         },
         responseType: ResponseType.json,
       ),

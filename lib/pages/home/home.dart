@@ -6,7 +6,6 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:spotube/collections/routes.gr.dart';
 import 'package:spotube/collections/spotube_icons.dart';
 import 'package:spotube/models/database/database.dart';
-import 'package:spotube/modules/connect/connect_device.dart';
 import 'package:spotube/modules/home/sections/featured.dart';
 import 'package:spotube/modules/home/sections/sections.dart';
 import 'package:spotube/modules/home/sections/new_releases.dart';
@@ -28,6 +27,12 @@ class HomePage extends HookConsumerWidget {
     final mediaQuery = MediaQuery.of(context);
     final layoutMode =
         ref.watch(userPreferencesProvider.select((s) => s.layoutMode));
+    final hour = DateTime.now().hour;
+    final greeting = switch (hour) {
+      >= 5 && < 12 => "Good morning",
+      >= 12 && < 18 => "Good afternoon",
+      _ => "Good evening",
+    };
 
     return SafeArea(
         bottom: false,
@@ -41,27 +46,32 @@ class HomePage extends HookConsumerWidget {
               if (mediaQuery.smAndDown || layoutMode == LayoutMode.compact)
                 SliverAppBar(
                   floating: true,
-                  title: DefaultTextStyle(
+                  toolbarHeight: 64,
+                  titleSpacing: 16,
+                  title: Text(
+                    greeting,
                     style: TextStyle(
-                      fontFamily: "Cookie",
-                      fontSize: 30,
-                      letterSpacing: 1.8,
                       color: theme.colorScheme.foreground,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
                     ),
-                    child: const Text("Spotube"),
                   ),
                   backgroundColor: theme.colorScheme.background,
                   foregroundColor: theme.colorScheme.foreground,
                   actions: [
-                    const ConnectDeviceButton(),
-                    const Gap(10),
                     IconButton.ghost(
-                      icon: const Icon(SpotubeIcons.settings, size: 20),
+                      icon: const Icon(SpotubeIcons.speaker),
+                      onPressed: () {
+                        context.navigateTo(const ConnectRoute());
+                      },
+                    ),
+                    IconButton.ghost(
+                      icon: const Icon(SpotubeIcons.settings),
                       onPressed: () {
                         context.navigateTo(const SettingsRoute());
                       },
                     ),
-                    const Gap(10),
+                    const Gap(8),
                   ],
                 )
               else if (kIsMacOS)

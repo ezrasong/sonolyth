@@ -643,7 +643,7 @@ class $PreferencesTableTable extends PreferencesTable
               'accent_color_scheme', aliasedName, false,
               type: DriftSqlType.string,
               requiredDuringInsert: false,
-              defaultValue: const Constant("Slate:0xff64748b"))
+              defaultValue: const Constant("android:0xff6750a4"))
           .withConverter<SpotubeColor>(
               $PreferencesTableTable.$converteraccentColorScheme);
   @override
@@ -699,7 +699,7 @@ class $PreferencesTableTable extends PreferencesTable
       GeneratedColumn<String>('theme_mode', aliasedName, false,
               type: DriftSqlType.string,
               requiredDuringInsert: false,
-              defaultValue: Constant(ThemeMode.system.name))
+              defaultValue: Constant(ThemeMode.dark.name))
           .withConverter<ThemeMode>($PreferencesTableTable.$converterthemeMode);
   static const VerificationMeta _audioSourceIdMeta =
       const VerificationMeta('audioSourceId');

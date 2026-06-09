@@ -30,13 +30,13 @@ class AudioServices with WidgetsBindingObserver {
                 Env.releaseChannel
               )) {
                 (true, _) => "spotube",
-                (_, ReleaseChannel.stable) => "oss.krtirtho.spotube",
-                (_, ReleaseChannel.nightly) => "oss.krtirtho.spotube.nightly",
+                (_, ReleaseChannel.stable) => "com.ezrasong.sonolyth",
+                (_, ReleaseChannel.nightly) => "com.ezrasong.sonolyth.nightly",
               },
-              androidNotificationChannelName: 'Spotube',
+              androidNotificationChannelName: 'Sonolyth',
               androidNotificationOngoing: false,
               androidStopForegroundOnPause: false,
-              androidNotificationChannelDescription: "Spotube Media Controls",
+              androidNotificationChannelDescription: "Sonolyth Media Controls",
             ),
           )
         : null;

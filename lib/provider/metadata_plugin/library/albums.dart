@@ -19,7 +19,7 @@ class MetadataPluginSavedAlbumNotifier
   @override
   build() async {
     await ref.watch(metadataPluginAuthenticatedProvider.future);
-    return await fetch(0, 20);
+    return await fetchWithRetry(0, 20);
   }
 
   Future<void> addFavorite(List<SpotubeSimpleAlbumObject> albums) async {

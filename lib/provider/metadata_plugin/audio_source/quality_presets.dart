@@ -62,25 +62,54 @@ class AudioSourceAvailableQualityPresetsNotifier
     audioSourceConfigSnapshot.whenData((audioSourceConfig) {
       audioSourceSnapshot.whenData((audioSource) async {
         if (audioSource == null || audioSourceConfig == null) {
-          throw MetadataPluginException.noDefaultAudioSourcePlugin();
+          state = AudioSourcePresetsState();
+          return;
         }
+
         final preferences = await SharedPreferences.getInstance();
         final persistedStateStr =
             preferences.getString("audioSourceState-${audioSourceConfig.slug}");
 
         if (persistedStateStr != null) {
-          state =
-              AudioSourcePresetsState.fromJson(jsonDecode(persistedStateStr))
-                  .copyWith(
-            presets: audioSource.audioSource.supportedPresets,
+          state = _withFlacDownloadDefaults(
+            AudioSourcePresetsState.fromJson(jsonDecode(persistedStateStr))
+                .copyWith(
+              presets: audioSource.audioSource.supportedPresets,
+            ),
           );
         } else {
-          state = AudioSourcePresetsState(
-            presets: audioSource.audioSource.supportedPresets,
+          state = _withFlacDownloadDefaults(
+            AudioSourcePresetsState(
+              presets: audioSource.audioSource.supportedPresets,
+            ),
           );
         }
       });
     });
+  }
+
+  AudioSourcePresetsState _withFlacDownloadDefaults(
+    AudioSourcePresetsState next,
+  ) {
+    final selectedPreset =
+        next.presets.elementAtOrNull(next.selectedDownloadingContainerIndex);
+    final alreadyLossless =
+        selectedPreset is SpotubeAudioSourceContainerPresetLossless;
+    if (alreadyLossless) return next;
+
+    final flacIndex = next.presets
+        .indexWhere((preset) => preset.name.toLowerCase() == "flac");
+    final losslessIndex = next.presets.indexWhere(
+      (preset) => preset is SpotubeAudioSourceContainerPresetLossless,
+    );
+    final preferredIndex = flacIndex >= 0 ? flacIndex : losslessIndex;
+
+    if (preferredIndex < 0) return next;
+
+    return next.copyWith(
+      selectedDownloadingContainerIndex: preferredIndex,
+      selectedDownloadingQualityIndex: 0,
+    );
   }
 
   void setSelectedStreamingContainerIndex(int index) {

@@ -26,7 +26,7 @@ List<SideBarTiles> getSidebarTileList(AppLocalizations l10n) => [
         pathPrefix: "/home",
         route: const HomeRoute(),
         icon: SpotubeIcons.home,
-        title: l10n.browse,
+        title: "Home",
       ),
       SideBarTiles(
         id: "search",
@@ -88,7 +88,7 @@ List<SideBarTiles> getNavbarTileList(AppLocalizations l10n) => [
         pathPrefix: "/home",
         route: const HomeRoute(),
         icon: SpotubeIcons.home,
-        title: l10n.browse,
+        title: "Home",
       ),
       SideBarTiles(
         id: "search",
@@ -103,12 +103,5 @@ List<SideBarTiles> getNavbarTileList(AppLocalizations l10n) => [
         route: const UserPlaylistsRoute(),
         icon: SpotubeIcons.library,
         title: l10n.library,
-      ),
-      SideBarTiles(
-        id: "stats",
-        pathPrefix: "/stats",
-        route: const StatsRoute(),
-        icon: SpotubeIcons.chart,
-        title: l10n.stats,
       ),
     ];

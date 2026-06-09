@@ -23,19 +23,33 @@ class SearchPlaceholder extends HookConsumerWidget {
     final searchTerm = ref.watch(searchTermStateProvider);
 
     return switch ((searchTerm.isEmpty, snapshot.isLoading)) {
-      (true, false) => Column(
-          children: [
-            SizedBox(
-              height: mediaQuery.height * 0.2,
-            ),
-            Undraw(
-              illustration: UndrawIllustration.explore,
-              color: theme.colorScheme.primary,
-              height: 200 * theme.scaling,
-            ),
-            const SizedBox(height: 20),
-            Text(context.l10n.search_to_get_results).large(),
-          ],
+      (true, false) => LayoutBuilder(
+          builder: (context, constraints) {
+            final availableHeight = constraints.maxHeight.isFinite
+                ? constraints.maxHeight
+                : mediaQuery.height;
+            final topGap = (availableHeight * 0.16)
+                .clamp(24.0, mediaQuery.height * 0.2)
+                .toDouble();
+            final illustrationHeight = (availableHeight * 0.35)
+                .clamp(120.0, 200 * theme.scaling)
+                .toDouble();
+
+            return SingleChildScrollView(
+              padding: EdgeInsets.only(top: topGap, bottom: 24 * theme.scaling),
+              child: Column(
+                children: [
+                  Undraw(
+                    illustration: UndrawIllustration.explore,
+                    color: theme.colorScheme.primary,
+                    height: illustrationHeight,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(context.l10n.search_to_get_results).large(),
+                ],
+              ),
+            );
+          },
         ),
       (false, true) => Container(
           constraints: BoxConstraints(

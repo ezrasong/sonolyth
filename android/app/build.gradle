@@ -32,7 +32,7 @@ if (keystorePropertiesFile.exists()) {
 def composeVersion = "1.4.8"
 
 android {
-    namespace "oss.krtirtho.spotube"
+    namespace "com.ezrasong.sonolyth"
     
     compileSdkVersion 36
 
@@ -61,7 +61,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "oss.krtirtho.spotube"
+        applicationId "com.ezrasong.sonolyth"
         minSdkVersion 24
         targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
@@ -83,7 +83,7 @@ android {
             signingConfig signingConfigs.release
         }
         debug {
-            signingConfig signingConfigs.release
+            signingConfig signingConfigs.debug
         }
     }
 
@@ -92,22 +92,19 @@ android {
     productFlavors {
         nightly {
             dimension "default"
-            resValue "string", "app_name_en", "Spotube Nightly"
+            resValue "string", "app_name_en", "Sonolyth Nightly"
             applicationIdSuffix ".nightly"
             versionNameSuffix "-nightly"
-            signingConfig signingConfigs.release
         }
         dev {
             dimension "default"
-            resValue "string", "app_name_en", "Spotube Dev"
+            resValue "string", "app_name_en", "Sonolyth Dev"
             applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
-            signingConfig signingConfigs.release
         }
         stable {
             dimension "default"
-            resValue "string", "app_name_en", "Spotube"
-            signingConfig signingConfigs.release
+            resValue "string", "app_name_en", "Sonolyth"
         }
     }
 

@@ -17,6 +17,8 @@ class ErrorBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final visibleMessage = _friendlyErrorMessage(error);
+
     // Make a monospace error log view. Make sure it's only 4 lines
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 400),
@@ -38,10 +40,8 @@ class ErrorBox extends StatelessWidget {
                 filled: true,
                 fillColor: context.theme.colorScheme.muted,
                 child: Text(
-                  error.toString(),
+                  visibleMessage,
                   style: TextStyle(
-                    // Use monospace
-                    fontFamily: 'Ubuntu Mono',
                     color: context.theme.colorScheme.mutedForeground,
                     fontSize: 14,
                   ),
@@ -134,5 +134,14 @@ class ErrorBox extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _friendlyErrorMessage(Object error) {
+    final message = error.toString();
+    if (message.contains("status code of 401")) {
+      return "This section needs account access from your selected music source. Log in or choose a different provider, then retry.";
+    }
+
+    return "Something went wrong while loading this section. You can view the full logs for details.";
   }
 }

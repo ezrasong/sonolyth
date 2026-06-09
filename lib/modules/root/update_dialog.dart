@@ -14,8 +14,8 @@ class RootAppUpdateDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const url = "https://spotube.krtirtho.dev/downloads";
-    const nightlyUrl = "https://spotube.krtirtho.dev/downloads/nightly";
+    const url = "https://github.com/ezrasong/sonolyth/releases";
+    const nightlyUrl = "https://github.com/ezrasong/sonolyth/releases";
     return AlertDialog(
       title: Text(context.l10n.spotube_has_an_update),
       actions: [

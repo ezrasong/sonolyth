@@ -489,13 +489,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get about => 'About';
 
   @override
-  String get u_love_spotube => 'We know you love Spotube';
+  String get u_love_spotube => 'We know you love Sonolyth';
 
   @override
   String get check_for_updates => 'Check for updates';
 
   @override
-  String get about_spotube => 'About Spotube';
+  String get about_spotube => 'About Sonolyth';
 
   @override
   String get blacklist => 'Blacklist';
@@ -523,14 +523,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bug_issues => 'Bug+Issues';
 
   @override
-  String get made_with => 'Made with ❤️ in Bangladesh🇧🇩';
+  String get made_with => 'Made with ❤️';
 
   @override
-  String get kingkor_roy_tirtho => 'Kingkor Roy Tirtho';
+  String get kingkor_roy_tirtho => 'Ezra Song';
 
   @override
   String copyright(Object current_year) {
-    return '© 2021-$current_year Kingkor Roy Tirtho';
+    return '© $current_year Ezra Song';
   }
 
   @override
@@ -727,7 +727,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get download_ip_ban_warning =>
-      'BTW, your IP can get blocked on YouTube due excessive download requests than usual. IP block means you can\'t use YouTube (even if you\'re logged in) for at least 2-3 months from that IP device. And Spotube doesn\'t hold any responsibility if this ever happens';
+      'BTW, your IP can get blocked on YouTube due excessive download requests than usual. IP block means you can\'t use YouTube (even if you\'re logged in) for at least 2-3 months from that IP device. And Sonolyth doesn\'t hold any responsibility if this ever happens';
 
   @override
   String get by_clicking_accept_terms =>
@@ -742,7 +742,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get download_agreement_3 =>
-      'I\'m completely aware that my IP can get blocked on YouTube & I don\'t hold Spotube or his owners/contributors responsible for any accidents caused by my current action';
+      'I\'m completely aware that my IP can get blocked on YouTube & I don\'t hold Sonolyth or his owners/contributors responsible for any accidents caused by my current action';
 
   @override
   String get decline => 'Decline';
@@ -824,7 +824,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get encryption_failed_warning =>
-      'Spotube uses encryption to securely store your data. But failed to do so. So it\'ll fallback to insecure storage\nIf you\'re using linux, please make sure you\'ve any secret-service (gnome-keyring, kde-wallet, keepassxc etc) installed';
+      'Sonolyth uses encryption to securely store your data. But failed to do so. So it\'ll fallback to insecure storage\nIf you\'re using linux, please make sure you\'ve any secret-service (gnome-keyring, kde-wallet, keepassxc etc) installed';
 
   @override
   String get querying_info => 'Querying info...';
@@ -1003,7 +1003,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get choose_your_region_description =>
-      'This will help Spotube show you the right content\nfor your location.';
+      'This will help Sonolyth show you the right content\nfor your location.';
 
   @override
   String get choose_your_language => 'Choose your language';
@@ -1013,7 +1013,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get help_project_grow_description =>
-      'Spotube is an open-source project. You can help this project grow by contributing to the project, reporting bugs, or suggesting new features.';
+      'Sonolyth is an open-source project. You can help this project grow by contributing to the project, reporting bugs, or suggesting new features.';
 
   @override
   String get contribute_on_github => 'Contribute on GitHub';
@@ -1028,7 +1028,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enable_connect => 'Enable Connect';
 
   @override
-  String get enable_connect_description => 'Control Spotube from other devices';
+  String get enable_connect_description =>
+      'Control Sonolyth from other devices';
 
   @override
   String get devices => 'Devices';
@@ -1076,19 +1077,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get spotube_has_an_update => 'Spotube has an update';
+  String get spotube_has_an_update => 'Sonolyth has an update';
 
   @override
   String get download_now => 'Download Now';
 
   @override
   String nightly_version(Object nightlyBuildNum) {
-    return 'Spotube Nightly $nightlyBuildNum has been released';
+    return 'Sonolyth Nightly $nightlyBuildNum has been released';
   }
 
   @override
   String release_version(Object version) {
-    return 'Spotube v$version has been released';
+    return 'Sonolyth v$version has been released';
   }
 
   @override
@@ -1511,7 +1512,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get third_party_plugin_dmca_notice =>
-      'The Spotube team does not hold any responsibility (including legal) for any \"Third-party\" plugins.\nPlease use them at your own risk. For any bugs/issues, please report them to the plugin repository.\n\nIf any \"Third-party\" plugin is breaking ToS/DMCA of any service/legal entity, please ask the \"Third-party\" plugin author or the hosting platform .e.g GitHub/Codeberg to take action. Above listed (\"Third-party\" labelled) are all public/community maintained plugins. We\'re not curating them, so we cannot take any action on them.\n\n';
+      'The Sonolyth team does not hold any responsibility (including legal) for any \"Third-party\" plugins.\nPlease use them at your own risk. For any bugs/issues, please report them to the plugin repository.\n\nIf any \"Third-party\" plugin is breaking ToS/DMCA of any service/legal entity, please ask the \"Third-party\" plugin author or the hosting platform .e.g GitHub/Codeberg to take action. Above listed (\"Third-party\" labelled) are all public/community maintained plugins. We\'re not curating them, so we cannot take any action on them.\n\n';
 
   @override
   String get input_does_not_match_format =>

@@ -14,20 +14,15 @@ import 'package:flutter/widgets.dart';
 class $AssetsBrandingGen {
   const $AssetsBrandingGen();
 
-  /// File path: assets/branding/spotube-logo-light.png
-  AssetGenImage get spotubeLogoLight =>
-      const AssetGenImage('assets/branding/spotube-logo-light.png');
+  /// File path: assets/branding/sonolyth-logo.ico
+  String get sonolythLogoIco => 'assets/branding/sonolyth-logo.ico';
 
-  /// File path: assets/branding/spotube-logo.ico
-  String get spotubeLogoIco => 'assets/branding/spotube-logo.ico';
-
-  /// File path: assets/branding/spotube-logo.png
-  AssetGenImage get spotubeLogoPng =>
-      const AssetGenImage('assets/branding/spotube-logo.png');
+  /// File path: assets/branding/sonolyth-logo.png
+  AssetGenImage get sonolythLogoPng =>
+      const AssetGenImage('assets/branding/sonolyth-logo.png');
 
   /// List of all assets
-  List<dynamic> get values =>
-      [spotubeLogoLight, spotubeLogoIco, spotubeLogoPng];
+  List<dynamic> get values => [sonolythLogoIco, sonolythLogoPng];
 }
 
 class $AssetsImagesGen {
@@ -36,10 +31,6 @@ class $AssetsImagesGen {
   /// File path: assets/images/album-placeholder.png
   AssetGenImage get albumPlaceholder =>
       const AssetGenImage('assets/images/album-placeholder.png');
-
-  /// File path: assets/images/bengali-patterns-bg.jpg
-  AssetGenImage get bengaliPatternsBg =>
-      const AssetGenImage('assets/images/bengali-patterns-bg.jpg');
 
   /// File path: assets/images/liked-tracks.jpg
   AssetGenImage get likedTracks =>
@@ -59,7 +50,6 @@ class $AssetsImagesGen {
   /// List of all assets
   List<AssetGenImage> get values => [
         albumPlaceholder,
-        bengaliPatternsBg,
         likedTracks,
         placeholder,
         userPlaceholder

@@ -60,7 +60,7 @@ class PreferencesTable extends Table {
   TextColumn get closeBehavior => textEnum<CloseBehavior>()
       .withDefault(Constant(CloseBehavior.close.name))();
   TextColumn get accentColorScheme => text()
-      .withDefault(const Constant("Slate:0xff64748b"))
+      .withDefault(const Constant("android:0xff6750a4"))
       .map(const SpotubeColorConverter())();
   TextColumn get layoutMode =>
       textEnum<LayoutMode>().withDefault(Constant(LayoutMode.adaptive.name))();
@@ -77,7 +77,7 @@ class PreferencesTable extends Table {
   TextColumn get localLibraryLocation =>
       text().withDefault(const Constant("")).map(const StringListConverter())();
   TextColumn get themeMode =>
-      textEnum<ThemeMode>().withDefault(Constant(ThemeMode.system.name))();
+      textEnum<ThemeMode>().withDefault(Constant(ThemeMode.dark.name))();
   TextColumn get audioSourceId => text().nullable()();
   TextColumn get youtubeClientEngine => textEnum<YoutubeClientEngine>()
       .withDefault(Constant(YoutubeClientEngine.youtubeExplode.name))();
@@ -102,14 +102,14 @@ class PreferencesTable extends Table {
       systemTitleBar: false,
       skipNonMusic: false,
       closeBehavior: CloseBehavior.close,
-      accentColorScheme: SpotubeColor(Colors.slate.value, name: "Slate"),
+      accentColorScheme: const SpotubeColor(0xff6750a4, name: "android"),
       layoutMode: LayoutMode.adaptive,
       locale: const Locale("system", "system"),
       market: Market.US,
       searchMode: SearchMode.youtube,
       downloadLocation: "",
       localLibraryLocation: [],
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.dark,
       audioSourceId: null,
       youtubeClientEngine: kIsIOS
           ? YoutubeClientEngine.youtubeExplode

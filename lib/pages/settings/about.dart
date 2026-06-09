@@ -3,14 +3,12 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:spotube/collections/assets.gen.dart';
 import 'package:spotube/collections/env.dart';
 import 'package:spotube/components/button/back_button.dart';
-import 'package:spotube/components/image/universal_image.dart';
 import 'package:spotube/components/links/hyper_link.dart';
 import 'package:spotube/components/titlebar/titlebar.dart';
 import 'package:spotube/extensions/context.dart';
 import 'package:spotube/hooks/controllers/use_package_info.dart';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:auto_route/auto_route.dart';
 
 final _licenseProvider = FutureProvider<String>((ref) async {
@@ -45,7 +43,7 @@ class AboutSpotubePage extends HookConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
               children: [
-                Assets.branding.spotubeLogoPng.image(
+                Assets.branding.sonolythLogoPng.image(
                   height: 200,
                   width: 200,
                 ),
@@ -69,7 +67,7 @@ class AboutSpotubePage extends HookConsumerWidget {
                               TableCell(
                                 child: Hyperlink(
                                   context.l10n.kingkor_roy_tirtho,
-                                  "https://github.com/KRTirtho",
+                                  "https://github.com/ezrasong",
                                 ),
                               )
                             ],
@@ -98,26 +96,14 @@ class AboutSpotubePage extends HookConsumerWidget {
                               )
                             ],
                           ),
-                          const TableRow(
-                            cells: [
-                              TableCell(child: Text("Website")),
-                              colon,
-                              TableCell(
-                                child: Hyperlink(
-                                  "spotube.krtirtho.dev",
-                                  "https://spotube.krtirtho.dev",
-                                ),
-                              ),
-                            ],
-                          ),
                           TableRow(
                             cells: [
                               TableCell(child: Text(context.l10n.repository)),
                               colon,
                               const TableCell(
                                 child: Hyperlink(
-                                  "github.com/KRTirtho/spotube",
-                                  "https://github.com/KRTirtho/spotube",
+                                  "github.com/ezrasong/sonolyth",
+                                  "https://github.com/ezrasong/sonolyth",
                                 ),
                               ),
                             ],
@@ -129,7 +115,7 @@ class AboutSpotubePage extends HookConsumerWidget {
                               const TableCell(
                                 child: Hyperlink(
                                   "BSD-4-Clause",
-                                  "https://raw.githubusercontent.com/KRTirtho/spotube/master/LICENSE",
+                                  "https://raw.githubusercontent.com/ezrasong/sonolyth/master/LICENSE",
                                 ),
                               ),
                             ],
@@ -140,8 +126,8 @@ class AboutSpotubePage extends HookConsumerWidget {
                               colon,
                               const TableCell(
                                 child: Hyperlink(
-                                  "Discord#chat",
-                                  "https://discord.gg/uJ94vxB6vg",
+                                  "GitHub Issues",
+                                  "https://github.com/ezrasong/sonolyth/issues",
                                 ),
                               ),
                             ],
@@ -149,20 +135,6 @@ class AboutSpotubePage extends HookConsumerWidget {
                         ],
                       ),
                     ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: GestureDetector(
-                    onTap: () => launchUrl(
-                      Uri.parse("https://discord.gg/uJ94vxB6vg"),
-                      mode: LaunchMode.externalApplication,
-                    ),
-                    child: const UniversalImage(
-                      path:
-                          "https://discord.com/api/guilds/1012234096237350943/widget.png?style=banner2",
-                    ),
                   ),
                 ),
                 const SizedBox(height: 20),

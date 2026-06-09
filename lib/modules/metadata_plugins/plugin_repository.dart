@@ -30,6 +30,12 @@ class MetadataPluginRepositoryItem extends HookConsumerWidget {
       () => Uri.parse(pluginRepo.repoUrl).host,
       [pluginRepo.repoUrl],
     );
+    final pluginTitle = pluginRepo.name.startsWith("spotube-plugin")
+        ? pluginRepo.name
+            .replaceFirst("spotube-plugin-", "")
+            .trim()
+            .toCapitalCase()
+        : pluginRepo.name.toCapitalCase();
     final isInstalling = useState(false);
 
     return Card(
@@ -40,12 +46,7 @@ class MetadataPluginRepositoryItem extends HookConsumerWidget {
         children: [
           Basic(
             title: Text(
-              pluginRepo.name.startsWith("spotube-plugin")
-                  ? pluginRepo.name
-                      .replaceFirst("spotube-plugin-", "")
-                      .trim()
-                      .toCapitalCase()
-                  : pluginRepo.name.toCapitalCase(),
+              pluginTitle,
             ),
             subtitle: Text(pluginRepo.description),
             trailing: Button.primary(

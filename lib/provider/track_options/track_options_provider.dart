@@ -283,16 +283,13 @@ final trackOptionsStateProvider =
   final isBlacklisted = blacklist.contains(track);
   final isSavedTrack = ref.watch(metadataPluginIsSavedTrackProvider(track.id));
 
-  final downloadTask = playlist.activeTrack?.id == null
+  final downloadTask = track is SpotubeLocalTrackObject
       ? null
-      : downloadManager.getTaskByTrackId(playlist.activeTrack!.id);
-  final isInDownloadQueue = playlist.activeTrack == null ||
-          playlist.activeTrack! is SpotubeLocalTrackObject
-      ? false
-      : const [
-          DownloadStatus.queued,
-          DownloadStatus.downloading,
-        ].contains(downloadTask?.status);
+      : downloadManager.getTaskByTrackId(track.id);
+  final isInDownloadQueue = const [
+    DownloadStatus.queued,
+    DownloadStatus.downloading,
+  ].contains(downloadTask?.status);
 
   return (
     isInQueue: playlist.containsTrack(track),

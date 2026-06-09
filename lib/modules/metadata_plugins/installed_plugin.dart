@@ -2,13 +2,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/components/markdown/markdown.dart';
 import 'package:spotube/extensions/constrains.dart';
 import 'package:spotube/extensions/context.dart';
 import 'package:spotube/models/metadata/metadata.dart';
 import 'package:spotube/modules/metadata_plugins/plugin_update_available_dialog.dart';
 import 'package:spotube/provider/metadata_plugin/core/auth.dart';
-import 'package:spotube/provider/metadata_plugin/core/support.dart';
 import 'package:spotube/provider/metadata_plugin/metadata_plugin_provider.dart';
 import 'package:spotube/provider/metadata_plugin/updater/update_checker.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -286,93 +284,6 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 spacing: 8,
                 children: [
-                  if (isDefaultMetadata || isDefaultAudioSource)
-                    Consumer(builder: (context, ref, _) {
-                      final metadataSupportTextSnapshot =
-                          ref.watch(metadataPluginSupportTextProvider);
-                      final audioSourceSupportTextSnapshot =
-                          ref.watch(audioSourcePluginSupportTextProvider);
-
-                      final supportTextSnapshot =
-                          switch ((isDefaultMetadata, isDefaultAudioSource)) {
-                        (true, _) => metadataSupportTextSnapshot,
-                        (false, true) => audioSourceSupportTextSnapshot,
-                        _ => null,
-                      };
-
-                      if ((supportTextSnapshot?.hasValue ?? false) &&
-                          supportTextSnapshot?.value == null) {
-                        return const SizedBox.shrink();
-                      }
-
-                      final bgColor =
-                          context.theme.brightness == Brightness.dark
-                              ? const Color.fromARGB(255, 255, 145, 175)
-                              : Colors.pink[600];
-                      final textColor =
-                          context.theme.brightness == Brightness.dark
-                              ? Colors.pink[700]
-                              : Colors.pink[50];
-
-                      final mediaQuery = MediaQuery.sizeOf(context);
-
-                      return Button(
-                        style: ButtonVariance.secondary.copyWith(
-                          decoration: (context, states, value) {
-                            return value.copyWithIfBoxDecoration(
-                              color: bgColor,
-                            );
-                          },
-                          textStyle: (context, states, value) {
-                            return value.copyWith(
-                              color: textColor,
-                            );
-                          },
-                          iconTheme: (context, states, value) {
-                            return value.copyWith(
-                              color: textColor,
-                            );
-                          },
-                        ),
-                        leading: const Icon(SpotubeIcons.heartFilled),
-                        child: Text(context.l10n.support),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: Text(
-                                    context.l10n.support_plugin_development),
-                                content: ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                    maxHeight: mediaQuery.height * 0.8,
-                                    maxWidth: 720,
-                                  ),
-                                  child: SizedBox(
-                                    width: double.infinity,
-                                    child: SingleChildScrollView(
-                                      child: AppMarkdown(
-                                        data: supportTextSnapshot
-                                                ?.asData?.value ??
-                                            "",
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                actions: [
-                                  Button.secondary(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text(context.l10n.close),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                      );
-                    }),
                   if ((isDefaultMetadata || isDefaultAudioSource) &&
                       requiresAuth &&
                       !isAuthenticated)

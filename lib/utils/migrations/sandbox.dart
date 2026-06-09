@@ -11,7 +11,7 @@ Future<void> migrateMacOsFromSandboxToNoSandbox() async {
 
   try {
     final sandboxApplicationSupportDir = Directory(
-      "/Users/${Platform.environment["USER"]}/Library/Containers/oss.krtirtho.spotube/Data/Library/Application Support/oss.krtirtho.spotube",
+      "/Users/${Platform.environment["USER"]}/Library/Containers/com.ezrasong.sonolyth/Data/Library/Application Support/com.ezrasong.sonolyth",
     );
 
     if (!await sandboxApplicationSupportDir.exists()) {

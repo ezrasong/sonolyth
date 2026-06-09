@@ -413,7 +413,7 @@ i1.GeneratedColumn<String> _column_24(String aliasedName) =>
 i1.GeneratedColumn<String> _column_25(String aliasedName) =>
     i1.GeneratedColumn<String>('theme_mode', aliasedName, false,
         type: i1.DriftSqlType.string,
-        defaultValue: Constant(ThemeMode.system.name));
+        defaultValue: Constant(ThemeMode.dark.name));
 i1.GeneratedColumn<String> _column_26(String aliasedName) =>
     i1.GeneratedColumn<String>('audio_source', aliasedName, false,
         type: i1.DriftSqlType.string, defaultValue: Constant("youtube"));
@@ -2197,7 +2197,7 @@ final class Schema8 extends i0.VersionedSchema {
 i1.GeneratedColumn<String> _column_69(String aliasedName) =>
     i1.GeneratedColumn<String>('accent_color_scheme', aliasedName, false,
         type: i1.DriftSqlType.string,
-        defaultValue: const Constant("Slate:0xff64748b"));
+        defaultValue: const Constant("android:0xff6750a4"));
 i1.GeneratedColumn<String> _column_70(String aliasedName) =>
     i1.GeneratedColumn<String>('plugin_api_version', aliasedName, false,
         type: i1.DriftSqlType.string, defaultValue: const Constant('1.0.0'));

@@ -15,6 +15,7 @@ import 'package:spotube/extensions/context.dart';
 import 'package:spotube/models/metadata/metadata.dart';
 import 'package:spotube/modules/metadata_plugins/installed_plugin.dart';
 import 'package:spotube/modules/metadata_plugins/plugin_repository.dart';
+import 'package:spotube/modules/spotiflac/extension_registry_section.dart';
 import 'package:spotube/provider/metadata_plugin/core/repositories.dart';
 import 'package:spotube/provider/metadata_plugin/metadata_plugin_provider.dart';
 import 'package:file_picker/file_picker.dart';
@@ -42,6 +43,8 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
 
     final pluginRepos = useMemoized(
       () {
+        if (tabState.value == 3) return <MetadataPluginRepository>[];
+
         final installedPluginIds = plugins.asData?.value.plugins
                 .map((e) => e.repository)
                 .nonNulls
@@ -77,6 +80,7 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
     );
 
     final installedPlugins = useMemoized<List<PluginConfiguration>?>(() {
+      if (tabState.value == 3) return [];
       if (tabState.value == 0) return plugins.asData?.value.plugins;
 
       return plugins.asData?.value.plugins.where((d) {
@@ -100,130 +104,134 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
           padding: const EdgeInsets.all(8),
           child: CustomScrollView(
             slivers: [
-              SliverToBoxAdapter(
-                child: Row(
-                  spacing: 8,
-                  children: [
-                    Expanded(
-                      child: FormBuilder(
-                        key: formKey,
-                        child: TextFormBuilderField(
-                          name: "plugin_url",
-                          validator: FormBuilderValidators.url(
-                              protocols: ["http", "https"]),
-                          placeholder:
-                              Text(context.l10n.paste_plugin_download_url),
+              if (tabState.value != 3)
+                SliverToBoxAdapter(
+                  child: Row(
+                    spacing: 8,
+                    children: [
+                      Expanded(
+                        child: FormBuilder(
+                          key: formKey,
+                          child: TextFormBuilderField(
+                            name: "plugin_url",
+                            validator: FormBuilderValidators.url(
+                                protocols: ["http", "https"]),
+                            placeholder:
+                                Text(context.l10n.paste_plugin_download_url),
+                          ),
                         ),
                       ),
-                    ),
-                    HookBuilder(builder: (context) {
-                      final isLoading = useState(false);
+                      HookBuilder(builder: (context) {
+                        final isLoading = useState(false);
 
-                      return Tooltip(
-                        tooltip: TooltipContainer(
-                          child: Text(context
-                              .l10n.download_and_install_plugin_from_url),
-                        ).call,
-                        child: IconButton.secondary(
-                          icon: isLoading.value
-                              ? const SizedBox.square(
-                                  dimension: 22,
-                                  child:
-                                      CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Icon(SpotubeIcons.download),
-                          enabled: !isLoading.value,
-                          onPressed: () async {
-                            try {
-                              if (formKey.currentState?.saveAndValidate() ??
-                                  false) {
-                                final url = formKey.currentState
-                                    ?.fields["plugin_url"]?.value as String;
+                        return Tooltip(
+                          tooltip: TooltipContainer(
+                            child: Text(context
+                                .l10n.download_and_install_plugin_from_url),
+                          ).call,
+                          child: IconButton.secondary(
+                            icon: isLoading.value
+                                ? const SizedBox.square(
+                                    dimension: 22,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
+                                  )
+                                : const Icon(SpotubeIcons.download),
+                            enabled: !isLoading.value,
+                            onPressed: () async {
+                              try {
+                                if (formKey.currentState?.saveAndValidate() ??
+                                    false) {
+                                  final url = formKey.currentState
+                                      ?.fields["plugin_url"]?.value as String;
 
-                                if (url.isNotEmpty) {
-                                  isLoading.value = true;
-                                  final pluginConfig = await pluginsNotifier
-                                      .downloadAndCachePlugin(url);
+                                  if (url.isNotEmpty) {
+                                    isLoading.value = true;
+                                    final pluginConfig = await pluginsNotifier
+                                        .downloadAndCachePlugin(url);
 
-                                  await pluginsNotifier.addPlugin(pluginConfig);
+                                    await pluginsNotifier
+                                        .addPlugin(pluginConfig);
 
-                                  formKey.currentState?.fields["plugin_url"]
-                                      ?.reset();
+                                    formKey.currentState?.fields["plugin_url"]
+                                        ?.reset();
+                                  }
                                 }
-                              }
-                            } catch (e, stackTrace) {
-                              AppLogger.reportError(e, stackTrace);
-                              if (context.mounted) {
-                                showToast(
-                                  showDuration: const Duration(seconds: 5),
-                                  context: context,
-                                  builder: (context, overlay) {
-                                    return SurfaceCard(
-                                      child: Basic(
-                                        leading: const Icon(
-                                          SpotubeIcons.error,
-                                          color: Colors.red,
+                              } catch (e, stackTrace) {
+                                AppLogger.reportError(e, stackTrace);
+                                if (context.mounted) {
+                                  showToast(
+                                    showDuration: const Duration(seconds: 5),
+                                    context: context,
+                                    builder: (context, overlay) {
+                                      return SurfaceCard(
+                                        child: Basic(
+                                          leading: const Icon(
+                                            SpotubeIcons.error,
+                                            color: Colors.red,
+                                          ),
+                                          title: Text(
+                                            context.l10n
+                                                .failed_to_add_plugin_error(
+                                                    e.toString()),
+                                          ),
                                         ),
-                                        title: Text(
-                                          context.l10n
-                                              .failed_to_add_plugin_error(
-                                                  e.toString()),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                );
+                                      );
+                                    },
+                                  );
+                                }
+                              } finally {
+                                isLoading.value = false;
                               }
-                            } finally {
-                              isLoading.value = false;
+                            },
+                          ),
+                        );
+                      }),
+                      Tooltip(
+                        tooltip: TooltipContainer(
+                          child: Text(context.l10n.upload_plugin_from_file),
+                        ).call,
+                        child: IconButton.primary(
+                          icon: const Icon(SpotubeIcons.upload),
+                          onPressed: () async {
+                            Uint8List bytes;
+
+                            if (kIsFlatpak) {
+                              final result = await openFile(
+                                acceptedTypeGroups: [
+                                  const XTypeGroup(
+                                    label: 'Sonolyth Metadata Plugin',
+                                    extensions: ['smplug'],
+                                  ),
+                                ],
+                              );
+                              if (result == null) return;
+                              bytes = await result.readAsBytes();
+                            } else {
+                              final result =
+                                  await FilePicker.platform.pickFiles(
+                                type:
+                                    kIsAndroid ? FileType.any : FileType.custom,
+                                allowedExtensions: kIsAndroid ? [] : ["smplug"],
+                                withData: true,
+                              );
+
+                              if (result == null) return;
+
+                              final file = result.files.first;
+                              if (file.bytes == null) return;
+                              bytes = file.bytes!;
                             }
+
+                            final pluginConfig = await pluginsNotifier
+                                .extractPluginArchive(bytes);
+                            await pluginsNotifier.addPlugin(pluginConfig);
                           },
                         ),
-                      );
-                    }),
-                    Tooltip(
-                      tooltip: TooltipContainer(
-                        child: Text(context.l10n.upload_plugin_from_file),
-                      ).call,
-                      child: IconButton.primary(
-                        icon: const Icon(SpotubeIcons.upload),
-                        onPressed: () async {
-                          Uint8List bytes;
-
-                          if (kIsFlatpak) {
-                            final result = await openFile(
-                              acceptedTypeGroups: [
-                                const XTypeGroup(
-                                  label: 'Spotube Metadata Plugin',
-                                  extensions: ['smplug'],
-                                ),
-                              ],
-                            );
-                            if (result == null) return;
-                            bytes = await result.readAsBytes();
-                          } else {
-                            final result = await FilePicker.platform.pickFiles(
-                              type: kIsAndroid ? FileType.any : FileType.custom,
-                              allowedExtensions: kIsAndroid ? [] : ["smplug"],
-                              withData: true,
-                            );
-
-                            if (result == null) return;
-
-                            final file = result.files.first;
-                            if (file.bytes == null) return;
-                            bytes = file.bytes!;
-                          }
-
-                          final pluginConfig =
-                              await pluginsNotifier.extractPluginArchive(bytes);
-                          await pluginsNotifier.addPlugin(pluginConfig);
-                        },
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
               const SliverGap(12),
               SliverToBoxAdapter(
                 child: TabList(
@@ -235,120 +243,128 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
                     TabItem(child: Text("All")),
                     TabItem(child: Text("Metadata")),
                     TabItem(child: Text("Audio Source")),
+                    TabItem(child: Text("Extensions")),
                   ],
                 ),
               ),
               const SliverGap(12),
-              if (plugins.asData?.value.plugins.isNotEmpty ?? false)
+              if (tabState.value == 3) ...[
+                const SliverToBoxAdapter(
+                  child: SpotiFlacExtensionRegistrySection(),
+                ),
+                const SliverGap(20),
+              ] else ...[
+                if (plugins.asData?.value.plugins.isNotEmpty ?? false)
+                  SliverToBoxAdapter(
+                    child: Row(
+                      children: [
+                        const Gap(8),
+                        Text(context.l10n.installed).h4,
+                        const Gap(8),
+                        const Expanded(child: Divider()),
+                        const Gap(8),
+                      ],
+                    ),
+                  ),
+                const SliverGap(20),
+                SliverList.separated(
+                  itemCount: installedPlugins?.length ?? 0,
+                  separatorBuilder: (context, index) => const Gap(12),
+                  itemBuilder: (context, index) {
+                    final plugin = installedPlugins![index];
+                    final isDefaultMetadata = plugins
+                            .asData!.value.defaultMetadataPluginConfig?.slug ==
+                        plugin.slug;
+                    final isDefaultAudioSource = plugins.asData!.value
+                            .defaultAudioSourcePluginConfig?.slug ==
+                        plugin.slug;
+                    return MetadataInstalledPluginItem(
+                      plugin: plugin,
+                      isDefaultMetadata: isDefaultMetadata,
+                      isDefaultAudioSource: isDefaultAudioSource,
+                    );
+                  },
+                ),
+                const SliverGap(12),
                 SliverToBoxAdapter(
                   child: Row(
                     children: [
                       const Gap(8),
-                      Text(context.l10n.installed).h4,
+                      Text(context.l10n.available_plugins).h4,
                       const Gap(8),
                       const Expanded(child: Divider()),
                       const Gap(8),
                     ],
                   ),
                 ),
-              const SliverGap(20),
-              SliverList.separated(
-                itemCount: installedPlugins?.length ?? 0,
-                separatorBuilder: (context, index) => const Gap(12),
-                itemBuilder: (context, index) {
-                  final plugin = installedPlugins![index];
-                  final isDefaultMetadata =
-                      plugins.asData!.value.defaultMetadataPluginConfig?.slug ==
-                          plugin.slug;
-                  final isDefaultAudioSource = plugins
-                          .asData!.value.defaultAudioSourcePluginConfig?.slug ==
-                      plugin.slug;
-                  return MetadataInstalledPluginItem(
-                    plugin: plugin,
-                    isDefaultMetadata: isDefaultMetadata,
-                    isDefaultAudioSource: isDefaultAudioSource,
-                  );
-                },
-              ),
-              const SliverGap(12),
-              SliverToBoxAdapter(
-                child: Row(
-                  children: [
-                    const Gap(8),
-                    Text(context.l10n.available_plugins).h4,
-                    const Gap(8),
-                    const Expanded(child: Divider()),
-                    const Gap(8),
-                  ],
-                ),
-              ),
-              const SliverGap(12),
-              SliverInfiniteList(
-                isLoading: pluginReposSnapshot.isLoading &&
-                    !pluginReposSnapshot.isLoadingNextPage,
-                itemCount: pluginRepos.length,
-                onFetchData: pluginReposNotifier.fetchMore,
-                separatorBuilder: (context, index) {
-                  return const Gap(12);
-                },
-                loadingBuilder: (context) {
-                  return Skeletonizer(
-                    enabled: true,
-                    child: MetadataPluginRepositoryItem(
-                      pluginRepo: MetadataPluginRepository(
-                        name: "Loading...",
-                        description: "Loading...",
-                        repoUrl: "",
-                        owner: "",
-                        topics: [],
+                const SliverGap(12),
+                SliverInfiniteList(
+                  isLoading: pluginReposSnapshot.isLoading &&
+                      !pluginReposSnapshot.isLoadingNextPage,
+                  itemCount: pluginRepos.length,
+                  onFetchData: pluginReposNotifier.fetchMore,
+                  separatorBuilder: (context, index) {
+                    return const Gap(12);
+                  },
+                  loadingBuilder: (context) {
+                    return Skeletonizer(
+                      enabled: true,
+                      child: MetadataPluginRepositoryItem(
+                        pluginRepo: MetadataPluginRepository(
+                          name: "Loading...",
+                          description: "Loading...",
+                          repoUrl: "",
+                          owner: "",
+                          topics: [],
+                        ),
                       ),
-                    ),
-                  );
-                },
-                itemBuilder: (context, index) {
-                  final pluginRepo = pluginRepos[index];
+                    );
+                  },
+                  itemBuilder: (context, index) {
+                    final pluginRepo = pluginRepos[index];
 
-                  return MetadataPluginRepositoryItem(
-                    pluginRepo: pluginRepo,
-                  );
-                },
-              ),
-              const SliverGap(20),
-              SliverCrossAxisConstrained(
-                maxCrossAxisExtent: 720,
-                child: SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Container(
-                    alignment: Alignment.bottomCenter,
-                    margin: const EdgeInsets.only(bottom: 20),
-                    child: SafeArea(
-                      child: Card(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing: 12,
-                          children: [
-                            Row(
-                              spacing: 8,
-                              children: [
-                                const Icon(SpotubeIcons.warning, size: 16),
-                                Text(
-                                  context.l10n.disclaimer,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                ).bold,
-                              ],
-                            ),
-                            Text(context.l10n.third_party_plugin_dmca_notice)
-                                .muted
-                                .xSmall,
-                          ],
+                    return MetadataPluginRepositoryItem(
+                      pluginRepo: pluginRepo,
+                    );
+                  },
+                ),
+                const SliverGap(20),
+                SliverCrossAxisConstrained(
+                  maxCrossAxisExtent: 720,
+                  child: SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Container(
+                      alignment: Alignment.bottomCenter,
+                      margin: const EdgeInsets.only(bottom: 20),
+                      child: SafeArea(
+                        child: Card(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            spacing: 12,
+                            children: [
+                              Row(
+                                spacing: 8,
+                                children: [
+                                  const Icon(SpotubeIcons.warning, size: 16),
+                                  Text(
+                                    context.l10n.disclaimer,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ).bold,
+                                ],
+                              ),
+                              Text(context.l10n.third_party_plugin_dmca_notice)
+                                  .muted
+                                  .xSmall,
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ],
           ),
         ),

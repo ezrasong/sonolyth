@@ -9,7 +9,7 @@ import 'package:encrypt/encrypt.dart';
 import 'package:media_kit/media_kit.dart' hide Track;
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' show ThemeMode, Colors;
+import 'package:shadcn_flutter/shadcn_flutter.dart' show ThemeMode;
 import 'package:spotube/models/database/database.steps.dart';
 import 'package:spotube/models/lyrics.dart';
 import 'package:spotube/models/metadata/market.dart';
@@ -103,7 +103,7 @@ class AppDatabase extends _$AppDatabase {
           );
           await customStatement(
             "ALTER TABLE $tableName "
-            "ADD COLUMN $columnName TEXT NOT NULL DEFAULT 'Slate:0xff64748b'",
+            "ADD COLUMN $columnName TEXT NOT NULL DEFAULT 'android:0xff6750a4'",
           );
           await customStatement(
             "UPDATE $tableName "
@@ -115,7 +115,7 @@ class AppDatabase extends _$AppDatabase {
           );
           await customStatement(
             "UPDATE $tableName "
-            "SET $columnName = 'Slate:0xff64748b' WHERE $columnName = 'Blue:0xFF2196F3'",
+            "SET $columnName = 'android:0xff6750a4' WHERE $columnName IN ('Blue:0xFF2196F3', 'Slate:0xff64748b', 'spotify:0xff1db954')",
           );
         },
         from5To6: (m, schema) async {

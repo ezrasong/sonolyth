@@ -35,16 +35,14 @@ class AlbumCard extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final playlist = ref.watch(audioPlayerProvider);
-    final playing =
-        useStream(audioPlayer.playingStream).data ?? audioPlayer.isPlaying;
-    final playlistNotifier = ref.watch(audioPlayerProvider.notifier);
+    final playlistNotifier = ref.read(audioPlayerProvider.notifier);
     final historyNotifier = ref.read(playbackHistoryActionsProvider);
     final isFetchingActiveTrack = ref.watch(queryingTrackInfoProvider);
 
-    final isPlaylistPlaying = useMemoized<bool>(
-      () => playlist.containsCollection(album.id),
-      [playlist, album.id],
+    // Only rebuild this card when *its* collection's playing status flips,
+    // not on every track change / play-pause across the whole queue.
+    final isPlaylistPlaying = ref.watch(
+      audioPlayerProvider.select((s) => s.containsCollection(album.id)),
     );
 
     final updating = useState(false);
@@ -75,7 +73,9 @@ class AlbumCard extends HookConsumerWidget {
       updating.value = true;
       try {
         if (isPlaylistPlaying) {
-          return playing ? audioPlayer.pause() : audioPlayer.resume();
+          return audioPlayer.isPlaying
+              ? audioPlayer.pause()
+              : audioPlayer.resume();
         }
 
         final fetchedTracks = await fetchAllTrack();
@@ -102,7 +102,6 @@ class AlbumCard extends HookConsumerWidget {
       }
     }, [
       isPlaylistPlaying,
-      playing,
       audioPlayer,
       fetchAllTrack,
       context,

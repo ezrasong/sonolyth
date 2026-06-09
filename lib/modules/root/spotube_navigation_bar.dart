@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart' as material;
 import 'package:flutter/material.dart' show Badge;
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -15,6 +16,8 @@ import 'package:spotube/provider/download_manager_provider.dart';
 import 'package:spotube/provider/user_preferences/user_preferences_provider.dart';
 
 final navigationPanelHeight = StateProvider<double>((ref) => 50);
+
+const _spotifyBlack = Color(0xff000000);
 
 class SpotubeNavigationBar extends HookConsumerWidget {
   const SpotubeNavigationBar({
@@ -57,31 +60,71 @@ class SpotubeNavigationBar extends HookConsumerWidget {
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 100),
-      height: panelHeight,
-      child: SingleChildScrollView(
+      height: panelHeight + 14,
+      color: _spotifyBlack,
+      padding: const EdgeInsets.only(top: 6, bottom: 8),
+      child: Row(
+        children: [
+          for (final tile in navbarTileList)
+            Expanded(
+              child: _SpotifyNavigationItem(
+                icon: tile.icon,
+                label: tile.title,
+                selected: navbarTileList[selectedIndex] == tile,
+                badgeCount: tile.id == "library" ? downloadCount : 0,
+                onPressed: () {
+                  context.navigateTo(tile.route);
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SpotifyNavigationItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final int badgeCount;
+  final VoidCallback onPressed;
+
+  const _SpotifyNavigationItem({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.badgeCount,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = selected ? Colors.white : Colors.white.withAlpha(150);
+
+    return material.InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(8),
+      child: SizedBox.expand(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 2,
           children: [
-            const Divider(),
-            NavigationBar(
-              index: selectedIndex,
-              surfaceBlur: context.theme.surfaceBlur,
-              surfaceOpacity: context.theme.surfaceOpacity,
-              children: [
-                for (final tile in navbarTileList)
-                  NavigationButton(
-                    style: navbarTileList[selectedIndex] == tile
-                        ? const ButtonStyle.fixed(density: ButtonDensity.icon)
-                        : const ButtonStyle.muted(density: ButtonDensity.icon),
-                    child: Badge(
-                      isLabelVisible: tile.id == "library" && downloadCount > 0,
-                      label: Text(downloadCount.toString()),
-                      child: Icon(tile.icon),
-                    ),
-                    onPressed: () {
-                      context.navigateTo(tile.route);
-                    },
-                  )
-              ],
+            Badge(
+              isLabelVisible: badgeCount > 0,
+              label: Text(badgeCount.toString()),
+              backgroundColor: material.Theme.of(context).colorScheme.primary,
+              child: Icon(icon, color: foreground, size: 23),
+            ),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: foreground,
+                fontSize: 11,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              ),
             ),
           ],
         ),

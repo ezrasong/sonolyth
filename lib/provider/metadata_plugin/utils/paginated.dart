@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:dio/dio.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:spotube/models/metadata/metadata.dart';
 // ignore: implementation_imports
@@ -13,6 +14,42 @@ mixin PaginatedAsyncNotifierMixin<K>
     on AsyncNotifierBase<SpotubePaginationResponseObject<K>> {
   Future<SpotubePaginationResponseObject<K>> fetch(int offset, int limit);
 
+  /// Wraps [fetch] with retry + backoff for HTTP 429 (rate limit) responses.
+  /// The metadata provider (e.g. Spotify) returns 429 when the app issues a
+  /// burst of requests on load, which otherwise surfaces as a hard error in a
+  /// tab or silently halts pagination. Honors a `Retry-After` header when
+  /// present, else exponential backoff (1s, 2s, 4s). Non-429 errors rethrow
+  /// immediately so genuine failures aren't masked.
+  Future<SpotubePaginationResponseObject<K>> fetchWithRetry(
+    int offset,
+    int limit, {
+    int maxAttempts = 4,
+  }) async {
+    for (var attempt = 0;; attempt++) {
+      try {
+        return await fetch(offset, limit);
+      } catch (e) {
+        if (attempt >= maxAttempts - 1 || !_isRateLimited(e)) rethrow;
+        await Future<void>.delayed(
+          _retryAfter(e) ?? Duration(seconds: 1 << attempt),
+        );
+      }
+    }
+  }
+
+  bool _isRateLimited(Object error) {
+    if (error is DioException && error.response?.statusCode == 429) return true;
+    return error.toString().contains('429');
+  }
+
+  Duration? _retryAfter(Object error) {
+    if (error is! DioException) return null;
+    final header = error.response?.headers.value('retry-after');
+    final seconds = header == null ? null : int.tryParse(header.trim());
+    if (seconds == null) return null;
+    return Duration(seconds: seconds.clamp(1, 30));
+  }
+
   Future<void> fetchMore() async {
     if (state.value == null || !state.value!.hasMore) return;
 
@@ -20,7 +57,7 @@ mixin PaginatedAsyncNotifierMixin<K>
     try {
       state = AsyncLoadingNext(state.asData!.value);
 
-      final newState = await fetch(
+      final newState = await fetchWithRetry(
         state.value!.nextOffset!,
         state.value!.limit,
       );

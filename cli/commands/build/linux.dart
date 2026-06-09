@@ -73,8 +73,8 @@ class LinuxBuildCommand extends Command with BuildCommandCommonSteps {
     ).copy(
       join(tempDir, "com.github.KRTirtho.Spotube.appdata.xml"),
     );
-    await File(join(cwd.path, "assets", "branding", "spotube-logo.png")).copy(
-      join(tempDir, "spotube-logo.png"),
+    await File(join(cwd.path, "assets", "branding", "sonolyth-logo.png")).copy(
+      join(tempDir, "sonolyth-logo.png"),
     );
 
     await shell.run(

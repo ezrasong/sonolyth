@@ -6,12 +6,15 @@ import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:spotube/collections/spotube_icons.dart';
 import 'package:spotube/components/heart_button/heart_button.dart';
 import 'package:spotube/components/image/universal_image.dart';
+import 'package:spotube/components/dialogs/confirm_download_dialog.dart';
 import 'package:spotube/components/track_presentation/presentation_props.dart';
 import 'package:spotube/components/track_presentation/use_action_callbacks.dart';
 import 'package:spotube/components/track_presentation/use_is_user_playlist.dart';
 import 'package:spotube/extensions/constrains.dart';
 import 'package:spotube/extensions/context.dart';
+import 'package:spotube/models/metadata/metadata.dart';
 import 'package:spotube/modules/playlist/playlist_create_dialog.dart';
+import 'package:spotube/provider/download_manager_provider.dart';
 
 class TrackPresentationTopSection extends HookConsumerWidget {
   const TrackPresentationTopSection({super.key});
@@ -22,6 +25,11 @@ class TrackPresentationTopSection extends HookConsumerWidget {
     final options = TrackPresentationOptions.of(context);
     final scale = context.theme.scaling;
     final isUserPlaylist = useIsUserPlaylist(ref, options.collectionId);
+    final collectionLabel = switch (options.collection) {
+      SpotubeSimpleAlbumObject() => "Album",
+      SpotubeSimplePlaylistObject() => "Playlist",
+      _ => "Playlist",
+    };
 
     final decorationImage = DecorationImage(
       image: UniversalImage.imageProvider(options.image),
@@ -32,21 +40,66 @@ class TrackPresentationTopSection extends HookConsumerWidget {
 
     final (:isLoading, :isActive, :onPlay, :onShuffle, :onAddToQueue) =
         useActionCallbacks(ref);
+    ref.watch(downloadManagerProvider);
+    final downloader = ref.read(downloadManagerProvider.notifier);
+
+    Future<void> onDownloadAll() async {
+      final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (context) => const ConfirmDownloadDialog(),
+          ) ??
+          false;
+      if (!confirmed) return;
+
+      final tracks = options.tracks.isEmpty
+          ? await options.pagination.onFetchAll()
+          : options.tracks;
+      final fullTracks = tracks.whereType<SpotubeFullTrackObject>().toList();
+      if (fullTracks.isEmpty) return;
+
+      downloader.addAllToQueue(
+        fullTracks,
+        collectionUrl: options.shareUrl,
+      );
+      if (!context.mounted) return;
+      showToast(
+        context: context,
+        location: ToastLocation.topRight,
+        builder: (context, overlay) => SurfaceCard(
+          child: Basic(
+            leading: const Icon(SpotubeIcons.download),
+            title: Text(context.l10n.download_count(fullTracks.length)),
+          ),
+        ),
+      );
+    }
 
     final playbackActions = Row(
       spacing: 8 * scale,
       children: [
         Tooltip(
           tooltip: TooltipContainer(
+            child: Text(context.l10n.download_all),
+          ).call,
+          child: IconButton.outline(
+            icon: const Icon(SpotubeIcons.download),
+            shape: ButtonShape.circle,
+            enabled: !options.pagination.isLoading,
+            onPressed: onDownloadAll,
+          ),
+        ),
+        Tooltip(
+          tooltip: TooltipContainer(
             child: Text(context.l10n.shuffle_playlist),
           ).call,
-          child: IconButton.secondary(
+          child: IconButton.ghost(
             icon: isLoading
                 ? const Center(
                     child:
                         CircularProgressIndicator(onSurface: false, size: 20),
                   )
                 : const Icon(SpotubeIcons.shuffle),
+            shape: ButtonShape.circle,
             enabled: !isLoading && !isActive,
             onPressed: onShuffle,
           ),
@@ -58,29 +111,36 @@ class TrackPresentationTopSection extends HookConsumerWidget {
             ).call,
             child: IconButton.secondary(
               icon: const Icon(SpotubeIcons.queueAdd),
+              shape: ButtonShape.circle,
               enabled: !isLoading && !isActive,
               onPressed: onAddToQueue,
             ),
           )
         else
-          Button.secondary(
-            leading: const Icon(SpotubeIcons.add),
+          IconButton.ghost(
+            icon: const Icon(SpotubeIcons.queueAdd),
+            shape: ButtonShape.circle,
             enabled: !isLoading && !isActive,
             onPressed: onAddToQueue,
-            child: Text(context.l10n.queue),
           ),
-        Button.primary(
-          alignment: Alignment.center,
-          leading: switch ((isActive, isLoading)) {
-            (true, false) => const Icon(SpotubeIcons.pause),
-            (false, true) => const Center(
-                child: CircularProgressIndicator(onSurface: true, size: 18),
-              ),
-            _ => const Icon(SpotubeIcons.play),
-          },
-          onPressed: onPlay,
-          enabled: !isLoading && !isActive,
-          child: isActive ? Text(context.l10n.pause) : Text(context.l10n.play),
+        Tooltip(
+          tooltip: TooltipContainer(
+            child:
+                isActive ? Text(context.l10n.pause) : Text(context.l10n.play),
+          ).call,
+          child: IconButton.primary(
+            size: ButtonSize.large,
+            shape: ButtonShape.circle,
+            icon: switch ((isActive, isLoading)) {
+              (true, false) => const Icon(SpotubeIcons.pause),
+              (false, true) => const Center(
+                  child: CircularProgressIndicator(onSurface: true, size: 18),
+                ),
+              _ => const Icon(SpotubeIcons.play),
+            },
+            onPressed: onPlay,
+            enabled: !isLoading && !isActive,
+          ),
         ),
       ],
     );
@@ -156,100 +216,130 @@ class TrackPresentationTopSection extends HookConsumerWidget {
           ),
           sliver: SliverList.list(
             children: [
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  image: decorationImage,
-                  borderRadius: BorderRadius.circular(45),
+              Container(
+                padding: EdgeInsets.fromLTRB(
+                  16 * scale,
+                  40 * scale,
+                  16 * scale,
+                  20 * scale,
                 ),
-                child: OutlinedContainer(
-                  surfaceOpacity: context.theme.surfaceOpacity,
-                  surfaceBlur: context.theme.surfaceBlur,
-                  padding: EdgeInsets.all(24 * scale),
-                  borderRadius: BorderRadius.circular(22 * scale),
-                  borderWidth: 2,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    spacing: 16 * scale,
-                    children: [
-                      Row(
-                        spacing: 16 * scale,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            height: imageDimension * scale,
-                            width: imageDimension * scale,
-                            decoration: BoxDecoration(
-                              borderRadius: context.theme.borderRadiusXl,
-                              image: decorationImage,
-                            ),
-                          ),
-                          Flexible(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                AutoSizeText(
-                                  options.title,
-                                  maxLines: 2,
-                                  minFontSize: 16,
-                                  style: context.theme.typography.h3,
-                                ),
-                                if (options.description != null)
-                                  AutoSizeText(
-                                    options.description!,
-                                    maxLines: 2,
-                                    minFontSize: 14,
-                                    maxFontSize: 18,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: context
-                                          .theme.colorScheme.mutedForeground,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                const Gap(16),
-                                Flex(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  direction: mediaQuery.smAndUp
-                                      ? Axis.horizontal
-                                      : Axis.vertical,
-                                  spacing: 8 * scale,
-                                  children: [
-                                    if (options.owner != null)
-                                      OutlineBadge(
-                                        leading: options.ownerImage != null
-                                            ? Avatar(
-                                                initials:
-                                                    options.owner?[0] ?? "U",
-                                                provider: UniversalImage
-                                                    .imageProvider(
-                                                  options.ownerImage!,
-                                                ),
-                                                size: 20 * scale,
-                                              )
-                                            : null,
-                                        child: Text(
-                                          options.owner!,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ).small(),
-                                      ),
-                                    additionalActions,
-                                  ],
-                                ),
-                                if (mediaQuery.mdAndUp) ...[
-                                  const Gap(16),
-                                  playbackActions
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (mediaQuery.smAndDown) playbackActions,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xff303030),
+                      Color(0xff121212),
                     ],
                   ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 20 * scale,
+                  children: [
+                    Row(
+                      spacing: 18 * scale,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Container(
+                          height: imageDimension * scale,
+                          width: imageDimension * scale,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4 * scale),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(120),
+                                blurRadius: 24,
+                                offset: const Offset(0, 12),
+                              ),
+                            ],
+                            image: decorationImage,
+                          ),
+                        ),
+                        Flexible(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                collectionLabel,
+                                style: context.theme.typography.small.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              AutoSizeText(
+                                options.title,
+                                maxLines: 2,
+                                minFontSize: 28,
+                                maxFontSize: mediaQuery.mdAndUp ? 54 : 34,
+                                overflow: TextOverflow.ellipsis,
+                                style: context.theme.typography.h1.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              if (options.description != null)
+                                AutoSizeText(
+                                  options.description!,
+                                  maxLines: 2,
+                                  minFontSize: 12,
+                                  maxFontSize: 14,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.white.withAlpha(178),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              const Gap(8),
+                              Flex(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                direction: mediaQuery.smAndUp
+                                    ? Axis.horizontal
+                                    : Axis.vertical,
+                                spacing: 8 * scale,
+                                children: [
+                                  if (options.owner != null)
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (options.ownerImage != null)
+                                          Avatar(
+                                            initials: options.owner?[0] ?? "U",
+                                            provider:
+                                                UniversalImage.imageProvider(
+                                              options.ownerImage!,
+                                            ),
+                                            size: 20 * scale,
+                                          ),
+                                        if (options.ownerImage != null)
+                                          const Gap(6),
+                                        Flexible(
+                                          child: Text(
+                                            options.owner!,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ).small(),
+                                        ),
+                                      ],
+                                    ),
+                                  additionalActions,
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: playbackActions,
+                    ),
+                  ],
                 ),
               ),
             ],

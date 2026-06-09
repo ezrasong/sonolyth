@@ -486,13 +486,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get about => 'このアプリについて';
 
   @override
-  String get u_love_spotube => 'Spotube が好きだと知っていますよ';
+  String get u_love_spotube => 'Sonolyth が好きだと知っていますよ';
 
   @override
   String get check_for_updates => 'アップデートの確認';
 
   @override
-  String get about_spotube => 'Spotube について';
+  String get about_spotube => 'Sonolyth について';
 
   @override
   String get blacklist => 'ブラックリスト';
@@ -502,7 +502,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get spotube_description =>
-      'Spotube は、軽量でクロスプラットフォームな、すべて無料の spotify クライアント';
+      'Sonolyth は、軽量でクロスプラットフォームな、すべて無料の spotify クライアント';
 
   @override
   String get version => 'バージョン';
@@ -520,14 +520,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get bug_issues => 'バグや問題';
 
   @override
-  String get made_with => '❤️ を込めてバングラディシュ🇧🇩で開発';
+  String get made_with => 'Made with ❤️';
 
   @override
-  String get kingkor_roy_tirtho => 'Kingkor Roy Tirtho';
+  String get kingkor_roy_tirtho => 'Ezra Song';
 
   @override
   String copyright(Object current_year) {
-    return '© 2021-$current_year Kingkor Roy Tirtho';
+    return '© $current_year Ezra Song';
   }
 
   @override
@@ -719,7 +719,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get download_ip_ban_warning =>
-      'また、通常よりも過剰なダウンロード要求があれば、YouTubeはあなたのIPをブロックします。つまりそのIPの端末からは、少なくとも2-3か月の間、（ログインしても）YouTubeを利用できなくなりす。そうなっても Spotube は一切の責任を負いません';
+      'また、通常よりも過剰なダウンロード要求があれば、YouTubeはあなたのIPをブロックします。つまりそのIPの端末からは、少なくとも2-3か月の間、（ログインしても）YouTubeを利用できなくなりす。そうなっても Sonolyth は一切の責任を負いません';
 
   @override
   String get by_clicking_accept_terms => '「同意する」のクリックにより、以下への同意となります:';
@@ -732,7 +732,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get download_agreement_3 =>
-      '私のIPがYouTubeにブロックされることがあると完全に把握した。私のこの行動により起きたどんな事故も、Spotube やその所有者/貢献者に責任はありません。';
+      '私のIPがYouTubeにブロックされることがあると完全に把握した。私のこの行動により起きたどんな事故も、Sonolyth やその所有者/貢献者に責任はありません。';
 
   @override
   String get decline => '同意しない';
@@ -986,7 +986,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get choose_your_region => '地域を選択';
 
   @override
-  String get choose_your_region_description => 'Spotubeがあなたの地域に適したコンテンツを表示します。';
+  String get choose_your_region_description =>
+      'Sonolythがあなたの地域に適したコンテンツを表示します。';
 
   @override
   String get choose_your_language => '言語を選択してください';
@@ -1011,7 +1012,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get enable_connect => '接続する';
 
   @override
-  String get enable_connect_description => '他の端末からSpotubeを制御する';
+  String get enable_connect_description => '他の端末からSonolythを制御する';
 
   @override
   String get devices => '機器';
@@ -1059,19 +1060,19 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get spotube_has_an_update => 'Spotube の最新版あり';
+  String get spotube_has_an_update => 'Sonolyth の最新版あり';
 
   @override
   String get download_now => '今すぐダウンロード';
 
   @override
   String nightly_version(Object nightlyBuildNum) {
-    return 'Spotube Nightly $nightlyBuildNum がリリースされました';
+    return 'Sonolyth Nightly $nightlyBuildNum がリリースされました';
   }
 
   @override
   String release_version(Object version) {
-    return 'Spotube v$version がリリースされました';
+    return 'Sonolyth v$version がリリースされました';
   }
 
   @override
@@ -1483,7 +1484,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get third_party_plugin_dmca_notice =>
-      'Spotubeチームは、いかなる「サードパーティ」プラグインについても責任（法的責任を含む）を負いません。\nご自身の責任でご使用ください。バグや問題については、プラグインリポジトリに報告してください。\n\n「サードパーティ」プラグインが何らかのサービス/法人のToS/DMCAを侵害している場合、その「サードパーティ」プラグインの作者またはホスティングプラットフォーム（例：GitHub/Codeberg）に措置を講じるよう依頼してください。上記に記載されている（「サードパーティ」とラベル付けされた）ものはすべて、パブリック/コミュニティによって維持されているプラグインです。私たちはそれらをキュレーションしていないため、それらに対して措置を講じることはできません。\n\n';
+      'Sonolythチームは、いかなる「サードパーティ」プラグインについても責任（法的責任を含む）を負いません。\nご自身の責任でご使用ください。バグや問題については、プラグインリポジトリに報告してください。\n\n「サードパーティ」プラグインが何らかのサービス/法人のToS/DMCAを侵害している場合、その「サードパーティ」プラグインの作者またはホスティングプラットフォーム（例：GitHub/Codeberg）に措置を講じるよう依頼してください。上記に記載されている（「サードパーティ」とラベル付けされた）ものはすべて、パブリック/コミュニティによって維持されているプラグインです。私たちはそれらをキュレーションしていないため、それらに対して措置を講じることはできません。\n\n';
 
   @override
   String get input_does_not_match_format => '入力が必須フォーマットと一致しません';

@@ -4,15 +4,17 @@
   <uses-permission android:name="android.permission.WAKE_LOCK" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-  <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 
   <queries>
-    <!-- If your app opens https URLs -->
+    <package android:name="com.zarz.spotiflac" />
+
     <intent>
       <action android:name="android.intent.action.VIEW" />
       <data android:scheme="https" />
+    </intent>
+    <intent>
+      <action android:name="android.intent.action.SEND" />
+      <data android:mimeType="text/plain" />
     </intent>
   </queries>
 
@@ -30,7 +32,7 @@
       android:value="false" /> -->
 
     <activity
-      android:name="com.ryanheise.audioservice.AudioServiceActivity"
+      android:name=".MainActivity"
       android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
       android:exported="true"
       android:hardwareAccelerated="true"
@@ -70,7 +72,7 @@
 
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="spotube" />
+        <data android:scheme="sonolyth" />
       </intent-filter>
 
       <intent-filter>

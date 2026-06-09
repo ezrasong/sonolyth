@@ -1,4 +1,5 @@
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter/material.dart' as material;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -26,8 +27,6 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
     final playing =
         useStream(audioPlayer.playingStream).data ?? audioPlayer.isPlaying;
 
-    final theme = Theme.of(context);
-
     final shouldShow = useState(true);
 
     ref.listen(navigationPanelHeight, (_, height) {
@@ -38,76 +37,92 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
       duration: const Duration(milliseconds: 250),
       child: canShow && shouldShow.value
           ? Padding(
-              padding: const EdgeInsets.all(5),
-              child: SurfaceCard(
-                surfaceBlur: theme.surfaceBlur,
-                surfaceOpacity: theme.surfaceOpacity,
-                padding: EdgeInsets.zero,
-                borderRadius: theme.borderRadiusLg,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                panelController.open();
-                              },
-                              child: Container(
-                                width: double.infinity,
-                                color: Colors.transparent,
-                                child: PlayerTrackDetails(
-                                  track: playlist.activeTrack,
-                                  color: theme.colorScheme.foreground,
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+              child: material.Material(
+                color: const Color(0xff181818),
+                borderRadius: BorderRadius.circular(8),
+                clipBehavior: Clip.antiAlias,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.white.withAlpha(20),
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  panelController.open();
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  color: Colors.transparent,
+                                  child: PlayerTrackDetails(
+                                    track: playlist.activeTrack,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          Row(
-                            children: [
-                              IconButton.ghost(
-                                icon: const Icon(SpotubeIcons.skipBack),
-                                onPressed: isFetchingActiveTrack
-                                    ? null
-                                    : audioPlayer.skipToPrevious,
-                              ),
-                              Consumer(
-                                builder: (context, ref, _) {
-                                  return IconButton.ghost(
-                                    icon: isFetchingActiveTrack
-                                        ? const SizedBox(
-                                            height: 20,
-                                            width: 20,
-                                            child: CircularProgressIndicator(),
-                                          )
-                                        : Icon(
-                                            playing
-                                                ? SpotubeIcons.pause
-                                                : SpotubeIcons.play,
-                                          ),
-                                    onPressed: Actions.handler<PlayPauseIntent>(
-                                      context,
-                                      PlayPauseIntent(ref),
-                                    ),
-                                  );
-                                },
-                              ),
-                              IconButton.ghost(
-                                icon: const Icon(SpotubeIcons.skipForward),
-                                onPressed: isFetchingActiveTrack
-                                    ? null
-                                    : audioPlayer.skipToNext,
-                              ),
-                              const Gap(5),
-                            ],
-                          ),
-                        ],
+                            Row(
+                              children: [
+                                IconButton.ghost(
+                                  icon: Icon(
+                                    SpotubeIcons.skipBack,
+                                    color: Colors.white.withAlpha(210),
+                                  ),
+                                  onPressed: isFetchingActiveTrack
+                                      ? null
+                                      : audioPlayer.skipToPrevious,
+                                ),
+                                Consumer(
+                                  builder: (context, ref, _) {
+                                    return IconButton.ghost(
+                                      icon: isFetchingActiveTrack
+                                          ? const SizedBox(
+                                              height: 20,
+                                              width: 20,
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            )
+                                          : Icon(
+                                              playing
+                                                  ? SpotubeIcons.pause
+                                                  : SpotubeIcons.play,
+                                              color: Colors.white,
+                                            ),
+                                      onPressed:
+                                          Actions.handler<PlayPauseIntent>(
+                                        context,
+                                        PlayPauseIntent(ref),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                IconButton.ghost(
+                                  icon: Icon(
+                                    SpotubeIcons.skipForward,
+                                    color: Colors.white.withAlpha(210),
+                                  ),
+                                  onPressed: isFetchingActiveTrack
+                                      ? null
+                                      : audioPlayer.skipToNext,
+                                ),
+                                const Gap(5),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             )

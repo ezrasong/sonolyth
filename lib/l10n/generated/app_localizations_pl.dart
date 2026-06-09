@@ -489,13 +489,13 @@ class AppLocalizationsPl extends AppLocalizations {
   String get about => 'O projekcie';
 
   @override
-  String get u_love_spotube => 'Wiemy jak kochacie Spotube';
+  String get u_love_spotube => 'Wiemy jak kochacie Sonolyth';
 
   @override
   String get check_for_updates => 'Sprawdź aktualizacje';
 
   @override
-  String get about_spotube => 'O Spotube';
+  String get about_spotube => 'O Sonolyth';
 
   @override
   String get blacklist => 'Czarna lista';
@@ -505,7 +505,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get spotube_description =>
-      'Spotube, lekki, wieloplatformowy, darmowy dla wszystkich klient Spotify';
+      'Sonolyth, lekki, wieloplatformowy, darmowy dla wszystkich klient Spotify';
 
   @override
   String get version => 'Wersja';
@@ -523,14 +523,14 @@ class AppLocalizationsPl extends AppLocalizations {
   String get bug_issues => 'Błędy i propozycje';
 
   @override
-  String get made_with => 'Stworzono z ❤️ w Bangladesh\'u 🇧🇩';
+  String get made_with => 'Made with ❤️';
 
   @override
-  String get kingkor_roy_tirtho => 'Kingkor Roy Tirtho';
+  String get kingkor_roy_tirtho => 'Ezra Song';
 
   @override
   String copyright(Object current_year) {
-    return '© 2021-$current_year Kingkor Roy Tirtho';
+    return '© $current_year Ezra Song';
   }
 
   @override
@@ -728,7 +728,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get download_ip_ban_warning =>
-      'Przy okazji, Twój adres IP może zostać zablokowany w YouTube z powodu nadmiernych żądań pobierania niż zwykle. Blokada IP oznacza, że nie możesz korzystać z YouTube (nawet jeśli jesteś zalogowany) przez co najmniej 2-3 miesiące z IP tego urządzenia. Spotube nie ponosi żadnej odpowiedzialności, jeśli tak się stanie';
+      'Przy okazji, Twój adres IP może zostać zablokowany w YouTube z powodu nadmiernych żądań pobierania niż zwykle. Blokada IP oznacza, że nie możesz korzystać z YouTube (nawet jeśli jesteś zalogowany) przez co najmniej 2-3 miesiące z IP tego urządzenia. Sonolyth nie ponosi żadnej odpowiedzialności, jeśli tak się stanie';
 
   @override
   String get by_clicking_accept_terms =>
@@ -743,7 +743,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get download_agreement_3 =>
-      'Jestem całkowicie świadomy, że moje IP może zostać zablokowane w YouTube i nie pociągam Spotube ani jego właścicieli/współtwórców do odpowiedzialności za jakiekolwiek wypadki spowodowane moimi obecnymi działaniami';
+      'Jestem całkowicie świadomy, że moje IP może zostać zablokowane w YouTube i nie pociągam Sonolyth ani jego właścicieli/współtwórców do odpowiedzialności za jakiekolwiek wypadki spowodowane moimi obecnymi działaniami';
 
   @override
   String get decline => 'Odrzuć';
@@ -825,7 +825,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get encryption_failed_warning =>
-      'Spotube używa szyfrowania do bezpiecznego przechowywania danych. Ale nie udało się tego zrobić. Więc powróci do niezabezpieczonego przechowywania\nJeśli używasz Linuksa, upewnij się, że masz zainstalowane jakieś usługi do szyfrowania (gnome-keyring, kde-wallet, keepassxc itp.)';
+      'Sonolyth używa szyfrowania do bezpiecznego przechowywania danych. Ale nie udało się tego zrobić. Więc powróci do niezabezpieczonego przechowywania\nJeśli używasz Linuksa, upewnij się, że masz zainstalowane jakieś usługi do szyfrowania (gnome-keyring, kde-wallet, keepassxc itp.)';
 
   @override
   String get querying_info => 'Szukam informacji...';
@@ -1006,7 +1006,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get choose_your_region_description =>
-      'To pomoże Spotube pokazać Ci odpowiednią treść dla Twojej lokalizacji.';
+      'To pomoże Sonolyth pokazać Ci odpowiednią treść dla Twojej lokalizacji.';
 
   @override
   String get choose_your_language => 'Wybierz swój język';
@@ -1016,7 +1016,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get help_project_grow_description =>
-      'Spotube to projekt open-source. Możesz pomóc temu projektowi rosnąć, przyczyniając się do projektu, zgłaszając błędy lub sugerując nowe funkcje.';
+      'Sonolyth to projekt open-source. Możesz pomóc temu projektowi rosnąć, przyczyniając się do projektu, zgłaszając błędy lub sugerując nowe funkcje.';
 
   @override
   String get contribute_on_github => 'Przyczyniaj się na GitHubie';
@@ -1032,7 +1032,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get enable_connect_description =>
-      'Kontroluj Spotube z innych urządzeń';
+      'Kontroluj Sonolyth z innych urządzeń';
 
   @override
   String get devices => 'Urządzenia';
@@ -1080,19 +1080,19 @@ class AppLocalizationsPl extends AppLocalizations {
   }
 
   @override
-  String get spotube_has_an_update => 'Spotube ma aktualizację';
+  String get spotube_has_an_update => 'Sonolyth ma aktualizację';
 
   @override
   String get download_now => 'Pobierz teraz';
 
   @override
   String nightly_version(Object nightlyBuildNum) {
-    return 'Spotube Nightly $nightlyBuildNum został wydany';
+    return 'Sonolyth Nightly $nightlyBuildNum został wydany';
   }
 
   @override
   String release_version(Object version) {
-    return 'Spotube v$version został wydany';
+    return 'Sonolyth v$version został wydany';
   }
 
   @override
@@ -1519,7 +1519,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get third_party_plugin_dmca_notice =>
-      'Zespół Spotube nie ponosi żadnej odpowiedzialności (w tym prawnej) za żadne wtyczki \"zewnętrzne\".\nUżywaj ich na własne ryzyko. Wszelkie błędy/problemy prosimy zgłaszać w repozytorium wtyczki.\n\nJeśli jakakolwiek wtyczka \"zewnętrzna\" narusza ToS/DMCA jakiejkolwiek usługi/podmiotu prawnego, prosimy o kontakt z autorem wtyczki \"zewnętrznej\" lub platformą hostingową, np. GitHub/Codeberg, w celu podjęcia działań. Wymienione powyżej (oznaczone jako \"zewnętrzne\") są publicznymi wtyczkami utrzymywanymi przez społeczność. Nie kuratujemy ich, więc nie możemy podjąć żadnych działań w ich sprawie.\n\n';
+      'Zespół Sonolyth nie ponosi żadnej odpowiedzialności (w tym prawnej) za żadne wtyczki \"zewnętrzne\".\nUżywaj ich na własne ryzyko. Wszelkie błędy/problemy prosimy zgłaszać w repozytorium wtyczki.\n\nJeśli jakakolwiek wtyczka \"zewnętrzna\" narusza ToS/DMCA jakiejkolwiek usługi/podmiotu prawnego, prosimy o kontakt z autorem wtyczki \"zewnętrznej\" lub platformą hostingową, np. GitHub/Codeberg, w celu podjęcia działań. Wymienione powyżej (oznaczone jako \"zewnętrzne\") są publicznymi wtyczkami utrzymywanymi przez społeczność. Nie kuratujemy ich, więc nie możemy podjąć żadnych działań w ich sprawie.\n\n';
 
   @override
   String get input_does_not_match_format =>
