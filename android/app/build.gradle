@@ -80,7 +80,10 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            // Sonolyth: sign release with the keystore when android/key.properties
+            // exists; otherwise fall back to debug signing so a release build is
+            // still installable for sideloading without managing a keystore.
+            signingConfig keystorePropertiesFile.exists() ? signingConfigs.release : signingConfigs.debug
         }
         debug {
             signingConfig signingConfigs.debug

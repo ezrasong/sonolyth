@@ -177,6 +177,12 @@ class MetadataPluginNotifier extends AsyncNotifier<MetadataPluginState> {
   }
 
   Future<void> _loadDefaultPlugins(MetadataPluginState pluginState) async {
+    // Sonolyth fork: detect a genuinely fresh install (no plugins yet) so we
+    // can deterministically default the metadata provider to Spotify below,
+    // instead of letting startup load-order decide. Returning users keep
+    // whatever they already selected.
+    final isFreshInstall = pluginState.plugins.isEmpty;
+
     const plugins = [
       // Sonolyth fork: bundle the patched Spotify metadata plugin so it's
       // always preloaded (see assets/plugins/spotube-plugin-spotify).
@@ -185,12 +191,17 @@ class MetadataPluginNotifier extends AsyncNotifier<MetadataPluginState> {
       "spotube-plugin-youtube-audio",
     ];
 
+    PluginConfiguration? spotifyConfig;
+
     for (final plugin in plugins) {
       final byteData = await rootBundle.load(
         "assets/plugins/$plugin/plugin.smplug",
       );
       final pluginConfig =
           await extractPluginArchive(byteData.buffer.asUint8List());
+      if (plugin == "spotube-plugin-spotify") {
+        spotifyConfig = pluginConfig;
+      }
       try {
         await addPlugin(pluginConfig);
       } on MetadataPluginException catch (e) {
@@ -215,6 +226,14 @@ class MetadataPluginNotifier extends AsyncNotifier<MetadataPluginState> {
           }
         }
       }
+    }
+
+    // Sonolyth fork: on a fresh install, prefer Spotify as the default
+    // metadata provider (returning users keep their own selection).
+    if (isFreshInstall &&
+        spotifyConfig != null &&
+        spotifyConfig.abilities.contains(PluginAbilities.metadata)) {
+      await setDefaultMetadataPlugin(spotifyConfig);
     }
   }
 
