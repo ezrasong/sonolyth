@@ -3,6 +3,21 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    // Some third-party plugins (disable_battery_optimization) still declare
+    // the long-dead jcenter repository; connections to it time out on CI.
+    // Rewrite any jcenter URL to Maven Central everywhere, including
+    // plugin-declared buildscript repositories.
+    def replaceJcenter = { repoHandler ->
+        repoHandler.all { repo ->
+            if (repo instanceof MavenArtifactRepository &&
+                repo.url.toString().contains("jcenter.bintray.com")) {
+                repo.url = "https://repo1.maven.org/maven2"
+            }
+        }
+    }
+    replaceJcenter(repositories)
+    replaceJcenter(buildscript.repositories)
 }
 
 rootProject.buildDir = '../build'
