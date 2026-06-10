@@ -1,0 +1,114 @@
+name: Sonolyth Release (Android)
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        type: choice
+        options:
+          - stable
+          - nightly
+        default: stable
+        description: The release channel
+      dry_run:
+        type: boolean
+        default: false
+        description: Build only, don't publish a GitHub release
+
+env:
+  FLUTTER_VERSION: 3.35.2
+  FLUTTER_CHANNEL: master
+
+permissions:
+  contents: write
+
+jobs:
+  build_android:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2.18.0
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+          git-source: https://github.com/flutter/flutter.git
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17"
+          cache: "gradle"
+          check-latest: true
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Install android dependencies
+        run: |
+          flutter pub get
+          dart cli/cli.dart install-dependencies --platform=android --arch=all
+
+      # No keystore is configured for the fork yet; the build falls back to
+      # debug signing (fine for sideloading, not for store distribution).
+
+      - name: Build android apk
+        run: dart cli/cli.dart build --arch=all android
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          DOTENV: ${{ secrets.DOTENV_RELEASE }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: error
+          name: android-all
+          path: build/Sonolyth-android-all-arch.apk
+
+  release:
+    runs-on: ubuntu-22.04
+    if: ${{ !inputs.dry_run }}
+    needs:
+      - build_android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: ./binaries
+
+      - name: Generate checksums
+        run: |
+          find binaries -type f -exec sha256sum {} \; >> RELEASE.sha256sum
+          sed -i 's|binaries/.*/\([^/]*\)$|\1|' RELEASE.sha256sum
+
+      - name: Extract pubspec version
+        run: |
+          echo "PUBSPEC_VERSION=$(grep -oP 'version:\s*\K[^+]+(?=\+)' pubspec.yaml)" >> $GITHUB_ENV
+
+      - name: Upload release (stable)
+        if: ${{ inputs.channel == 'stable' }}
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: v${{ env.PUBSPEC_VERSION }}
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+          allowUpdates: true
+          artifacts: binaries/**/*,RELEASE.sha256sum
+
+      - name: Upload release (nightly)
+        if: ${{ inputs.channel == 'nightly' }}
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: nightly
+          prerelease: true
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+          allowUpdates: true
+          artifacts: binaries/**/*,RELEASE.sha256sum
+          body: |
+            Build Number: ${{ github.run_number }}
