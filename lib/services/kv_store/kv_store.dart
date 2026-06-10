@@ -30,6 +30,11 @@ abstract class KVStoreService {
   static Future<void> setRecentSearches(List<String> value) async =>
       await sharedPreferences.setStringList('recentSearches', value);
 
+  static String? get lastRoutePath =>
+      sharedPreferences.getString('lastRoutePath');
+  static Future<void> setLastRoutePath(String value) async =>
+      await sharedPreferences.setString('lastRoutePath', value);
+
   static WindowSize? get windowSize {
     final raw = sharedPreferences.getString('windowSize');
 

@@ -79,6 +79,11 @@ Future<void> main(List<String> rawArgs) async {
     // force High Refresh Rate on some Android devices (like One Plus)
     if (kIsAndroid) {
       await FlutterDisplayMode.setHighRefreshRate();
+      // Phone music app: portrait only. In landscape the width crosses the
+      // desktop breakpoint and the app flips into the sidebar layout mid-use.
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
     }
     if (kIsAndroid || kIsDesktop) {
       await NewPipeExtractor.init();
