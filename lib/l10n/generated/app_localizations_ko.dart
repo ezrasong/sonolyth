@@ -714,28 +714,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      '모든 트랙을 대량으로 다운로드하는 것은 명백한 불법 복제이며 음악 창작 사회에 피해를 입히는 행위입니다. 이 점을 알아주셨으면 합니다. 항상 아티스트의 노력을 존중하고 응원해 주세요.';
-
-  @override
-  String get download_ip_ban_warning =>
-      '참고로, 평소보다 과도한 다운로드 요청으로 인해 YouTube에서 IP가 차단될 수 있습니다. IP 차단은 해당 IP 기기에서 최소 2~3개월 동안 (로그인한 상태에서도) YouTube를 사용할 수 없음을 의미합니다. 그리고 이런 일이 발생하더라도 스포튜브는 어떠한 책임도 지지 않습니다.';
-
-  @override
-  String get by_clicking_accept_terms => '\'동의\'를 클릭하면 다음 약관에 동의하는 것입니다:';
-
-  @override
-  String get download_agreement_1 => '알고 있습니다. 전 나쁜 사람입니다.';
-
-  @override
-  String get download_agreement_2 =>
-      '제가 할 수 있는 모든 곳에서 아티스트를 지원할 것이며, 저는 그들의 작품을 살 돈이 없기 때문에 이렇게 하는 것뿐입니다.';
-
-  @override
-  String get download_agreement_3 =>
-      '본인은 YouTube에서 내 IP가 차단될 수 있음을 완전히 알고 있으며, 현재 내 행동으로 인해 발생하는 사고에 대해 Sonolyth 또는 그 소유자/기여자에게 책임을 묻지 않습니다.';
-
-  @override
   String get decline => '거절';
 
   @override
@@ -862,13 +840,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get restore_defaults => '기본값으로 복원';
 
   @override
-  String get download_music_format => '다운로드 음악 포맷';
-
-  @override
   String get streaming_music_format => '스트리밍 음악 포맷';
-
-  @override
-  String get download_music_quality => '다운로드 음질';
 
   @override
   String get streaming_music_quality => '스트리밍 음질';

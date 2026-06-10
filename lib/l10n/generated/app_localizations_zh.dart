@@ -712,27 +712,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      '如果你大量下载这些歌曲，你显然在侵犯音乐的版权并对音乐创作社区造成了伤害。我希望你能意识到这一点。永远要尊重并支持艺术家们的辛勤工作';
-
-  @override
-  String get download_ip_ban_warning =>
-      '小心，如果出现超出正常的下载请求那你的 IP 可能会被 YouTube 封禁，这意味着你的设备将在长达 2-3 个月的时间内无法使用该 IP 访问 YouTube（即使你没登录）。Sonolyth 对此不承担任何责任';
-
-  @override
-  String get by_clicking_accept_terms => '点击 \'同意\' 代表着你同意以下的条款';
-
-  @override
-  String get download_agreement_1 => '我明白侵犯音乐版权是一件不好的事情';
-
-  @override
-  String get download_agreement_2 => '我将尽可能支持艺术家的工作。我现在之所以做不到是因为缺乏资金来购买正版';
-
-  @override
-  String get download_agreement_3 =>
-      '我完全了解我的 IP 存在被 YouTube的风险。我同意 Sonolyth 的所有者与贡献者们无须对我目前的行为所导致的任何后果负责';
-
-  @override
   String get decline => '拒绝';
 
   @override
@@ -859,13 +838,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get restore_defaults => '恢复默认值';
 
   @override
-  String get download_music_format => '下载音乐格式';
-
-  @override
   String get streaming_music_format => '流媒体音乐格式';
-
-  @override
-  String get download_music_quality => '下载音乐质量';
 
   @override
   String get streaming_music_quality => '流媒体音乐质量';
@@ -2235,27 +2208,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   }
 
   @override
-  String get download_warning =>
-      '如果你大量下載這些歌曲，你顯然在侵犯音樂的版權並對音樂創作社區造成了傷害。我希望你能意識到這一點。永遠要尊重並支持藝術家們的辛勤工作';
-
-  @override
-  String get download_ip_ban_warning =>
-      '小心，如果出現超出正常的下載請求，那你的 IP 可能會被 YouTube 封鎖，這意味著你的裝置將在長達 2-3 個月的時間內無法使用該 IP 訪問 YouTube（即使你沒登入）。Sonolyth 不會因而承擔任何責任';
-
-  @override
-  String get by_clicking_accept_terms => '點擊 \'同意\' 代表你同意以下的條款';
-
-  @override
-  String get download_agreement_1 => '我明白侵害音樂版權是一件不好的事';
-
-  @override
-  String get download_agreement_2 => '我將盡可能支持藝術家的工作。我現在之所以做不到是因為缺乏資金來購買正版';
-
-  @override
-  String get download_agreement_3 =>
-      '我完全了解我的 IP 存在被 YouTube 封鎖的風險。並且我明白 Sonolyth 的擁有者與貢獻者們無須對我目前的行為所導致的任何後果負責';
-
-  @override
   String get decline => '拒絕';
 
   @override
@@ -2382,13 +2334,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get restore_defaults => '恢復預設值';
 
   @override
-  String get download_music_format => '下載音樂格式';
-
-  @override
   String get streaming_music_format => '串流音樂格式';
-
-  @override
-  String get download_music_quality => '下載音樂品質';
 
   @override
   String get streaming_music_quality => '串流音樂品質';

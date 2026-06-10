@@ -727,29 +727,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'Si descargas todas las canciones de golpe, estás claramente pirateando música y causando daño a la sociedad creativa de la música. Espero que seas consciente de esto y siempre intentes respetar y apoyar el arduo trabajo de los artistas';
-
-  @override
-  String get download_ip_ban_warning =>
-      'Por cierto, tu IP puede ser bloqueada en YouTube debido a solicitudes de descarga excesivas. El bloqueo de IP significa que no podrás usar YouTube (incluso si has iniciado sesión) durante al menos 2-3 meses desde esa dirección IP. Y Sonolyth no se hace responsable si esto ocurre alguna vez';
-
-  @override
-  String get by_clicking_accept_terms =>
-      'Al hacer clic en \'Aceptar\', aceptas los siguientes términos:';
-
-  @override
-  String get download_agreement_1 => 'Sé que estoy pirateando música. Soy malo';
-
-  @override
-  String get download_agreement_2 =>
-      'Apoyaré al artista donde pueda y solo lo hago porque no tengo dinero para comprar su arte';
-
-  @override
-  String get download_agreement_3 =>
-      'Soy completamente consciente de que mi IP puede ser bloqueada en YouTube y no responsabilizo a Sonolyth ni a sus dueños/contribuyentes por cualquier incidente causado por mi acción actual';
-
-  @override
   String get decline => 'Rechazar';
 
   @override
@@ -876,13 +853,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get restore_defaults => 'Restaurar valores predeterminados';
 
   @override
-  String get download_music_format => 'Formato de descarga de música';
-
-  @override
   String get streaming_music_format => 'Formato de transmisión de música';
-
-  @override
-  String get download_music_quality => 'Calidad de descarga de música';
 
   @override
   String get streaming_music_quality => 'Calidad de transmisión de música';

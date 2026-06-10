@@ -727,30 +727,6 @@ class AppLocalizationsTl extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'Kung nag-download ka ng lahat ng Track sa maramihan, malinaw na nagpa-pirate ka ng Musika at nagsasanhi ng pinsala sa creative society ng Musika. Sana ay alam mo ito. Palaging, subukang igalang at suportahan ang masipag na paggawa ng Artist';
-
-  @override
-  String get download_ip_ban_warning =>
-      'Sa nga pala, ang iyong IP ay maaaring ma-block sa YouTube dahil sa sobrang mga kahilingan sa pag-download kaysa sa karaniwan. Ang IP block ay nangangahulugang hindi mo magagamit ang YouTube (kahit na naka-log in ka) sa loob ng hindi bababa sa 2-3 buwan mula sa device na may IP na iyon. At hindi pinanghahawakan ng Sonolyth ang anumang responsibilidad kung mangyayari ito';
-
-  @override
-  String get by_clicking_accept_terms =>
-      'Sa pamamagitan ng pag-click sa \'tanggapin\', sumasang-ayon ka sa mga sumusunod na tuntunin:';
-
-  @override
-  String get download_agreement_1 =>
-      'Alam kong nagpa-pirate ako ng Musika. Masama ako';
-
-  @override
-  String get download_agreement_2 =>
-      'Susuportahan ko ang Artist saan man ako maaari at ginagawa ko lang ito dahil wala akong pera para bumili ng kanilang sining';
-
-  @override
-  String get download_agreement_3 =>
-      'Lubos kong nauunawaan na ang aking IP ay maaaring ma-block sa YouTube at hindi ko pinanghahawakan ang Sonolyth o ang kanyang mga may-ari/nag-ambag na responsable para sa anumang aksidente na sanhi ng aking kasalukuyang aksyon';
-
-  @override
   String get decline => 'Tanggihan';
 
   @override
@@ -878,13 +854,7 @@ class AppLocalizationsTl extends AppLocalizations {
   String get restore_defaults => 'Ibalik ang mga default';
 
   @override
-  String get download_music_format => 'I-download na format ng musika';
-
-  @override
   String get streaming_music_format => 'Format ng streaming ng musika';
-
-  @override
-  String get download_music_quality => 'Kalidad ng i-download na musika';
 
   @override
   String get streaming_music_quality => 'Kalidad ng streaming ng musika';

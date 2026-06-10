@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/modules/settings/section_card_with_heading.dart';
+import 'package:sonolyth/modules/spotiflac/download_providers_section.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 import 'package:sonolyth/utils/platform.dart';
@@ -47,6 +48,7 @@ class SettingsDownloadsSection extends HookConsumerWidget {
           ),
           onTap: pickDownloadLocation,
         ),
+        const SpotiFlacDownloadProvidersSection(),
       ],
     );
   }

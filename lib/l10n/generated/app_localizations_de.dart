@@ -728,30 +728,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'Wenn du alle Titel in großen Mengen herunterlädst, betreibst du eindeutig Raubkopien von Musik und schadest der kreativen Gesellschaft der Musik. Ich hoffe, dir ist dies bewusst. Versuche immer, die harte Arbeit der Künstler zu respektieren und zu unterstützen.';
-
-  @override
-  String get download_ip_ban_warning =>
-      'Übrigens, deine IP-Adresse kann aufgrund übermäßiger Downloadanfragen von YouTube gesperrt werden. Eine IP-Sperre bedeutet, dass du YouTube (auch wenn du angemeldet bist) für mindestens 2-3 Monate von diesem IP-Gerät aus nicht nutzen kannst. Sonolyth übernimmt keine Verantwortung, falls dies jemals geschieht.';
-
-  @override
-  String get by_clicking_accept_terms =>
-      'Durch Klicken auf \'Akzeptieren\' stimmst du den folgenden Bedingungen zu:';
-
-  @override
-  String get download_agreement_1 =>
-      'Ich weiß, dass ich Raubkopien von Musik betreibe. Ich bin böse.';
-
-  @override
-  String get download_agreement_2 =>
-      'Ich werde die Künstler, wo immer ich kann, unterstützen, und ich tue dies nur, weil ich kein Geld habe, um ihre Kunst zu kaufen.';
-
-  @override
-  String get download_agreement_3 =>
-      'Mir ist vollkommen bewusst, dass meine IP-Adresse auf YouTube gesperrt werden kann, und ich halte Sonolyth oder seine Eigentümer/Mitarbeiter nicht für etwaige Unfälle verantwortlich, die durch meine derzeitige Handlung verursacht werden.';
-
-  @override
   String get decline => 'Ablehnen';
 
   @override
@@ -879,13 +855,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get restore_defaults => 'Standardeinstellungen wiederherstellen';
 
   @override
-  String get download_music_format => 'Musik-Downloadformat';
-
-  @override
   String get streaming_music_format => 'Musik-Streamingformat';
-
-  @override
-  String get download_music_quality => 'Musik-Downloadqualität';
 
   @override
   String get streaming_music_quality => 'Musik-Streamingqualität';

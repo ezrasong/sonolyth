@@ -3,7 +3,6 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/adaptive/adaptive_pop_sheet_list.dart';
-import 'package:sonolyth/components/dialogs/confirm_download_dialog.dart';
 import 'package:sonolyth/components/dialogs/playlist_add_track_dialog.dart';
 import 'package:sonolyth/components/track_presentation/presentation_props.dart';
 import 'package:sonolyth/components/track_presentation/presentation_state.dart';
@@ -82,14 +81,6 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
     }) async {
       final fullTrackObjects =
           tracks.whereType<SonolythFullTrackObject>().toList();
-      final confirmed = await showDialog<bool>(
-            context: context,
-            builder: (context) {
-              return const ConfirmDownloadDialog();
-            },
-          ) ??
-          false;
-      if (confirmed != true) return;
       downloader.addAllToQueue(
         fullTrackObjects,
         collectionUrl: collectionUrl,

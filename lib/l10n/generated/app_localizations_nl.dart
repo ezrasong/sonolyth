@@ -722,30 +722,6 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'Als je alle nummers in bulk downloadt, ben je duidelijk bezig met muziekpiraterij en breng je schade toe aan de creatieve muziekmaatschappij. Ik hoop dat je je hiervan bewust bent. Probeer altijd het harde werk van artiesten te respecteren en te steunen.';
-
-  @override
-  String get download_ip_ban_warning =>
-      'BTW, je IP-adres kan worden geblokkeerd op YouTube als gevolg van buitensporige downloadverzoeken. IP-blokkering betekent dat je YouTube niet kunt gebruiken (zelfs als je ingelogd bent) voor tenminste 2-3 maanden vanaf dat IP-apparaat. Sonolyth is niet verantwoordelijk als dit ooit gebeurt.';
-
-  @override
-  String get by_clicking_accept_terms =>
-      'Door op \'accepteren\' te klikken ga je akkoord met de volgende voorwaarden:';
-
-  @override
-  String get download_agreement_1 =>
-      'Ik weet dat ik muziek illegaal donload. Ik ben slecht.';
-
-  @override
-  String get download_agreement_2 =>
-      'Ik steun de artiest waar ik kan en ik doe dit alleen omdat ik geen geld heb om hun kunst te kopen.';
-
-  @override
-  String get download_agreement_3 =>
-      'Ik ben me er volledig van bewust dat mijn IP geblokkeerd kan worden op YouTube & ik houd Sonolyth of zijn eigenaars/contributeurs niet verantwoordelijk voor ongelukken die veroorzaakt worden door mijn huidige actie.';
-
-  @override
   String get decline => 'Weigeren';
 
   @override
@@ -872,13 +848,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get restore_defaults => 'Standaardwaarden herstellen';
 
   @override
-  String get download_music_format => 'Download muziekformaat';
-
-  @override
   String get streaming_music_format => 'Streaming muziekformaat';
-
-  @override
-  String get download_music_quality => 'Downloadkwaliteit';
 
   @override
   String get streaming_music_quality => 'Streamingkwaliteit';

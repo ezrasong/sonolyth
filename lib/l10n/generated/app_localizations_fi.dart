@@ -722,30 +722,6 @@ class AppLocalizationsFi extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'Jos lataat kaikki laulut kerrällä olet selkeästi Piratoimassa ja aiheuttamassa vahinkoa musiikin luovaan yhteiskuntaan. Toivottavasti olet tietoinen tästä. Yritä aina kunnioittaa ja tukea Artistin kovaa työtä.';
-
-  @override
-  String get download_ip_ban_warning =>
-      'BTW, YouTube voi estää IP-Osoitteesi tavallista liiallisten latauspyyntöjen takia. IP-Osoitteen esto tarkoittaa sitä, ettet voi käyttää YouTubea (vaikka olisit kirjautunut) vähintään 2-3kk aikana kyseiseltä laitteelta. Sonolyth ei kanna yhtään vastuuta jos se tapahtuu.';
-
-  @override
-  String get by_clicking_accept_terms =>
-      'Painamalla \'hyväksy\' hyväksyt seuraaviin ehtoihin:';
-
-  @override
-  String get download_agreement_1 =>
-      'Tiedän että Piratoin musiikkia. Olen paha.';
-
-  @override
-  String get download_agreement_2 =>
-      'Tuen Artisteja silloin kun pystyn, ja teen tämän vain koska minulla ei ole rahaa ostaa heidän taidetta';
-
-  @override
-  String get download_agreement_3 =>
-      'Ymmärrän että minun YouTube voi estää IP-Osoitteeni ja en pidä Sonolytha tai omistajiinsa/avustajia vastuullisena mistään omista teoistsani';
-
-  @override
   String get decline => 'Hylkää';
 
   @override
@@ -872,13 +848,7 @@ class AppLocalizationsFi extends AppLocalizations {
   String get restore_defaults => 'Palauta oletukset';
 
   @override
-  String get download_music_format => 'Musiikin latausmuoto';
-
-  @override
   String get streaming_music_format => 'Musiikin suoratoistomuoto';
-
-  @override
-  String get download_music_quality => 'Musiikin latauslaatu';
 
   @override
   String get streaming_music_quality => 'Musiikin suoratoistolaadun';

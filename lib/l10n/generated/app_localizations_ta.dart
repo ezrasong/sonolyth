@@ -729,30 +729,6 @@ class AppLocalizationsTa extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'நீங்கள் அனைத்து பாடல்களையும் மொத்தமாக பதிவிறக்கினால், நீங்கள் தெளிவாக இசையைத் திருடுகிறீர்கள் மற்றும் இசையின் படைப்பாற்றல் சமூகத்திற்கு சேதம் விளைவிக்கிறீர்கள். நீங்கள் இதை அறிந்திருக்கிறீர்கள் என்று நம்புகிறேன். எப்போதும், கலைஞரின் கடின உழைப்பை மதித்து ஆதரிக்க முயற்சி செய்யுங்கள்';
-
-  @override
-  String get download_ip_ban_warning =>
-      'மேலும், அதிகப்படியான பதிவிறக்க கோரிக்கைகள் காரணமாக உங்கள் IP YouTube இல் தடைசெய்யப்படலாம். IP தடை என்பது குறைந்தது 2-3 மாதங்களுக்கு அந்த IP சாதனத்திலிருந்து YouTube ஐப் பயன்படுத்த முடியாது (நீங்கள் உள்நுழைந்திருந்தாலும் கூட). இது ஒருபோதும் நடந்தால் Sonolyth பொறுப்பேற்காது';
-
-  @override
-  String get by_clicking_accept_terms =>
-      '\'ஏற்றுக்கொள்\' என்பதைக் கிளிக் செய்வதன் மூலம் பின்வரும் விதிமுறைகளுக்கு நீங்கள் ஒப்புக்கொள்கிறீர்கள்:';
-
-  @override
-  String get download_agreement_1 =>
-      'நான் இசையைத் திருடுகிறேன் என்பது எனக்குத் தெரியும். நான் கெட்டவன்';
-
-  @override
-  String get download_agreement_2 =>
-      'நான் கலைஞரை முடிந்தவரை ஆதரிப்பேன், அவர்களின் கலைக்கு பணம் செலுத்த எனக்கு பணம் இல்லாததால் மட்டுமே இதைச் செய்கிறேன்';
-
-  @override
-  String get download_agreement_3 =>
-      'என் IP YouTube இல் தடைசெய்யப்படலாம் என்பதை நான் முழுமையாக அறிவேன், மேலும் என் தற்போதைய செயலால் ஏற்படும் எந்த விபத்துகளுக்கும் Sonolyth அல்லது அதன் உரிமையாளர்கள்/பங்களிப்பாளர்களை பொறுப்பாக்க மாட்டேன்';
-
-  @override
   String get decline => 'மறு';
 
   @override
@@ -879,13 +855,7 @@ class AppLocalizationsTa extends AppLocalizations {
   String get restore_defaults => 'இயல்புநிலைகளை மீட்டமை';
 
   @override
-  String get download_music_format => 'இசை பதிவிறக்க வடிவம்';
-
-  @override
   String get streaming_music_format => 'இசை ஸ்ட்ரீமிங் வடிவம்';
-
-  @override
-  String get download_music_quality => 'பதிவிறக்க தரம்';
 
   @override
   String get streaming_music_quality => 'ஸ்ட்ரீமிங் தரம்';

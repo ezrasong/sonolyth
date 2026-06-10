@@ -724,30 +724,6 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'При скачивании всех треков пакетом вы фактически занимаетесь пиратством и наносите ущерб творческому обществу музыки. Надеюсь, что вы осознаете это. Всегда старайтесь уважать и поддерживать усилия исполнителей, вложенные в их творчество';
-
-  @override
-  String get download_ip_ban_warning =>
-      'Кроме того, стоит учитывать, что из-за чрезмерного количества запросов на скачивание ваш IP-адрес может быть заблокирован на YouTube. Блокировка IP означает, что вы не сможете использовать YouTube (даже если вы вошли в свою учетную запись) в течение, как минимум, 2-3 месяцев с того устройства, с которого были сделаны эти запросы. Важно заметить, что Sonolyth не несет ответственности за такие события';
-
-  @override
-  String get by_clicking_accept_terms =>
-      'Нажимая \'принять\', вы соглашаетесь с следующими условиями:';
-
-  @override
-  String get download_agreement_1 =>
-      'Я осознаю, что я использую музыку незаконно. Это плохо.';
-
-  @override
-  String get download_agreement_2 =>
-      'Я бы поддержал исполнителей, где только смог, и делаю это, так как не имею средств на приобретение их творчества';
-
-  @override
-  String get download_agreement_3 =>
-      'Я полностью осознаю, что мой IP-адрес может быть заблокирован на YouTube, и я не считаю Sonolyth или его владельцев/соавторов ответственными за какие-либо неприятности, вызванные моими текущими действиями';
-
-  @override
   String get decline => 'Отклонить';
 
   @override
@@ -874,13 +850,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get restore_defaults => 'Восстановить настройки по умолчанию';
 
   @override
-  String get download_music_format => 'Формат загрузки музыки';
-
-  @override
   String get streaming_music_format => 'Формат потоковой музыки';
-
-  @override
-  String get download_music_quality => 'Качество загрузки';
 
   @override
   String get streaming_music_quality => 'Качество стриминга';

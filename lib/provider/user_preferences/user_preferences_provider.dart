@@ -29,6 +29,13 @@ class UserPreferencesNotifier extends Notifier<PreferencesTableData> {
               PreferencesTableCompanion.insert(
                 id: const Value(0),
                 downloadLocation: Value(await _getDefaultDownloadDirectory()),
+                // Default streaming engine: NewPipe everywhere it's supported
+                // (iOS has no NewPipe extractor, so it stays on YouTubeExplode).
+                youtubeClientEngine: Value(
+                  kIsIOS
+                      ? YoutubeClientEngine.youtubeExplode
+                      : YoutubeClientEngine.newPipe,
+                ),
               ),
             );
       }

@@ -725,30 +725,6 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'Tüm şarkıları toplu olarak indiriyorsanız, açıkça müzik korsanlığı yapıyorsunuz ve müzik dünyasının yaratıcı topluluğuna zarar veriyorsunuz demektir. Umuyorum bunun farkındasınızdır. Her zaman, sanatçıların emeğine saygı göstermeyi ve desteklemeyi deneyin.';
-
-  @override
-  String get download_ip_ban_warning =>
-      'Ayrıca, normalden fazla indirme istekleri nedeniyle YouTube\'da IP\'niz engellenebilir. IP engeli, en az 2-3 ay boyunca YouTube\'u (hatta oturum açmış olsanız bile) o IP cihazından kullanamayacağınız anlamına gelir. Ve eğer böyle bir durum yaşanırsa, Sonolyth bundan hiçbir sorumluluk kabul etmez.';
-
-  @override
-  String get by_clicking_accept_terms =>
-      '\"Kabul et\" e tıklayarak aşağıdaki şartları kabul etmiş olursunuz:';
-
-  @override
-  String get download_agreement_1 =>
-      'Müzik korsanlığı yaptığımı biliyorum. Ben fakir biriyim.';
-
-  @override
-  String get download_agreement_2 =>
-      'Sanatçıyı elimden geldiğince destekleyeceğim ve bunu sadece sanatını satın alacak param olmadığı için yapıyorum';
-
-  @override
-  String get download_agreement_3 =>
-      'YouTube\'da IP\'min engellenebileceğinin tamamen farkındayım ve mevcut eylemlerimden kaynaklanan herhangi bir kaza için Sonolyth\'u veya sahiplerini/katkıda bulunanları sorumlu tutmuyorum.';
-
-  @override
   String get decline => 'Reddet';
 
   @override
@@ -875,13 +851,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get restore_defaults => 'Varsayılanları geri yükle';
 
   @override
-  String get download_music_format => 'Müzik indirme formatı';
-
-  @override
   String get streaming_music_format => 'Müzik akış formatı';
-
-  @override
-  String get download_music_quality => 'İndirilen müzik kalitesi';
 
   @override
   String get streaming_music_quality => 'Yayınlanan müzik kalitesi';

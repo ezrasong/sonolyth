@@ -1473,42 +1473,6 @@ abstract class AppLocalizations {
   /// **'Selected {count} tracks'**
   String selected_count_tracks(Object count);
 
-  /// No description provided for @download_warning.
-  ///
-  /// In en, this message translates to:
-  /// **'If you download all Tracks at bulk you\'re clearly pirating Music & causing damage to the creative society of Music. I hope you are aware of this. Always, try respecting & supporting Artist\'s hard work'**
-  String get download_warning;
-
-  /// No description provided for @download_ip_ban_warning.
-  ///
-  /// In en, this message translates to:
-  /// **'BTW, your IP can get blocked on YouTube due excessive download requests than usual. IP block means you can\'t use YouTube (even if you\'re logged in) for at least 2-3 months from that IP device. And Sonolyth doesn\'t hold any responsibility if this ever happens'**
-  String get download_ip_ban_warning;
-
-  /// No description provided for @by_clicking_accept_terms.
-  ///
-  /// In en, this message translates to:
-  /// **'By clicking \'accept\' you agree to following terms:'**
-  String get by_clicking_accept_terms;
-
-  /// No description provided for @download_agreement_1.
-  ///
-  /// In en, this message translates to:
-  /// **'I know I\'m pirating Music. I\'m bad'**
-  String get download_agreement_1;
-
-  /// No description provided for @download_agreement_2.
-  ///
-  /// In en, this message translates to:
-  /// **'I\'ll support the Artist wherever I can and I\'m only doing this because I don\'t have money to buy their art'**
-  String get download_agreement_2;
-
-  /// No description provided for @download_agreement_3.
-  ///
-  /// In en, this message translates to:
-  /// **'I\'m completely aware that my IP can get blocked on YouTube & I don\'t hold Sonolyth or his owners/contributors responsible for any accidents caused by my current action'**
-  String get download_agreement_3;
-
   /// No description provided for @decline.
   ///
   /// In en, this message translates to:
@@ -1743,23 +1707,11 @@ abstract class AppLocalizations {
   /// **'Restore defaults'**
   String get restore_defaults;
 
-  /// No description provided for @download_music_format.
-  ///
-  /// In en, this message translates to:
-  /// **'Download music format'**
-  String get download_music_format;
-
   /// No description provided for @streaming_music_format.
   ///
   /// In en, this message translates to:
   /// **'Streaming music format'**
   String get streaming_music_format;
-
-  /// No description provided for @download_music_quality.
-  ///
-  /// In en, this message translates to:
-  /// **'Download music quality'**
-  String get download_music_quality;
 
   /// No description provided for @streaming_music_quality.
   ///

@@ -728,30 +728,6 @@ class AppLocalizationsNe extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'यदि तपाईं सबै ट्र्याकहरूलाई बल्कमा डाउनलोड गर्छनु हो भने तपाईं स्पष्ट रूपमा साङ्गीत चोरी गरिरहेका छन् र यो साङ्गीतको रचनात्मक समाजलाई क्षति पनि पुर्याउँछ। उमेराइएको छ कि तपाईं यसको बारेमा जागरूक छिनुहुन्छ। सधैं, कला गर्दै र कलाकारको कडा परम्परा समर्थन गर्दै आइन्छ।';
-
-  @override
-  String get download_ip_ban_warning =>
-      'बितिएका डाउनलोड अनुरोधहरूका कारण तपाईंको आइपीले YouTube मा ब्लक हुन सक्छ। आइपी ब्लक भनेको कम्तीमा 2-3 महिनासम्म तपाईं त्यस आइपी यन्त्रबाट YouTube प्रयोग गर्न सक्नुहुन्छ। र यदि यो हुँदैछ भने स्पट्यूबले यसलाई कसैले गरेको बारेमा कुनै दायित्व लिन्छैन।';
-
-  @override
-  String get by_clicking_accept_terms =>
-      '\'स्वीकृत\' गरेर तपाईं निम्नलिखित निर्वाचन गर्दैछिन्:';
-
-  @override
-  String get download_agreement_1 =>
-      'म मन्ने छु कि म साङ्गीत चोरी गरिरहेको छु। म बुरो हुँ';
-
-  @override
-  String get download_agreement_2 =>
-      'म कहिल्यै कहिल्यै तिनीहरूलाई समर्थन गर्नेछु र म यो तिनीहरूको कला किन्ने पैसा छैन भने मा मात्र यो गरेको छु';
-
-  @override
-  String get download_agreement_3 =>
-      'म पूरा रूपमा जान्छु कि मेरो आइपी YouTube मा ब्लक हुन सक्छ र म मन्छेहरूले मेरो चासोबाट भएको कुनै दुर्घटनामा स्पट्यूब वा तिनीहरूको मालिकहरू/सहयोगीहरूलाई दायित्वी ठान्छुँभन्ने पूर्ण जानकारी छैन';
-
-  @override
   String get decline => 'अस्वीकृत';
 
   @override
@@ -880,13 +856,7 @@ class AppLocalizationsNe extends AppLocalizations {
   String get restore_defaults => 'पूर्वनिर्धारितहरू पुनः स्थापित गर्नुहोस्';
 
   @override
-  String get download_music_format => 'सङ्गीत डाउनलोड ढाँचा';
-
-  @override
   String get streaming_music_format => 'स्ट्रिमिङ सङ्गीत ढाँचा';
-
-  @override
-  String get download_music_quality => 'डाउनलोड गुणस्तर';
 
   @override
   String get streaming_music_quality => 'स्ट्रिमिङ गुणस्तर';

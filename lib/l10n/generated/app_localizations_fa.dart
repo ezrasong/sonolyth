@@ -721,29 +721,6 @@ class AppLocalizationsFa extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'اگر همه ی آهنگ ها را به صورت انبو دانلود کنید به وضوح در حال دزدی موسقی هستید و در حال اسیب وارد کردن به جامه ی خلاق هنری می باشید .امیدوارم که از این موضوع اگاه باشید .همیشه سعی کنید به کار سخت هنرمند اخترام بگذارید.';
-
-  @override
-  String get download_ip_ban_warning =>
-      'راستی آی پی شما می تواند در یوتوب به دلیل درخواست های دانلود بیش از حد معمول مسدود شود. بلوک آی پی به این معنی است که شما نمی توانید از یوتوب (حتی اگر وارد سیستم شده باشید) حداقل 2-3 ماه از آن دستگاه آی پی استفاده کنید. و Sonolyth هیچ مسئولیتی در صورت وقوع این اتفاق ندارد';
-
-  @override
-  String get by_clicking_accept_terms =>
-      'با کلیک بر روی قبول با شرایط زیر موافقت می کنید:';
-
-  @override
-  String get download_agreement_1 => 'من میدانم در حال دزدی هستم .من بد هستم';
-
-  @override
-  String get download_agreement_2 =>
-      'من هر کجا ک بتوانم از هنرمندان حمایت میکنم اما این کارا فقط به دلیل اینکه توانایی مالی ندارم انجام میدهم';
-
-  @override
-  String get download_agreement_3 =>
-      'من کاملا میدانم که از طرف یوتوب بلاک میشم و این برنامه و مالکان را مسول این حادثه نمیدانم.';
-
-  @override
   String get decline => 'قبول نکردن';
 
   @override
@@ -870,13 +847,7 @@ class AppLocalizationsFa extends AppLocalizations {
   String get restore_defaults => 'بازیابی پیش فرض ها';
 
   @override
-  String get download_music_format => 'فرمت دانلود موسیقی';
-
-  @override
   String get streaming_music_format => 'فرمت پخش آنلاین موسیقی';
-
-  @override
-  String get download_music_quality => 'کیفیت دانلود موسیقی';
 
   @override
   String get streaming_music_quality => 'کیفیت پخش آنلاین موسیقی';

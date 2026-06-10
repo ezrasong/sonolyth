@@ -724,30 +724,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'Tải xuống tất cả các bài hát một lần, sẽ vi phạm bản quyền âm nhạc và gây thiệt hại cho xã hội sáng tạo âm nhạc. Hy vọng bạn nhận thức được điều này. Hãy luôn tôn trọng và ủng hộ công sức của nghệ sĩ';
-
-  @override
-  String get download_ip_ban_warning =>
-      'Địa chỉ IP của bạn có thể bị chặn trên YouTube do yêu cầu tải xuống quá mức so với bình thường. Chặn IP có nghĩa là bạn không thể sử dụng YouTube (ngay cả khi bạn đã đăng nhập) ít nhất 2-3 tháng từ thiết bị IP đó. Và Sonolyth không chịu trách nhiệm nếu điều này xảy ra';
-
-  @override
-  String get by_clicking_accept_terms =>
-      'Bằng cách nhấp vào \'Chấp nhận\', bạn đồng ý với các điều khoản sau:';
-
-  @override
-  String get download_agreement_1 =>
-      'Tôi biết mình đang vi phạm bản quyền âm nhạc. Đó là không tốt.';
-
-  @override
-  String get download_agreement_2 =>
-      'Tôi sẽ ủng hộ nghệ sĩ bất cứ nơi nào tôi có thể và tôi chỉ làm điều này vì tôi không có tiền để mua tác phẩm của họ';
-
-  @override
-  String get download_agreement_3 =>
-      'Tôi hoàn toàn nhận thức được rằng địa chỉ IP của tôi có thể bị chặn trên YouTube và tôi không đổ lỗi cho Sonolyth hoặc chủ sở hữu/người đóng góp của nó về bất kỳ tai nạn nào do hành động này của tôi';
-
-  @override
   String get decline => 'Từ chối';
 
   @override
@@ -875,13 +851,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get restore_defaults => 'Khôi phục mặc định';
 
   @override
-  String get download_music_format => 'Định dạng nhạc tải về';
-
-  @override
   String get streaming_music_format => 'Định dạng nhạc phát trực tuyến';
-
-  @override
-  String get download_music_quality => 'Chất lượng nhạc tải về';
 
   @override
   String get streaming_music_quality => 'Chất lượng nhạc phát trực tuyến';

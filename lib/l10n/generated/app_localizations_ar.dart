@@ -725,29 +725,6 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'إذا قمت بتنزيل جميع المقاطع الصوتية بكميات كبيرة، فمن الواضح أنك تقوم بقرصنة الموسيقى وتسبب الضرر للمجتمع الإبداعي للموسيقى. أتمنى أن تكون على علم بهذا. حاول دائمًا احترام ودعم العمل الجاد للفنان';
-
-  @override
-  String get download_ip_ban_warning =>
-      'بالمناسبة، يمكن أن يتم حظر عنوان IP الخاص بك على YouTube بسبب طلبات التنزيل الزائدة عن المعتاد. يعني حظر IP أنه لا يمكنك استخدام YouTube (حتى إذا قمت بتسجيل الدخول) لمدة تتراوح بين شهرين إلى ثلاثة أشهر على الأقل من جهاز IP هذا. ولا يتحمل Sonolyth أي مسؤولية إذا حدث هذا على الإطلاق';
-
-  @override
-  String get by_clicking_accept_terms =>
-      'بالنقر على \"قبول\"، فإنك توافق على الشروط التالية:';
-
-  @override
-  String get download_agreement_1 => 'أعلم أنني أقوم بقرصنة الموسيقى. انا سيئ';
-
-  @override
-  String get download_agreement_2 =>
-      'سأدعم الفنان أينما أستطيع، وأنا أفعل هذا فقط لأنني لا أملك المال لشراء أعمالهم الفنية';
-
-  @override
-  String get download_agreement_3 =>
-      'أدرك تمامًا أنه يمكن حظر عنوان IP الخاص بي على YouTube ولا أحمل Sonolyth أو مالكيه/مساهميه المسؤولية عن أي حوادث ناجمة عن الإجراء الحالي الخاص بي';
-
-  @override
   String get decline => 'رفض';
 
   @override
@@ -874,13 +851,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get restore_defaults => 'استعادة الإعدادات الافتراضية';
 
   @override
-  String get download_music_format => 'تنسيق تنزيل الموسيقى';
-
-  @override
   String get streaming_music_format => 'تنسيق بث الموسيقى';
-
-  @override
-  String get download_music_quality => 'جودة تنزيل الموسيقى';
 
   @override
   String get streaming_music_quality => 'جودة بث الموسيقى';

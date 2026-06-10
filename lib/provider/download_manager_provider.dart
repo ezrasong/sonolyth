@@ -6,8 +6,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/spotiflac/download_settings.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
+import 'package:sonolyth/provider/youtube_engine/youtube_engine.dart';
 import 'package:sonolyth/services/logger/logger.dart';
 import 'package:sonolyth/services/spotiflac/native_flac_downloader.dart';
+import 'package:sonolyth/services/spotiflac/providers/youtube_provider.dart';
 
 enum DownloadStatus {
   queued,
@@ -174,7 +176,13 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
       }
 
       final settings = await ref.read(spotiFlacDownloadSettingsProvider.future);
-      final providers = settings.enabledProviders;
+      // The YouTube fallback needs the active engine, which is Riverpod-scoped
+      // (depends on the user's chosen client engine), so inject it here.
+      final youtubeEngine = ref.read(youtubeEngineProvider);
+      final providers = settings.enabledProviders
+          .map((p) =>
+              p is YouTubeProvider ? YouTubeProvider(engine: youtubeEngine) : p)
+          .toList();
       final downloadLocation =
           ref.read(userPreferencesProvider).downloadLocation;
 
@@ -189,8 +197,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
 
       _setStatus(task.track, DownloadStatus.completed);
     } catch (e, stack) {
-      final wasCancelled = e is DioException &&
-          CancelToken.isCancel(e);
+      final wasCancelled = e is DioException && CancelToken.isCancel(e);
       _setStatus(
         task.track,
         wasCancelled ? DownloadStatus.canceled : DownloadStatus.failed,

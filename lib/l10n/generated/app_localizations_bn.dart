@@ -724,29 +724,6 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'যদি আপনি সমস্ত ট্র্যাকগুলি একসঙ্গে ডাউনলোড করেন, তবে আপনি নিশ্চিতভাবে সঙ্গীত চুরি করছেন এবং সৃষ্টিশীল সমাজে ক্ষতি দিচ্ছেন। আমি আশা করি আপনি এটা সম্পর্কে জানেন। সর্বদা, শিল্পীদের কঠিন পরিশ্রমকে সম্মান করতে চেষ্টা করুন এবং সমর্থন করুন';
-
-  @override
-  String get download_ip_ban_warning =>
-      'তথ্যবিশ্বস্ত করে নেওয়া যায় যে, আপনার IP ঠিকানাটি YouTube দ্বারা স্থানান্তরিত করা হতে পারে যখন সাধারন থেকে বেশি ডাউনলোড অনুরোধ হয়। IP ব্লকের মাধ্যমে আপনি কমপক্ষে ২-৩ মাস ধরে (ঐ IP ডিভাইস থেকে) YouTube ব্যবহার করতে পারবেন না। এবং Sonolyth কোনও দায়িত্ব সম্পর্কে দায়িত্ব বহন করে না যদি এটি ঘটে।';
-
-  @override
-  String get by_clicking_accept_terms =>
-      '\'গ্রহণ\' ক্লিক করে আপনি নিম্নলিখিত শর্তাদি স্বীকার করছেন:';
-
-  @override
-  String get download_agreement_1 => 'আমি জানি আমি সঙ্গীত চুরি করছি। আমি খারাপ';
-
-  @override
-  String get download_agreement_2 =>
-      'আমি কেবলমাত্র তাদের কাজ কেনার জন্য অর্থ নেই কিন্তু যেখানে প্রয়োজন সেখানে আমি শিল্পীদের সমর্থন করব।';
-
-  @override
-  String get download_agreement_3 =>
-      'আমি সম্পূর্ণরূপে জানি যে আমার IP YouTube-তে ব্লক হতে পারে এবং আমি Sonolyth বা তার মালিকানাধীন কোনও দায়িত্ব পেতে পারিনি আমার বর্তমান ক্রিয়াটি দ্বারা সৃষ্ট দুর্ঘটনা করার জন্য';
-
-  @override
   String get decline => 'অগ্রায়ন করুন';
 
   @override
@@ -873,13 +850,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get restore_defaults => 'ডিফল্ট সেটিংস পুনরুদ্ধার করুন';
 
   @override
-  String get download_music_format => 'গান ডাউনলোডের বিন্যাস';
-
-  @override
   String get streaming_music_format => 'গান স্ট্রিমিং এর বিন্যাস';
-
-  @override
-  String get download_music_quality => 'গান ডাউনলোডের মান';
 
   @override
   String get streaming_music_quality => 'গান স্ট্রিমিং এর মান';

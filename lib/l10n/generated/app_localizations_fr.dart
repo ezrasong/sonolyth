@@ -730,30 +730,6 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'Si vous téléchargez toutes les pistes en vrac, vous violez clairement les droits d\'auteur de la musique et vous causez des dommages à la société créative de la musique. J\'espère que vous en êtes conscient. Essayez toujours de respecter et de soutenir le travail acharné des artistes.';
-
-  @override
-  String get download_ip_ban_warning =>
-      'Au fait, votre adresse IP peut être bloquée sur YouTube en raison d\'une demande excessive de téléchargements par rapport à la normale. Le blocage de l\'IP signifie que vous ne pourrez pas utiliser YouTube (même si vous êtes connecté) pendant au moins 2 à 3 mois à partir de cet appareil IP. Et Sonolyth ne peut être tenu responsable si cela se produit.';
-
-  @override
-  String get by_clicking_accept_terms =>
-      'En cliquant sur \'accepter\', vous acceptez les conditions suivantes :';
-
-  @override
-  String get download_agreement_1 =>
-      'Je sais que je pirate de la musique. Je suis méchant(e).';
-
-  @override
-  String get download_agreement_2 =>
-      'Je soutiendrai l\'artiste autant que possible et je ne fais cela que parce que je n\'ai pas d\'argent pour acheter leur art.';
-
-  @override
-  String get download_agreement_3 =>
-      'Je suis parfaitement conscient(e) que mon adresse IP peut être bloquée sur YouTube et je ne tiens pas Sonolyth ni ses propriétaires/contributeurs responsables de tout accident causé par mon action actuelle.';
-
-  @override
   String get decline => 'Refuser';
 
   @override
@@ -880,13 +856,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get restore_defaults => 'Restaurer les valeurs par défaut';
 
   @override
-  String get download_music_format => 'Format de téléchargement de musique';
-
-  @override
   String get streaming_music_format => 'Format de streaming de musique';
-
-  @override
-  String get download_music_quality => 'Qualité de téléchargement de musique';
 
   @override
   String get streaming_music_quality => 'Qualité de streaming de musique';

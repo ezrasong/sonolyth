@@ -5,11 +5,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sonolyth/services/spotiflac/providers/deezer_provider.dart';
 import 'package:sonolyth/services/spotiflac/providers/qobuz_provider.dart';
 import 'package:sonolyth/services/spotiflac/providers/spotiflac_provider.dart';
+import 'package:sonolyth/services/spotiflac/providers/youtube_provider.dart';
 
 /// All download providers Sonolyth ships natively, in default priority order.
+/// YouTube is intentionally last — it's the lossy audio-only fallback used only
+/// when no lossless provider has the track.
 final allSpotiFlacProviders = <SpotiFlacProvider>[
   QobuzProvider(),
   DeezerProvider(),
+  YouTubeProvider(),
 ];
 
 const _prefsKey = "spotiflac-download-settings";

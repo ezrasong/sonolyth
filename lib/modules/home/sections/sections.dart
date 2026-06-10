@@ -6,7 +6,10 @@ import 'package:sonolyth/components/fallbacks/error_box.dart';
 import 'package:sonolyth/components/fallbacks/no_default_metadata_plugin.dart';
 import 'package:sonolyth/components/horizontal_playbutton_card_view/horizontal_playbutton_card_view.dart';
 import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/metadata_plugin/browse/sections.dart';
+import 'package:sonolyth/provider/metadata_plugin/core/auth.dart';
+import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
 import 'package:sonolyth/provider/metadata_plugin/utils/common.dart';
 import 'package:sonolyth/services/metadata/errors/exceptions.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
@@ -57,10 +60,26 @@ class HomePageBrowseSection extends HookConsumerWidget {
     }
 
     if (browseSections.hasError) {
+      // When the default metadata plugin supports auth but the user isn't
+      // signed in, the failure is almost always an auth error — surface a
+      // "Log in" button instead of a generic "something went wrong".
+      final pluginConfig = ref.watch(metadataPluginsProvider).asData?.value;
+      final supportsAuth = pluginConfig?.defaultMetadataPluginConfig?.abilities
+              .contains(PluginAbilities.authentication) ??
+          false;
+      final isAuthenticated =
+          ref.watch(metadataPluginAuthenticatedProvider).asData?.value ?? false;
+      final pluginSnapshot = ref.watch(metadataPluginProvider);
+
       return SliverFillRemaining(
         child: Center(
           child: ErrorBox(
             error: browseSections.error!,
+            onLogin: supportsAuth && !isAuthenticated
+                ? () async {
+                    await pluginSnapshot.asData?.value?.auth.authenticate();
+                  }
+                : null,
             onRetry: () {
               ref.invalidate(metadataPluginBrowseSectionsProvider);
             },

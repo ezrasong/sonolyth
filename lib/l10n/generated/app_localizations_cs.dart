@@ -720,29 +720,6 @@ class AppLocalizationsCs extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'Pokud stáhnete všechny skladby najednou, pirátíte tím hudbu a škodíte kreativní společnosti hudby. Doufám, že jste si toho vědomi. Vždy se snažte respektovat a podporovat tvrdou práci umělců';
-
-  @override
-  String get download_ip_ban_warning =>
-      'Mimochodem, vaše IP může být na YouTube zablokována kvůli nadměrným požadavkům na stahování. Blokování IP znamená, že nemůžete používat YouTube (i když jste přihlášeni) alespoň 2-3 měsíce ze zařízení s touto IP. A Sonolyth nenese žádnou odpovědnost, pokud se to někdy stane';
-
-  @override
-  String get by_clicking_accept_terms =>
-      'Kliknutím na \'přijmout\' souhlasíte s následujícími podmínkami:';
-
-  @override
-  String get download_agreement_1 => 'Vím, že pirátím hudbu. Jsem špatný';
-
-  @override
-  String get download_agreement_2 =>
-      'Budu podporovat umělce, kdekoliv to bude možné, a dělám to jen proto, že nemám peníze na koupi jejich umění';
-
-  @override
-  String get download_agreement_3 =>
-      'Jsem si naprosto vědom toho, že moje IP může být na YouTube zablokována a nenesu žádnou odpovědnost za nehody způsobené mým současným jednáním';
-
-  @override
   String get decline => 'Odmítnout';
 
   @override
@@ -869,13 +846,7 @@ class AppLocalizationsCs extends AppLocalizations {
   String get restore_defaults => 'Obnovit výchozí';
 
   @override
-  String get download_music_format => 'Formát stahování hudby';
-
-  @override
   String get streaming_music_format => 'Formát streamování hudby';
-
-  @override
-  String get download_music_quality => 'Kvalita stahování hudby';
 
   @override
   String get streaming_music_quality => 'Kvalita streamování hudby';

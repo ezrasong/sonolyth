@@ -714,27 +714,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      '全曲の一括ダウンロードは明らかに音楽への海賊行為であり、音楽を生み出す共同体に損害を与えるでしょう。気づいてほしい。アーティストの多大な努力に敬意を払い、支援するようにしてください';
-
-  @override
-  String get download_ip_ban_warning =>
-      'また、通常よりも過剰なダウンロード要求があれば、YouTubeはあなたのIPをブロックします。つまりそのIPの端末からは、少なくとも2-3か月の間、（ログインしても）YouTubeを利用できなくなりす。そうなっても Sonolyth は一切の責任を負いません';
-
-  @override
-  String get by_clicking_accept_terms => '「同意する」のクリックにより、以下への同意となります:';
-
-  @override
-  String get download_agreement_1 => 'ええ、音楽への海賊行為だ。私はよくない';
-
-  @override
-  String get download_agreement_2 => '芸術作品を買うお金がないのでそうするしかないが、アーティストをできる限り支援する';
-
-  @override
-  String get download_agreement_3 =>
-      '私のIPがYouTubeにブロックされることがあると完全に把握した。私のこの行動により起きたどんな事故も、Sonolyth やその所有者/貢献者に責任はありません。';
-
-  @override
   String get decline => '同意しない';
 
   @override
@@ -861,13 +840,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get restore_defaults => '設定を初期化';
 
   @override
-  String get download_music_format => '音楽ダウンロード形式';
-
-  @override
   String get streaming_music_format => '音楽ストリーミング形式';
-
-  @override
-  String get download_music_quality => '音楽ダウンロード品質';
 
   @override
   String get streaming_music_quality => '音楽ストリーミング品質';

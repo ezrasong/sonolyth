@@ -9,15 +9,23 @@ import 'package:sonolyth/extensions/context.dart';
 class ErrorBox extends StatelessWidget {
   final Object error;
   final VoidCallback? onRetry;
+
+  /// When provided, the error is treated as a "not logged in" error: a primary
+  /// "Log in" button is shown and the message points the user at signing in.
+  final VoidCallback? onLogin;
+
   const ErrorBox({
     super.key,
     required this.error,
     this.onRetry,
+    this.onLogin,
   });
 
   @override
   Widget build(BuildContext context) {
-    final visibleMessage = _friendlyErrorMessage(error);
+    final visibleMessage = onLogin != null
+        ? "You're not signed in to your music source. Log in to load this section."
+        : _friendlyErrorMessage(error);
 
     // Make a monospace error log view. Make sure it's only 4 lines
     return ConstrainedBox(
@@ -50,9 +58,17 @@ class ErrorBox extends StatelessWidget {
                 ),
               ),
               // Show a dialog with full log and a retry button as well
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
                 children: [
+                  if (onLogin != null)
+                    Button.primary(
+                      leading: const Icon(SonolythIcons.login),
+                      onPressed: onLogin,
+                      child: Text(context.l10n.login),
+                    ),
                   Button.text(
                     leading: const Icon(SonolythIcons.logs),
                     onPressed: () {

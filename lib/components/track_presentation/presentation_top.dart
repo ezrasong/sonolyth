@@ -7,7 +7,6 @@ import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/heart_button/heart_button.dart';
 import 'package:sonolyth/components/image/universal_image.dart';
-import 'package:sonolyth/components/dialogs/confirm_download_dialog.dart';
 import 'package:sonolyth/components/track_presentation/presentation_props.dart';
 import 'package:sonolyth/components/track_presentation/use_action_callbacks.dart';
 import 'package:sonolyth/components/track_presentation/use_is_user_playlist.dart';
@@ -15,7 +14,9 @@ import 'package:sonolyth/extensions/constrains.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/extensions/string.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:media_kit/media_kit.dart' show PlaylistMode;
 import 'package:sonolyth/modules/playlist/playlist_create_dialog.dart';
+import 'package:sonolyth/provider/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/download_manager_provider.dart';
 import 'package:sonolyth/services/audio_player/audio_player.dart';
 
@@ -42,9 +43,8 @@ class TrackPresentationTopSection extends HookConsumerWidget {
 
     // Wide screens keep the artwork beside the title; on phones it becomes a
     // large centred hero (Spotify-style), so it can take more of the width.
-    final imageDimension = isWide
-        ? 200.0
-        : (mediaQuery.width * 0.56).clamp(160.0, 260.0);
+    final imageDimension =
+        isWide ? 200.0 : (mediaQuery.width * 0.56).clamp(160.0, 260.0);
 
     final (:isLoading, :isActive, :onPlay, :onShuffle, :onAddToQueue) =
         useActionCallbacks(ref);
@@ -54,13 +54,6 @@ class TrackPresentationTopSection extends HookConsumerWidget {
     final downloader = ref.read(downloadManagerProvider.notifier);
 
     Future<void> onDownloadAll() async {
-      final confirmed = await showDialog<bool>(
-            context: context,
-            builder: (context) => const ConfirmDownloadDialog(),
-          ) ??
-          false;
-      if (!confirmed) return;
-
       final tracks = options.tracks.isEmpty
           ? await options.pagination.onFetchAll()
           : options.tracks;
@@ -126,6 +119,35 @@ class TrackPresentationTopSection extends HookConsumerWidget {
       ),
     );
 
+    final loopMode = ref.watch(audioPlayerProvider.select((s) => s.loopMode));
+    final repeatButton = Tooltip(
+      tooltip: TooltipContainer(
+        child: Text(
+          loopMode == PlaylistMode.single
+              ? context.l10n.loop_track
+              : context.l10n.repeat_playlist,
+        ),
+      ).call,
+      child: IconButton.ghost(
+        icon: Icon(
+          loopMode == PlaylistMode.single
+              ? SonolythIcons.repeatOne
+              : SonolythIcons.repeat,
+          color: loopMode != PlaylistMode.none
+              ? context.theme.colorScheme.primary
+              : null,
+        ),
+        shape: ButtonShape.circle,
+        onPressed: () => audioPlayer.setLoopMode(
+          switch (loopMode) {
+            PlaylistMode.loop => PlaylistMode.single,
+            PlaylistMode.single => PlaylistMode.none,
+            PlaylistMode.none => PlaylistMode.loop,
+          },
+        ),
+      ),
+    );
+
     final playButton = Tooltip(
       tooltip: TooltipContainer(
         child: isActive && playing
@@ -134,7 +156,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
       ).call,
       child: IconButton.primary(
         shape: ButtonShape.circle,
-        size: ButtonSize.large,
+        size: isWide ? ButtonSize.large : const ButtonSize(1.3),
         icon: switch ((isActive, isLoading)) {
           (true, false) => Icon(
               playing ? SonolythIcons.pause : SonolythIcons.play,
@@ -225,6 +247,9 @@ class TrackPresentationTopSection extends HookConsumerWidget {
       if (editButton != null) editButton,
       queueButton,
     ];
+    // Split point used on phones to seat the Play button dead-centre, with the
+    // secondary icons balanced to either side of it.
+    final secondaryLeftCount = (secondaryActions.length / 2).ceil();
 
     final artwork = Container(
       height: imageDimension * scale,
@@ -241,6 +266,9 @@ class TrackPresentationTopSection extends HookConsumerWidget {
         image: decorationImage,
       ),
     );
+
+    final cleanedDescription =
+        options.description?.unescapeHtml().cleanHtml().trim();
 
     final titleBlock = Column(
       mainAxisSize: MainAxisSize.min,
@@ -265,9 +293,11 @@ class TrackPresentationTopSection extends HookConsumerWidget {
             fontWeight: FontWeight.w800,
           ),
         ),
-        if (options.description != null)
+        // Only render a description when there's actually one — an empty string
+        // would otherwise reserve a blank line and open a dead gap.
+        if (cleanedDescription != null && cleanedDescription.isNotEmpty)
           AutoSizeText(
-            options.description!.unescapeHtml().cleanHtml(),
+            cleanedDescription,
             maxLines: 2,
             minFontSize: 12,
             maxFontSize: 14,
@@ -348,22 +378,22 @@ class TrackPresentationTopSection extends HookConsumerWidget {
         : Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: 18 * scale,
+            spacing: 14 * scale,
             children: [
               Center(child: artwork),
               titleBlock,
               if (ownerRow != null) ownerRow,
+              // Play sits dead-centre, flanked by shuffle (left) and repeat
+              // (right); the secondary icons split evenly to the outer edges so
+              // there's an equal number of controls on each side.
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                    child: Row(
-                      spacing: 2 * scale,
-                      children: secondaryActions,
-                    ),
-                  ),
+                  ...secondaryActions.take(secondaryLeftCount),
                   shuffleButton,
-                  Gap(4 * scale),
                   playButton,
+                  repeatButton,
+                  ...secondaryActions.skip(secondaryLeftCount),
                 ],
               ),
             ],
@@ -381,7 +411,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
               Container(
                 padding: EdgeInsets.fromLTRB(
                   16 * scale,
-                  (isWide ? 40 : 28) * scale,
+                  (isWide ? 40 : 22) * scale,
                   16 * scale,
                   20 * scale,
                 ),

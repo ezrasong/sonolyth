@@ -722,30 +722,6 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'यदि आप सभी ट्रैक्स को बल्क में डाउनलोड करते हैं, तो आप स्पष्ट रूप से संगीत की अवैध नकली बना रहे हैं और संगीत के रचनात्मक समाज को क्षति पहुंचा रहे हैं। मुझे आशा है कि आप इसके बारे में जागरूक हैं। हमेशा कोशिश करें कि कलाकार के मेहनत का सम्मान और समर्थन करें।';
-
-  @override
-  String get download_ip_ban_warning =>
-      'बाहरी डाउनलोड अनुरोधों के कारण आपका आईपी YouTube पर अधिक से अधिक ब्लॉक हो सकता है। आईपी ब्लॉक का अर्थ है कि आप उसी आईपी उपकरण से कम से कम 2-3 महीनों तक YouTube का उपयोग नहीं कर सकेंगे (यदि आप लॉग इन हैं तो भी)। और स्पोट्यूब किसी भी जिम्मेदारी को नहीं उठाता है अगर ऐसा कभी होता है।';
-
-  @override
-  String get by_clicking_accept_terms =>
-      '\'स्वीकार\' पर क्लिक करके आप निम्नलिखित शर्तों से सहमत होते हैं:';
-
-  @override
-  String get download_agreement_1 =>
-      'मुझे पता है कि मैं संगीत की अवैध नकली बना रहा हूं। मैं बुरा हूं';
-
-  @override
-  String get download_agreement_2 =>
-      'मैं कलाकार का समर्थन करूंगा जहां भी मुझे संभव हो और मैं केवल इसल  िए ऐसा कर रहा हूं क्योंकि मेरे पास उनकी कला खरीदने के लिए पैसे नहीं हैं।';
-
-  @override
-  String get download_agreement_3 =>
-      'मैं पूरी तरह से जागरूक हूं कि मेरा आईपी YouTube पर ब्लॉक हो सकता है और मैं स्पोट्यूब या उसके मालिकों / सहयोगियों को किसी भी दुर्घटना के लिए जिम्मेदार नहीं मानता।';
-
-  @override
   String get decline => 'इनकार करें';
 
   @override
@@ -872,13 +848,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get restore_defaults => 'डिफ़ॉल्ट सेटिंग्स को बहाल करें';
 
   @override
-  String get download_music_format => 'संगीत डाउनलोड प्रारूप';
-
-  @override
   String get streaming_music_format => 'संगीत स्ट्रीमिंग प्रारूप';
-
-  @override
-  String get download_music_quality => 'संगीत डाउनलोड गुणवत्ता';
 
   @override
   String get streaming_music_quality => 'संगीत स्ट्रीमिंग गुणवत्ता';

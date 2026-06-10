@@ -724,30 +724,6 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String get download_warning =>
-      'Jika Anda mengunduh semua Lagu secara massal, Anda jelas membajak Musik & menyebabkan kerusakan pada masyarakat kreatif Musik. Saya harap Anda menyadari hal ini. Selalu berusaha menghormati & mendukung kerja keras Artis';
-
-  @override
-  String get download_ip_ban_warning =>
-      'BTW, IP Anda bisa diblokir di YouTube karena permintaan unduhan yang berlebihan dari biasanya. Blokir IP berarti Anda tidak dapat menggunakan YouTube (meskipun Anda masuk) setidaknya selama 2-3 bulan dari perangkat IP tersebut. Dan Sonolyth tidak bertanggung jawab jika hal ini terjadi';
-
-  @override
-  String get by_clicking_accept_terms =>
-      'Dengan mengklik \'terima\' Anda menyetujui ketentuan berikut:';
-
-  @override
-  String get download_agreement_1 =>
-      'Saya tahu saya membajak Musik. Saya buruk';
-
-  @override
-  String get download_agreement_2 =>
-      'Saya akan mendukung Artis di mana pun saya bisa dan saya melakukan ini hanya karena saya tidak punya uang untuk membeli karya seni mereka';
-
-  @override
-  String get download_agreement_3 =>
-      'Saya sepenuhnya menyadari bahwa IP saya dapat diblokir di YouTube & saya tidak menganggap Sonolyth atau pemilik/kontributornya bertanggung jawab atas kecelakaan apa pun yang disebabkan oleh tindakan saya saat ini';
-
-  @override
   String get decline => 'Menolak';
 
   @override
@@ -874,13 +850,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get restore_defaults => 'Kembalikan semula';
 
   @override
-  String get download_music_format => 'Format unduh musik';
-
-  @override
   String get streaming_music_format => 'Format streaming musik';
-
-  @override
-  String get download_music_quality => 'Kualitas unduh musik';
 
   @override
   String get streaming_music_quality => 'Kualitas streaming musik';

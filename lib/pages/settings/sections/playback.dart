@@ -97,37 +97,10 @@ class SettingsPlaybackSection extends HookConsumerWidget {
               sourcePresetsNotifier.setSelectedStreamingQualityIndex(value);
             },
           ),
-          AdaptiveSelectTile(
-            secondary: const Icon(SonolythIcons.plugin),
-            title: Text(context.l10n.download_music_format),
-            value: sourcePresets.selectedDownloadingContainerIndex,
-            options: [
-              for (final MapEntry(:key, value: preset)
-                  in sourcePresets.presets.asMap().entries)
-                SelectItemButton(value: key, child: Text(preset.name)),
-            ],
-            onChanged: (value) {
-              if (value == null) return;
-              sourcePresetsNotifier.setSelectedDownloadingContainerIndex(value);
-            },
-          ),
-          AdaptiveSelectTile(
-            secondary: const Icon(SonolythIcons.audioQuality),
-            title: Text(context.l10n.download_music_quality),
-            value: sourcePresets.selectedStreamingQualityIndex,
-            options: [
-              for (final MapEntry(:key, value: quality) in sourcePresets
-                  .presets[sourcePresets.selectedDownloadingContainerIndex]
-                  .qualities
-                  .asMap()
-                  .entries)
-                SelectItemButton(value: key, child: Text(quality.toString())),
-            ],
-            onChanged: (value) {
-              if (value == null) return;
-              sourcePresetsNotifier.setSelectedStreamingQualityIndex(value);
-            },
-          ),
+          // NOTE: the old "Download music format/quality" presets were removed —
+          // they only configured the legacy audio-source downloader. Native
+          // downloads now pick their own format per provider (FLAC for
+          // Qobuz/Deezer, M4A for the YouTube fallback); see Settings > Downloads.
         ],
         ListTile(
           title: Text(context.l10n.cache_music),
