@@ -3,7 +3,7 @@ description: Open source extensible music streaming platform and app, based on B
 
 publish_to: "none"
 
-version: 5.1.2+45
+version: 5.2.0+46
 
 homepage: https://github.com/ezrasong/sonolyth
 repository: https://github.com/ezrasong/sonolyth
@@ -27,6 +27,7 @@ dependencies:
     git:
       path: packages/desktop_webview_window
       url: https://github.com/KRTirtho/flutter-plugins.git
+  crypto: ^3.0.3
   device_info_plus: ^11.1.1
   dio: ^5.4.3+1
   disable_battery_optimization:
@@ -42,6 +43,7 @@ dependencies:
   envied: ^1.0.0
   file_picker: 10.3.3
   file_selector: ^1.0.3
+  pointycastle: ^3.9.1
   fluentui_system_icons: ^1.1.234
   flutter:
     sdk: flutter

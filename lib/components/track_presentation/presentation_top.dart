@@ -13,6 +13,7 @@ import 'package:sonolyth/components/track_presentation/use_action_callbacks.dart
 import 'package:sonolyth/components/track_presentation/use_is_user_playlist.dart';
 import 'package:sonolyth/extensions/constrains.dart';
 import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/extensions/string.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/modules/playlist/playlist_create_dialog.dart';
 import 'package:sonolyth/provider/download_manager_provider.dart';
@@ -27,6 +28,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
     final options = TrackPresentationOptions.of(context);
     final scale = context.theme.scaling;
     final isUserPlaylist = useIsUserPlaylist(ref, options.collectionId);
+    final isWide = mediaQuery.mdAndUp;
     final collectionLabel = switch (options.collection) {
       SonolythSimpleAlbumObject() => "Album",
       SonolythSimplePlaylistObject() => "Playlist",
@@ -38,7 +40,11 @@ class TrackPresentationTopSection extends HookConsumerWidget {
       fit: BoxFit.cover,
     );
 
-    final imageDimension = mediaQuery.mdAndUp ? 200 : 120;
+    // Wide screens keep the artwork beside the title; on phones it becomes a
+    // large centred hero (Spotify-style), so it can take more of the width.
+    final imageDimension = isWide
+        ? 200.0
+        : (mediaQuery.width * 0.56).clamp(160.0, 260.0);
 
     final (:isLoading, :isActive, :onPlay, :onShuffle, :onAddToQueue) =
         useActionCallbacks(ref);
@@ -78,118 +84,112 @@ class TrackPresentationTopSection extends HookConsumerWidget {
       );
     }
 
-    final playbackActions = Row(
-      spacing: 8 * scale,
-      children: [
-        Tooltip(
-          tooltip: TooltipContainer(
-            child: Text(context.l10n.download_all),
-          ).call,
-          child: IconButton.outline(
-            icon: const Icon(SonolythIcons.download),
-            shape: ButtonShape.circle,
-            enabled: !options.pagination.isLoading,
-            onPressed: onDownloadAll,
-          ),
-        ),
-        Tooltip(
-          tooltip: TooltipContainer(
-            child: Text(context.l10n.shuffle_playlist),
-          ).call,
-          child: IconButton.ghost(
-            icon: isLoading
-                ? const Center(
-                    child:
-                        CircularProgressIndicator(onSurface: false, size: 20),
-                  )
-                : const Icon(SonolythIcons.shuffle),
-            shape: ButtonShape.circle,
-            enabled: !isLoading && !isActive,
-            onPressed: onShuffle,
-          ),
-        ),
-        if (mediaQuery.width <= 320)
-          Tooltip(
-            tooltip: TooltipContainer(
-              child: Text(context.l10n.add_to_queue),
-            ).call,
-            child: IconButton.secondary(
-              icon: const Icon(SonolythIcons.queueAdd),
-              shape: ButtonShape.circle,
-              enabled: !isLoading && !isActive,
-              onPressed: onAddToQueue,
-            ),
-          )
-        else
-          IconButton.ghost(
-            icon: const Icon(SonolythIcons.queueAdd),
-            shape: ButtonShape.circle,
-            enabled: !isLoading && !isActive,
-            onPressed: onAddToQueue,
-          ),
-        Tooltip(
-          tooltip: TooltipContainer(
-            child: isActive && playing
-                ? Text(context.l10n.pause)
-                : Text(context.l10n.play),
-          ).call,
-          child: IconButton.primary(
-            shape: ButtonShape.circle,
-            icon: switch ((isActive, isLoading)) {
-              (true, false) => Icon(
-                  playing ? SonolythIcons.pause : SonolythIcons.play,
-                ),
-              (false, true) => const Center(
-                  child: CircularProgressIndicator(onSurface: true, size: 18),
-                ),
-              _ => const Icon(SonolythIcons.play),
-            },
-            // When this collection is already playing, the button toggles
-            // pause/resume instead of being disabled.
-            onPressed: isActive
-                ? () =>
-                    playing ? audioPlayer.pause() : audioPlayer.resume()
-                : onPlay,
-            enabled: !isLoading,
-          ),
-        ),
-      ],
+    // ---- Individual action buttons, composed differently per layout ----
+
+    final downloadButton = Tooltip(
+      tooltip: TooltipContainer(
+        child: Text(context.l10n.download_all),
+      ).call,
+      child: IconButton.ghost(
+        icon: const Icon(SonolythIcons.download),
+        shape: ButtonShape.circle,
+        enabled: !options.pagination.isLoading,
+        onPressed: onDownloadAll,
+      ),
     );
 
-    final additionalActions = Row(
-      spacing: 8 * scale,
-      children: [
-        if (isUserPlaylist)
-          IconButton.outline(
-            size: ButtonSize.small,
-            icon: const Icon(SonolythIcons.edit),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return PlaylistCreateDialog(
-                    playlistId: options.collectionId,
-                    trackIds: options.tracks.map((e) => e.id).toList(),
-                  );
-                },
-              );
-            },
-          ),
-        if (options.shareUrl != null)
-          Tooltip(
+    final shuffleButton = Tooltip(
+      tooltip: TooltipContainer(
+        child: Text(context.l10n.shuffle_playlist),
+      ).call,
+      child: IconButton.ghost(
+        icon: isLoading
+            ? const Center(
+                child: CircularProgressIndicator(onSurface: false, size: 20),
+              )
+            : const Icon(SonolythIcons.shuffle),
+        shape: ButtonShape.circle,
+        enabled: !isLoading && !isActive,
+        onPressed: onShuffle,
+      ),
+    );
+
+    final queueButton = Tooltip(
+      tooltip: TooltipContainer(
+        child: Text(context.l10n.add_to_queue),
+      ).call,
+      child: IconButton.ghost(
+        icon: const Icon(SonolythIcons.queueAdd),
+        shape: ButtonShape.circle,
+        enabled: !isLoading && !isActive,
+        onPressed: onAddToQueue,
+      ),
+    );
+
+    final playButton = Tooltip(
+      tooltip: TooltipContainer(
+        child: isActive && playing
+            ? Text(context.l10n.pause)
+            : Text(context.l10n.play),
+      ).call,
+      child: IconButton.primary(
+        shape: ButtonShape.circle,
+        size: ButtonSize.large,
+        icon: switch ((isActive, isLoading)) {
+          (true, false) => Icon(
+              playing ? SonolythIcons.pause : SonolythIcons.play,
+            ),
+          (false, true) => const Center(
+              child: CircularProgressIndicator(onSurface: true, size: 18),
+            ),
+          _ => const Icon(SonolythIcons.play),
+        },
+        // When this collection is already playing, the button toggles
+        // pause/resume instead of being disabled.
+        onPressed: isActive
+            ? () => playing ? audioPlayer.pause() : audioPlayer.resume()
+            : onPlay,
+        enabled: !isLoading,
+      ),
+    );
+
+    final editButton = isUserPlaylist
+        ? Tooltip(
+            tooltip: TooltipContainer(
+              child: Text(context.l10n.edit),
+            ).call,
+            child: IconButton.ghost(
+              icon: const Icon(SonolythIcons.edit),
+              shape: ButtonShape.circle,
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return PlaylistCreateDialog(
+                      playlistId: options.collectionId,
+                      trackIds: options.tracks.map((e) => e.id).toList(),
+                    );
+                  },
+                );
+              },
+            ),
+          )
+        : null;
+
+    final shareButton = options.shareUrl == null
+        ? null
+        : Tooltip(
             tooltip: TooltipContainer(
               child: Text(context.l10n.share),
             ).call,
-            child: IconButton.outline(
+            child: IconButton.ghost(
               icon: const Icon(SonolythIcons.share),
-              size: ButtonSize.small,
+              shape: ButtonShape.circle,
               onPressed: () async {
                 await Clipboard.setData(
                   ClipboardData(text: options.shareUrl!),
                 );
-
                 if (!context.mounted) return;
-
                 showToast(
                   context: context,
                   location: ToastLocation.topRight,
@@ -204,33 +204,184 @@ class TrackPresentationTopSection extends HookConsumerWidget {
                 );
               },
             ),
-          ),
-        if (options.onHeart != null)
-          HeartButton(
+          );
+
+    final heartButton = options.onHeart == null
+        ? null
+        : HeartButton(
             isLiked: options.isLiked,
             tooltip: options.isLiked
                 ? context.l10n.remove_from_favorites
                 : context.l10n.save_as_favorite,
-            variance: ButtonVariance.outline,
-            size: ButtonSize.small,
+            variance: ButtonVariance.ghost,
             onPressed: options.onHeart,
+          );
+
+    // Secondary (non-play) icons, shared across layouts.
+    final secondaryActions = <Widget>[
+      if (heartButton != null) heartButton,
+      downloadButton,
+      if (shareButton != null) shareButton,
+      if (editButton != null) editButton,
+      queueButton,
+    ];
+
+    final artwork = Container(
+      height: imageDimension * scale,
+      width: imageDimension * scale,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6 * scale),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(140),
+            blurRadius: 32,
+            offset: const Offset(0, 14),
+          ),
+        ],
+        image: decorationImage,
+      ),
+    );
+
+    final titleBlock = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 6 * scale,
+      children: [
+        Text(
+          collectionLabel,
+          style: context.theme.typography.small.copyWith(
+            color: context.theme.colorScheme.mutedForeground,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        AutoSizeText(
+          options.title,
+          maxLines: 2,
+          minFontSize: isWide ? 28 : 24,
+          maxFontSize: isWide ? 54 : 34,
+          overflow: TextOverflow.ellipsis,
+          style: context.theme.typography.h1.copyWith(
+            color: context.theme.colorScheme.foreground,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        if (options.description != null)
+          AutoSizeText(
+            options.description!.unescapeHtml().cleanHtml(),
+            maxLines: 2,
+            minFontSize: 12,
+            maxFontSize: 14,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: context.theme.colorScheme.mutedForeground,
+              fontSize: 14,
+            ),
           ),
       ],
     );
 
+    final ownerRow = options.owner == null
+        ? null
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (options.ownerImage != null)
+                Avatar(
+                  initials: options.owner?[0] ?? "U",
+                  provider: UniversalImage.imageProvider(
+                    options.ownerImage!,
+                  ),
+                  size: 22 * scale,
+                ),
+              if (options.ownerImage != null) const Gap(8),
+              Flexible(
+                child: Text(
+                  options.owner!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: context.theme.colorScheme.foreground,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ).small(),
+              ),
+            ],
+          );
+
+    final header = isWide
+        // Wide screens (tablet/desktop): artwork beside the title, controls
+        // in a row beneath — matches the desktop player.
+        ? Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 20 * scale,
+            children: [
+              Row(
+                spacing: 18 * scale,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  artwork,
+                  Flexible(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 10 * scale,
+                      children: [
+                        titleBlock,
+                        if (ownerRow != null) ownerRow,
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                spacing: 8 * scale,
+                children: [
+                  playButton,
+                  ...secondaryActions,
+                ],
+              ),
+            ],
+          )
+        // Phones: large centred artwork, left-aligned title/owner/description,
+        // then an action bar with secondary icons on the left and shuffle +
+        // a prominent Play on the right (Spotify-style).
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: 18 * scale,
+            children: [
+              Center(child: artwork),
+              titleBlock,
+              if (ownerRow != null) ownerRow,
+              Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      spacing: 2 * scale,
+                      children: secondaryActions,
+                    ),
+                  ),
+                  shuffleButton,
+                  Gap(4 * scale),
+                  playButton,
+                ],
+              ),
+            ],
+          );
+
     return SliverMainAxisGroup(
       slivers: [
-        if (mediaQuery.mdAndUp) SliverGap(16 * scale),
+        if (isWide) SliverGap(16 * scale),
         SliverPadding(
           padding: EdgeInsets.symmetric(
-            horizontal: (mediaQuery.mdAndUp ? 16 : 8.0) * scale,
+            horizontal: (isWide ? 16 : 16.0) * scale,
           ),
           sliver: SliverList.list(
             children: [
               Container(
                 padding: EdgeInsets.fromLTRB(
                   16 * scale,
-                  40 * scale,
+                  (isWide ? 40 : 28) * scale,
                   16 * scale,
                   20 * scale,
                 ),
@@ -244,121 +395,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
                     ],
                   ),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: 20 * scale,
-                  children: [
-                    Row(
-                      spacing: 18 * scale,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Container(
-                          height: imageDimension * scale,
-                          width: imageDimension * scale,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(4 * scale),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withAlpha(120),
-                                blurRadius: 24,
-                                offset: const Offset(0, 12),
-                              ),
-                            ],
-                            image: decorationImage,
-                          ),
-                        ),
-                        Flexible(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                collectionLabel,
-                                style: context.theme.typography.small.copyWith(
-                                  color: context.theme.colorScheme.foreground,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              AutoSizeText(
-                                options.title,
-                                maxLines: 2,
-                                minFontSize: 28,
-                                maxFontSize: mediaQuery.mdAndUp ? 54 : 34,
-                                overflow: TextOverflow.ellipsis,
-                                style: context.theme.typography.h1.copyWith(
-                                  color: context.theme.colorScheme.foreground,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              if (options.description != null)
-                                AutoSizeText(
-                                  options.description!,
-                                  maxLines: 2,
-                                  minFontSize: 12,
-                                  maxFontSize: 14,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: context
-                                        .theme.colorScheme.mutedForeground,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              const Gap(8),
-                              Flex(
-                                // Vertical (phone) layout must stay
-                                // left-aligned with the title above it;
-                                // centering only makes sense horizontally.
-                                crossAxisAlignment: mediaQuery.smAndUp
-                                    ? CrossAxisAlignment.center
-                                    : CrossAxisAlignment.start,
-                                direction: mediaQuery.smAndUp
-                                    ? Axis.horizontal
-                                    : Axis.vertical,
-                                spacing: 8 * scale,
-                                children: [
-                                  if (options.owner != null)
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (options.ownerImage != null)
-                                          Avatar(
-                                            initials: options.owner?[0] ?? "U",
-                                            provider:
-                                                UniversalImage.imageProvider(
-                                              options.ownerImage!,
-                                            ),
-                                            size: 20 * scale,
-                                          ),
-                                        if (options.ownerImage != null)
-                                          const Gap(6),
-                                        Flexible(
-                                          child: Text(
-                                            options.owner!,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              color: context
-                                                  .theme.colorScheme.foreground,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ).small(),
-                                        ),
-                                      ],
-                                    ),
-                                  additionalActions,
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: playbackActions,
-                    ),
-                  ],
-                ),
+                child: header,
               ),
             ],
           ),

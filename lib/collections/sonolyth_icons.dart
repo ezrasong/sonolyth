@@ -57,6 +57,7 @@ abstract class SonolythIcons {
   static const angleRight = FeatherIcons.chevronRight;
   static const angleLeft = FeatherIcons.chevronLeft;
   static const angleDown = FeatherIcons.chevronDown;
+  static const angleUp = FeatherIcons.chevronUp;
   static const shoppingBag = FeatherIcons.shoppingBag;
   static const screenSearch = Icons.screen_search_desktop_outlined;
   static const save = FeatherIcons.save;

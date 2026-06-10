@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/modules/metadata_plugins/plugin_update_available_dialog.dart';
 import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
 import 'package:sonolyth/provider/metadata_plugin/updater/update_checker.dart';
@@ -22,20 +23,40 @@ void useGlobalSubscriptions(WidgetRef ref) {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       ServiceUtils.checkForUpdates(context, ref);
 
-      final pluginUpdate =
-          await ref.read(metadataPluginUpdateCheckerProvider.future);
+      // Check both the default metadata and audio-source plugins for updates
+      // on launch and offer them one after another.
+      final pluginConfig = await ref.read(metadataPluginsProvider.future);
 
-      if (pluginUpdate != null) {
-        final pluginConfig = await ref.read(metadataPluginsProvider.future);
-        if (context.mounted) {
-          showDialog(
-            context: context,
-            builder: (context) => MetadataPluginUpdateAvailableDialog(
-              plugin: pluginConfig.defaultMetadataPluginConfig!,
-              update: pluginUpdate,
-            ),
-          );
-        }
+      Future<void> offerUpdate(
+        PluginUpdateAvailable? update,
+        PluginConfiguration? plugin,
+      ) async {
+        if (update == null || plugin == null || !context.mounted) return;
+        await showDialog(
+          context: context,
+          builder: (context) => MetadataPluginUpdateAvailableDialog(
+            plugin: plugin,
+            update: update,
+          ),
+        );
+      }
+
+      final metadataUpdate =
+          await ref.read(metadataPluginUpdateCheckerProvider.future);
+      await offerUpdate(
+        metadataUpdate,
+        pluginConfig.defaultMetadataPluginConfig,
+      );
+
+      final audioSourceUpdate =
+          await ref.read(audioSourcePluginUpdateCheckerProvider.future);
+      // Skip when the audio source is the same plugin already offered above.
+      if (pluginConfig.defaultAudioSourcePluginConfig !=
+          pluginConfig.defaultMetadataPluginConfig) {
+        await offerUpdate(
+          audioSourceUpdate,
+          pluginConfig.defaultAudioSourcePluginConfig,
+        );
       }
     });
 

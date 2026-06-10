@@ -15,7 +15,7 @@ import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/modules/metadata_plugins/installed_plugin.dart';
 import 'package:sonolyth/modules/metadata_plugins/plugin_repository.dart';
-import 'package:sonolyth/modules/spotiflac/extension_registry_section.dart';
+import 'package:sonolyth/modules/spotiflac/download_providers_section.dart';
 import 'package:sonolyth/provider/metadata_plugin/core/repositories.dart';
 import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
 import 'package:file_picker/file_picker.dart';
@@ -243,14 +243,14 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
                     TabItem(child: Text("All")),
                     TabItem(child: Text("Metadata")),
                     TabItem(child: Text("Audio Source")),
-                    TabItem(child: Text("Extensions")),
+                    TabItem(child: Text("Downloads")),
                   ],
                 ),
               ),
               const SliverGap(12),
               if (tabState.value == 3) ...[
                 const SliverToBoxAdapter(
-                  child: SpotiFlacExtensionRegistrySection(),
+                  child: SpotiFlacDownloadProvidersSection(),
                 ),
                 const SliverGap(20),
               ] else ...[

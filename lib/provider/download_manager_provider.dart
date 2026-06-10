@@ -4,8 +4,10 @@ import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/spotiflac/download_settings.dart';
+import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 import 'package:sonolyth/services/logger/logger.dart';
-import 'package:sonolyth/services/spotiflac/spotiflac_downloader.dart';
+import 'package:sonolyth/services/spotiflac/native_flac_downloader.dart';
 
 enum DownloadStatus {
   queued,
@@ -14,6 +16,11 @@ enum DownloadStatus {
   failed,
   canceled,
 }
+
+/// Fixed scale pushed onto [DownloadTask.downloadedBytesStream]; the UI divides
+/// by [DownloadTask.totalSizeBytes] to get a 0..1 ratio, and the native
+/// downloader reports fractional progress rather than byte counts.
+const _progressScale = 1000000;
 
 class DownloadTask {
   final SonolythFullTrackObject track;
@@ -79,6 +86,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
         track: track,
         status: DownloadStatus.queued,
         cancelToken: CancelToken(),
+        totalSizeBytes: _progressScale,
       ),
     ];
 
@@ -100,16 +108,9 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
             track: e,
             status: DownloadStatus.queued,
             cancelToken: CancelToken(),
+            totalSizeBytes: _progressScale,
           )),
     ];
-
-    if (collectionUrl?.trim().isNotEmpty == true) {
-      _startCollectionDownload(
-        collectionUrl!.trim(),
-        newTracks,
-      ); // No await should be invoked to avoid stuck UI
-      return;
-    }
 
     _startDownloading(); // No await should be invoked to avoid stuck UI
   }
@@ -123,9 +124,11 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
   }
 
   void cancel(SonolythFullTrackObject track) {
-    if (state.firstWhereOrNull((e) => e.track.id == track.id)?.status ==
-        DownloadStatus.failed) {
-      return;
+    final task = state.firstWhereOrNull((e) => e.track.id == track.id);
+    if (task == null || task.status == DownloadStatus.failed) return;
+    if (task.status == DownloadStatus.downloading &&
+        !task.cancelToken.isCancelled) {
+      task.cancelToken.cancel();
     }
     _setStatus(track, DownloadStatus.canceled);
   }
@@ -142,63 +145,59 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
   void _setStatus(SonolythFullTrackObject track, DownloadStatus status) {
     state = state.map((e) {
       if (e.track.id == track.id) {
-        if ((status == DownloadStatus.canceled) && e.cancelToken.isCancelled) {
-          e.cancelToken.cancel();
+        // A re-queued task needs a fresh cancel token; the old one may have
+        // been cancelled on a prior failed/cancelled attempt.
+        if (status == DownloadStatus.queued && e.cancelToken.isCancelled) {
+          return e.copyWith(status: status, cancelToken: CancelToken());
         }
-
         return e.copyWith(status: status);
       }
       return e;
     }).toList();
   }
 
-  bool _isShowingDialog = false;
+  void _emitProgress(SonolythFullTrackObject track, double progress) {
+    final task = state.firstWhereOrNull((e) => e.track.id == track.id);
+    if (task == null || task._downloadedBytesStreamController.isClosed) return;
+    task._downloadedBytesStreamController
+        .add((progress.clamp(0, 1) * _progressScale).toInt());
+  }
 
   Future<void> _downloadTrack(DownloadTask task) async {
     try {
       _setStatus(task.track, DownloadStatus.downloading);
-      if (task.cancelToken.isCancelled) {
+      final task0 = state.firstWhereOrNull((e) => e.track.id == task.track.id);
+      if (task0 == null) return;
+      if (task0.cancelToken.isCancelled) {
         _setStatus(task.track, DownloadStatus.canceled);
         return;
       }
 
-      final opened = await SpotiFlacDownloader.downloadTrack(task.track);
-      if (opened) {
-        _setStatus(task.track, DownloadStatus.completed);
-      } else {
-        _setStatus(task.track, DownloadStatus.failed);
-      }
-    } catch (e, stack) {
-      _setStatus(task.track, DownloadStatus.failed);
-      AppLogger.reportError(e, stack);
-    }
-  }
+      final settings = await ref.read(spotiFlacDownloadSettingsProvider.future);
+      final providers = settings.enabledProviders;
+      final downloadLocation =
+          ref.read(userPreferencesProvider).downloadLocation;
 
-  Future<void> _startCollectionDownload(
-    String collectionUrl,
-    List<SonolythFullTrackObject> tracks,
-  ) async {
-    if (_isShowingDialog) return;
-    _isShowingDialog = true;
-    try {
-      for (final track in tracks) {
-        _setStatus(track, DownloadStatus.downloading);
-      }
+      await nativeFlacDownloader.download(
+        track: task.track,
+        providers: providers,
+        downloadDirectory: downloadLocation,
+        qualityByProvider: settings.qualityByProvider,
+        cancelToken: task0.cancelToken,
+        onProgress: (progress) => _emitProgress(task.track, progress),
+      );
 
-      final opened = await SpotiFlacDownloader.downloadUrl(collectionUrl);
-      for (final track in tracks) {
-        _setStatus(
-          track,
-          opened ? DownloadStatus.completed : DownloadStatus.failed,
-        );
-      }
+      _setStatus(task.track, DownloadStatus.completed);
     } catch (e, stack) {
-      for (final track in tracks) {
-        _setStatus(track, DownloadStatus.failed);
+      final wasCancelled = e is DioException &&
+          CancelToken.isCancel(e);
+      _setStatus(
+        task.track,
+        wasCancelled ? DownloadStatus.canceled : DownloadStatus.failed,
+      );
+      if (!wasCancelled) {
+        AppLogger.reportError(e, stack);
       }
-      AppLogger.reportError(e, stack);
-    } finally {
-      _isShowingDialog = false;
     }
   }
 
@@ -210,8 +209,8 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
         try {
           await _downloadTrack(task);
         } finally {
-          // After completion, check for more queued tasks
-          // Ignore errors of the prior task to allow next task to complete
+          // After completion, check for more queued tasks.
+          // Ignore errors of the prior task to allow next task to complete.
           await _startDownloading();
         }
       }
