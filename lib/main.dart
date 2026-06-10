@@ -113,6 +113,15 @@ Future<void> main(List<String> rawArgs) async {
 
     final database = AppDatabase();
 
+    // One-time: drop audio-source matches picked by the old MV-biased
+    // ranking so the song-over-music-video preference applies everywhere.
+    if (KVStoreService.sharedPreferences.getBool('sourceMatchRankingV2') !=
+        true) {
+      await database.sourceMatchTable.delete().go();
+      await KVStoreService.sharedPreferences
+          .setBool('sourceMatchRankingV2', true);
+    }
+
     if (kIsDesktop) {
       await localNotifier.setup(appName: "Sonolyth");
       await WindowManagerTools.initialize();

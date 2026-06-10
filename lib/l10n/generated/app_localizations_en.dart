@@ -672,7 +672,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get key => 'Key';
 
   @override
-  String get duration => 'Duration (s)';
+  String get duration => 'Duration';
 
   @override
   String get tempo => 'Tempo (BPM)';

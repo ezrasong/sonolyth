@@ -17,8 +17,15 @@ import 'package:spotube/services/metadata/errors/exceptions.dart';
 import 'package:spotube/services/sourced_track/exceptions.dart';
 import 'package:spotube/utils/service_utils.dart';
 
-final officialMusicRegex = RegExp(
-  r"official\s(video|audio|music\svideo|lyric\svideo|visualizer)",
+/// Markers of audio-first uploads (what we want to play).
+final audioOnlyRegex = RegExp(
+  r"(official\s*audio|audio\s*only|\blyrics?\b|lyric\s*video|visuali[sz]er|color\s*coded|topic)",
+  caseSensitive: false,
+);
+
+/// Markers of music videos (intros/outros/dialogue — avoid by default).
+final musicVideoRegex = RegExp(
+  r"(\bm\/v\b|\bmv\b|music\s*video|official\s*video|video\s*oficial|뮤직비디오|\bteaser\b|\btrailer\b)",
   caseSensitive: false,
 );
 
@@ -109,39 +116,48 @@ class SourcedTrack extends BasicSourcedTrack {
     return results
         .map((sibling) {
           int score = 0;
+          final title = sibling.title.toLowerCase();
 
           for (final artist in track.artists) {
-            final isSameChannelArtist =
-                sibling.artists.any((a) => a.toLowerCase() == artist.name);
+            final artistName = artist.name.toLowerCase();
+            final channel = sibling.artists.map((a) => a.toLowerCase());
 
-            if (isSameChannelArtist) {
-              score += 1;
+            if (channel.any((a) => a == artistName)) {
+              score += 2;
+            }
+            // YouTube's auto-generated "<artist> - Topic" channels are pure
+            // audio uploads — the best possible match.
+            if (channel.any((a) => a.contains("$artistName - topic"))) {
+              score += 4;
             }
 
-            final titleContainsArtist =
-                sibling.title.toLowerCase().contains(artist.name.toLowerCase());
-
-            if (titleContainsArtist) {
+            if (title.contains(artistName)) {
               score += 1;
             }
           }
 
-          final titleContainsTrackName =
-              sibling.title.toLowerCase().contains(track.name.toLowerCase());
-
-          final hasOfficialFlag =
-              officialMusicRegex.hasMatch(sibling.title.toLowerCase());
-
-          if (titleContainsTrackName) {
+          if (title.contains(track.name.toLowerCase())) {
             score += 3;
           }
 
-          if (hasOfficialFlag) {
-            score += 1;
+          // Prefer the song itself over the music video: MVs carry intros,
+          // outros and dialogue, so audio-marked uploads win and duration
+          // closeness to the actual track is weighted heavily.
+          if (audioOnlyRegex.hasMatch(title)) {
+            score += 3;
+          }
+          if (musicVideoRegex.hasMatch(title)) {
+            score -= 4;
           }
 
-          if (hasOfficialFlag && titleContainsTrackName) {
-            score += 2;
+          final durationDiffSeconds =
+              (sibling.duration.inSeconds - track.durationMs ~/ 1000).abs();
+          if (durationDiffSeconds <= 3) {
+            score += 6;
+          } else if (durationDiffSeconds <= 10) {
+            score += 3;
+          } else if (durationDiffSeconds > 45) {
+            score -= 4;
           }
 
           return (sibling: sibling, score: score);
@@ -161,17 +177,9 @@ class SourcedTrack extends BasicSourcedTrack {
       throw MetadataPluginException.noDefaultAudioSourcePlugin();
     }
 
-    final videoResults = <SpotubeAudioSourceMatchObject>[];
-
     final searchResults = await audioSource.audioSource.matches(query);
 
-    if (ServiceUtils.onlyContainsEnglish(query.name)) {
-      videoResults.addAll(searchResults);
-    } else {
-      videoResults.addAll(rankResults(searchResults, query));
-    }
-
-    return videoResults.toSet().toList();
+    return rankResults(searchResults, query).toSet().toList();
   }
 
   Future<SourcedTrack> copyWithSibling() async {

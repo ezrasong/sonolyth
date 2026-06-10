@@ -120,7 +120,9 @@ class SpotifyPlaylistEndpoint {
             artists: [trackArtists[0]]
           },
           artists: trackArtists,
-          duration_ms: item["duration"]?["totalMilliseconds"],
+          // fetchPlaylist exposes the length as trackDuration (older payloads
+          // used duration) — missing this made every track show 0:00.
+          duration_ms: item["trackDuration"]?["totalMilliseconds"] ?? item["duration"]?["totalMilliseconds"],
           external_urls: {
             spotify: "https://open.spotify.com/track/${item["uri"].split(":").last}",
           },

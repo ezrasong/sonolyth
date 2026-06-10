@@ -79,11 +79,18 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
         );
         await remotePlayback.setShuffle(true);
       } else {
+        if (initialTracks.isEmpty) return;
         // Shuffle the track list in Dart instead of using mpv's shuffle:
         // playback starts instantly on a deterministic index, so the player
         // modal always shows the track that's actually playing (mpv's
         // playlist shuffle reorders out from under the reported index).
-        final shuffledTracks = [...initialTracks]..shuffle();
+        // The page already prewarmed the first track's audio source, so
+        // starting with it (and shuffling everything behind it) makes
+        // shuffle-play start without the sourcing delay.
+        final shuffledTracks = [
+          initialTracks.first,
+          ...initialTracks.skip(1).toList()..shuffle(),
+        ];
         await playlistNotifier.load(
           shuffledTracks,
           autoPlay: true,

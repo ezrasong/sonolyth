@@ -203,7 +203,7 @@
   "valence": "Valence",
   "popularity": "Popularity",
   "key": "Key",
-  "duration": "Duration (s)",
+  "duration": "Duration",
   "tempo": "Tempo (BPM)",
   "mode": "Mode",
   "time_signature": "Time Signature",
