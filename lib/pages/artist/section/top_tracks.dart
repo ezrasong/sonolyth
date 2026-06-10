@@ -6,6 +6,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spotube/collections/fake.dart';
 import 'package:spotube/collections/spotube_icons.dart';
 import 'package:spotube/components/dialogs/select_device_dialog.dart';
+import 'package:spotube/components/fallbacks/error_box.dart';
 import 'package:spotube/components/track_tile/track_tile.dart';
 import 'package:spotube/extensions/context.dart';
 import 'package:spotube/models/connect/connect.dart';
@@ -35,7 +36,12 @@ class ArtistPageTopTracks extends HookConsumerWidget {
     if (topTracksQuery.hasError) {
       return SliverToBoxAdapter(
         child: Center(
-          child: Text(topTracksQuery.error.toString()),
+          child: ErrorBox(
+            error: topTracksQuery.error!,
+            onRetry: () => ref.invalidate(
+              metadataPluginArtistTopTracksProvider(artistId),
+            ),
+          ),
         ),
       );
     }

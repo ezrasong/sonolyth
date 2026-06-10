@@ -7,11 +7,12 @@ class BlurCard extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: const Color(0xff181818),
-        border: Border.all(color: const Color(0xff2a2a2a)),
+        color: colorScheme.card,
+        border: Border.all(color: colorScheme.border),
         borderRadius: BorderRadius.circular(8),
       ),
       constraints: const BoxConstraints(maxWidth: 400),

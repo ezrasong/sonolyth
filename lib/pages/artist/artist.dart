@@ -5,6 +5,7 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spotube/components/button/back_button.dart';
+import 'package:spotube/components/fallbacks/error_box.dart';
 
 import 'package:spotube/components/titlebar/titlebar.dart';
 import 'package:spotube/extensions/context.dart';
@@ -65,7 +66,14 @@ class ArtistPage extends HookConsumerWidget {
           },
           child: Builder(builder: (context) {
             if (artistQuery.hasError && artistQuery.asData?.value == null) {
-              return Center(child: Text(artistQuery.error.toString()));
+              return Center(
+                child: ErrorBox(
+                  error: artistQuery.error!,
+                  onRetry: () => ref.invalidate(
+                    metadataPluginArtistProvider(artistId),
+                  ),
+                ),
+              );
             }
             return Skeletonizer(
               enabled: artistQuery.isLoading,

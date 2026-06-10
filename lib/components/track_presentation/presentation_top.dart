@@ -223,13 +223,13 @@ class TrackPresentationTopSection extends HookConsumerWidget {
                   16 * scale,
                   20 * scale,
                 ),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0xff303030),
-                      Color(0xff121212),
+                      context.theme.colorScheme.muted,
+                      context.theme.colorScheme.background,
                     ],
                   ),
                 ),
@@ -264,7 +264,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
                               Text(
                                 collectionLabel,
                                 style: context.theme.typography.small.copyWith(
-                                  color: Colors.white,
+                                  color: context.theme.colorScheme.foreground,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -275,7 +275,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
                                 maxFontSize: mediaQuery.mdAndUp ? 54 : 34,
                                 overflow: TextOverflow.ellipsis,
                                 style: context.theme.typography.h1.copyWith(
-                                  color: Colors.white,
+                                  color: context.theme.colorScheme.foreground,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -287,7 +287,8 @@ class TrackPresentationTopSection extends HookConsumerWidget {
                                   maxFontSize: 14,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    color: Colors.white.withAlpha(178),
+                                    color: context
+                                        .theme.colorScheme.mutedForeground,
                                     fontSize: 14,
                                   ),
                                 ),
@@ -319,8 +320,9 @@ class TrackPresentationTopSection extends HookConsumerWidget {
                                             options.owner!,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              color: Colors.white,
+                                            style: TextStyle(
+                                              color: context
+                                                  .theme.colorScheme.foreground,
                                               fontWeight: FontWeight.w600,
                                             ),
                                           ).small(),

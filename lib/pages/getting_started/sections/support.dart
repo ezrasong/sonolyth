@@ -33,10 +33,10 @@ class GettingStartedScreenSupportSection extends HookConsumerWidget {
                   ],
                 ),
                 const Gap(16),
-                const Text(
+                Text(
                   "Install a provider to search, stream, and download music.",
                   style: TextStyle(
-                    color: Color(0xffb3b3b3),
+                    color: Theme.of(context).colorScheme.mutedForeground,
                     height: 1.35,
                   ),
                 ),

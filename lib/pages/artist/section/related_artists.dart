@@ -1,5 +1,8 @@
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+import 'package:spotube/collections/fake.dart';
+import 'package:spotube/components/fallbacks/error_box.dart';
 import 'package:spotube/modules/artist/artist_card.dart';
 import 'package:spotube/provider/metadata_plugin/artist/related.dart';
 
@@ -38,11 +41,33 @@ class ArtistPageRelatedArtists extends ConsumerWidget {
         ),
       AsyncError(:final error) => SliverToBoxAdapter(
           child: Center(
-            child: Text(error.toString()),
+            child: ErrorBox(
+              error: error,
+              onRetry: () => ref.invalidate(
+                metadataPluginArtistRelatedArtistsProvider(artistId),
+              ),
+            ),
           ),
         ),
-      _ => const SliverToBoxAdapter(
-          child: Center(child: CircularProgressIndicator()),
+      _ => SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          sliver: SliverGrid.builder(
+            itemCount: 4,
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 200,
+              mainAxisExtent: 250,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 0.8,
+            ),
+            itemBuilder: (context, index) => Skeletonizer(
+              enabled: true,
+              child: SizedBox(
+                width: 180,
+                child: ArtistCard(FakeData.artist),
+              ),
+            ),
+          ),
         ),
     };
   }

@@ -93,10 +93,10 @@ class _LibraryTopNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = material.Theme.of(context).colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return material.Material(
-      color: const Color(0xff121212),
+      color: colorScheme.background,
       child: SizedBox(
         height: 48,
         child: Row(
@@ -107,8 +107,9 @@ class _LibraryTopNavigation extends StatelessWidget {
                 child: Builder(
                   builder: (context) {
                     final selected = key == selectedIndex;
-                    final foreground =
-                        selected ? Colors.white : Colors.white.withAlpha(180);
+                    final foreground = selected
+                        ? colorScheme.foreground
+                        : colorScheme.mutedForeground;
 
                     return _LibraryTopNavigationItem(
                       label: tile.title,

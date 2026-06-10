@@ -30,8 +30,8 @@ class GettingStartedPageGreetingSection extends HookConsumerWidget {
                   ? context.l10n.freedom_of_music_palm
                   : context.l10n.freedom_of_music,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xffb3b3b3),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.mutedForeground,
                 fontSize: 18,
                 height: 1.35,
               ),

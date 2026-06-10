@@ -17,8 +17,6 @@ import 'package:spotube/provider/user_preferences/user_preferences_provider.dart
 
 final navigationPanelHeight = StateProvider<double>((ref) => 50);
 
-const _spotifyBlack = Color(0xff000000);
-
 class SpotubeNavigationBar extends HookConsumerWidget {
   const SpotubeNavigationBar({
     super.key,
@@ -61,7 +59,7 @@ class SpotubeNavigationBar extends HookConsumerWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 100),
       height: panelHeight + 14,
-      color: _spotifyBlack,
+      color: context.theme.colorScheme.background,
       padding: const EdgeInsets.only(top: 6, bottom: 8),
       child: Row(
         children: [
@@ -100,7 +98,9 @@ class _SpotifyNavigationItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = selected ? Colors.white : Colors.white.withAlpha(150);
+    final colorScheme = context.theme.colorScheme;
+    final foreground =
+        selected ? colorScheme.foreground : colorScheme.mutedForeground;
 
     return material.InkWell(
       onTap: onPressed,
@@ -113,7 +113,7 @@ class _SpotifyNavigationItem extends StatelessWidget {
             Badge(
               isLabelVisible: badgeCount > 0,
               label: Text(badgeCount.toString()),
-              backgroundColor: material.Theme.of(context).colorScheme.primary,
+              backgroundColor: colorScheme.primary,
               child: Icon(icon, color: foreground, size: 23),
             ),
             Text(

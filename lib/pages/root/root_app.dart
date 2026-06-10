@@ -10,6 +10,8 @@ import 'package:spotube/modules/root/spotube_navigation_bar.dart';
 import 'package:spotube/hooks/configurators/use_endless_playback.dart';
 import 'package:spotube/modules/root/use_global_subscriptions.dart';
 import 'package:spotube/provider/glance/glance.dart';
+import 'package:spotube/services/kv_store/kv_store.dart';
+import 'package:spotube/services/logger/logger.dart';
 
 @RoutePage()
 class RootAppPage extends HookConsumerWidget {
@@ -17,7 +19,10 @@ class RootAppPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    const backgroundColor = Color(0xff121212);
+    final backgroundColor = context.theme.colorScheme.background;
+    final systemIconBrightness = context.theme.brightness == Brightness.dark
+        ? Brightness.light
+        : Brightness.dark;
 
     ref.listen(glanceProvider, (_, __) {});
 
@@ -28,12 +33,40 @@ class RootAppPage extends HookConsumerWidget {
       SystemChrome.setSystemUIOverlayStyle(
         SystemUiOverlayStyle(
           statusBarColor: backgroundColor,
-          statusBarIconBrightness: Brightness.light,
-          systemNavigationBarColor: Color(0xff000000),
-          systemNavigationBarIconBrightness: Brightness.light,
+          statusBarIconBrightness: systemIconBrightness,
+          systemNavigationBarColor: backgroundColor,
+          systemNavigationBarIconBrightness: systemIconBrightness,
         ),
       );
       return null;
+    }, [backgroundColor, systemIconBrightness]);
+
+    // Remember the screen the user was on and restore it on next launch.
+    useEffect(() {
+      final router = context.router.root;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final lastRoute = KVStoreService.lastRoutePath;
+        if (lastRoute != null &&
+            lastRoute.isNotEmpty &&
+            lastRoute != "/" &&
+            lastRoute != router.currentPath) {
+          try {
+            await router.navigateNamed(lastRoute);
+          } catch (e, stack) {
+            AppLogger.reportError(e, stack);
+          }
+        }
+      });
+
+      void persistRoute() {
+        final path = router.currentPath;
+        if (path.isEmpty || path == "/") return;
+        KVStoreService.setLastRoutePath(path);
+      }
+
+      router.addListener(persistRoute);
+      return () => router.removeListener(persistRoute);
     }, const []);
 
     final scaffold = MediaQuery.removeViewInsets(

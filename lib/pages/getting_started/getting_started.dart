@@ -71,7 +71,7 @@ class GettingStartedPage extends HookConsumerWidget {
       ],
       floatingHeader: true,
       child: Container(
-        color: const Color(0xff121212),
+        color: Theme.of(context).colorScheme.background,
         child: PageView(
           controller: pageController,
           children: [
