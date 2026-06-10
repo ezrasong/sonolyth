@@ -1,9 +1,9 @@
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/components/ui/button_tile.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/services/audio_player/audio_player.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/ui/button_tile.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/services/audio_player/audio_player.dart';
 
 class ConnectPageLocalDevices extends HookWidget {
   const ConnectPageLocalDevices({super.key});
@@ -46,7 +46,7 @@ class ConnectPageLocalDevices extends HookWidget {
             return ButtonTile(
               selected: selectedDevice == device,
               onPressed: () => audioPlayer.setAudioDevice(device),
-              leading: const Icon(SpotubeIcons.speaker),
+              leading: const Icon(SonolythIcons.speaker),
               title: Text(device.description),
               subtitle: Text(device.name),
             );

@@ -8,7 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:spotube/utils/platform.dart';
+import 'package:sonolyth/utils/platform.dart';
 import 'package:logging/logging.dart' as logging;
 
 final _loggingToLoggerLevel = {

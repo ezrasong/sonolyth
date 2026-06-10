@@ -1,12 +1,12 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/collections/routes.gr.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/components/ui/button_tile.dart';
-import 'package:spotube/modules/connect/local_devices.dart';
-import 'package:spotube/components/titlebar/titlebar.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/provider/connect/clients.dart';
+import 'package:sonolyth/collections/routes.gr.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/ui/button_tile.dart';
+import 'package:sonolyth/modules/connect/local_devices.dart';
+import 'package:sonolyth/components/titlebar/titlebar.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/provider/connect/clients.dart';
 import 'package:auto_route/auto_route.dart';
 
 @RoutePage()
@@ -53,7 +53,7 @@ class ConnectPage extends HookConsumerWidget {
                           device.name;
                   return ButtonTile(
                     selected: selected,
-                    leading: const Icon(SpotubeIcons.monitor),
+                    leading: const Icon(SonolythIcons.monitor),
                     title: Text(device.name),
                     subtitle: selected
                         ? Text(
@@ -63,7 +63,7 @@ class ConnectPage extends HookConsumerWidget {
                         : null,
                     trailing: selected
                         ? IconButton.outline(
-                            icon: const Icon(SpotubeIcons.power),
+                            icon: const Icon(SonolythIcons.power),
                             size: ButtonSize.small,
                             onPressed: () =>
                                 connectClientsNotifier.clearResolvedService(),

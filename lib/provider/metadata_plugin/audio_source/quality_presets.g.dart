@@ -10,7 +10,7 @@ _$AudioSourcePresetsStateImpl _$$AudioSourcePresetsStateImplFromJson(
         Map json) =>
     _$AudioSourcePresetsStateImpl(
       presets: (json['presets'] as List<dynamic>?)
-              ?.map((e) => SpotubeAudioSourceContainerPreset.fromJson(
+              ?.map((e) => SonolythAudioSourceContainerPreset.fromJson(
                   Map<String, dynamic>.from(e as Map)))
               .toList() ??
           const [],

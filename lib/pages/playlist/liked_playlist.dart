@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart' as material;
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:spotube/collections/assets.gen.dart';
-import 'package:spotube/components/track_presentation/presentation_props.dart';
-import 'package:spotube/components/track_presentation/track_presentation.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/pages/playlist/playlist.dart';
-import 'package:spotube/provider/metadata_plugin/library/tracks.dart';
+import 'package:sonolyth/collections/assets.gen.dart';
+import 'package:sonolyth/components/track_presentation/presentation_props.dart';
+import 'package:sonolyth/components/track_presentation/track_presentation.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/pages/playlist/playlist.dart';
+import 'package:sonolyth/provider/metadata_plugin/library/tracks.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:spotube/provider/metadata_plugin/utils/common.dart';
+import 'package:sonolyth/provider/metadata_plugin/utils/common.dart';
 
 @RoutePage()
 class LikedPlaylistPage extends HookConsumerWidget {
   static const name = PlaylistPage.name;
 
-  final SpotubeSimplePlaylistObject playlist;
+  final SonolythSimplePlaylistObject playlist;
   const LikedPlaylistPage({
     super.key,
     required this.playlist,

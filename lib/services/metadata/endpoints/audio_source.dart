@@ -1,6 +1,6 @@
 import 'package:hetu_script/hetu_script.dart';
 import 'package:hetu_script/values.dart';
-import 'package:spotube/models/metadata/metadata.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
 
 class MetadataPluginAudioSourceEndpoint {
   final Hetu hetu;
@@ -10,29 +10,29 @@ class MetadataPluginAudioSourceEndpoint {
       (hetu.fetch("metadataPlugin") as HTInstance).memberGet("audioSource")
           as HTInstance;
 
-  List<SpotubeAudioSourceContainerPreset> get supportedPresets {
+  List<SonolythAudioSourceContainerPreset> get supportedPresets {
     final raw = hetuMetadataAudioSource.memberGet("supportedPresets") as List;
 
     return raw
-        .map((e) => SpotubeAudioSourceContainerPreset.fromJson(e))
+        .map((e) => SonolythAudioSourceContainerPreset.fromJson(e))
         .toList();
   }
 
-  Future<List<SpotubeAudioSourceMatchObject>> matches(
-    SpotubeFullTrackObject track,
+  Future<List<SonolythAudioSourceMatchObject>> matches(
+    SonolythFullTrackObject track,
   ) async {
     final raw = await hetuMetadataAudioSource
         .invoke("matches", positionalArgs: [track.toJson()]) as List;
 
-    return raw.map((e) => SpotubeAudioSourceMatchObject.fromJson(e)).toList();
+    return raw.map((e) => SonolythAudioSourceMatchObject.fromJson(e)).toList();
   }
 
-  Future<List<SpotubeAudioSourceStreamObject>> streams(
-    SpotubeAudioSourceMatchObject match,
+  Future<List<SonolythAudioSourceStreamObject>> streams(
+    SonolythAudioSourceMatchObject match,
   ) async {
     final raw = await hetuMetadataAudioSource
         .invoke("streams", positionalArgs: [match.toJson()]) as List;
 
-    return raw.map((e) => SpotubeAudioSourceStreamObject.fromJson(e)).toList();
+    return raw.map((e) => SonolythAudioSourceStreamObject.fromJson(e)).toList();
   }
 }

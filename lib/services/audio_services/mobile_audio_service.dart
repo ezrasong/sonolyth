@@ -3,13 +3,13 @@ import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
-import 'package:spotube/provider/audio_player/audio_player.dart';
-import 'package:spotube/provider/audio_player/state.dart';
-import 'package:spotube/services/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/audio_player/state.dart';
+import 'package:sonolyth/services/audio_player/audio_player.dart';
 import 'package:media_kit/media_kit.dart' hide Track;
-import 'package:spotube/services/audio_player/playback_state.dart';
-import 'package:spotube/services/logger/logger.dart';
-import 'package:spotube/utils/platform.dart';
+import 'package:sonolyth/services/audio_player/playback_state.dart';
+import 'package:sonolyth/services/logger/logger.dart';
+import 'package:sonolyth/utils/platform.dart';
 
 class MobileAudioService extends BaseAudioHandler {
   AudioSession? session;

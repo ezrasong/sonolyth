@@ -5,16 +5,16 @@ import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:lrc/lrc.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:spotube/models/database/database.dart';
-import 'package:spotube/models/lyrics.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/database/database.dart';
-import 'package:spotube/services/dio/dio.dart';
-import 'package:spotube/services/logger/logger.dart';
+import 'package:sonolyth/models/database/database.dart';
+import 'package:sonolyth/models/lyrics.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/database/database.dart';
+import 'package:sonolyth/services/dio/dio.dart';
+import 'package:sonolyth/services/logger/logger.dart';
 
 class SyncedLyricsNotifier
-    extends FamilyAsyncNotifier<SubtitleSimple, SpotubeTrackObject?> {
-  SpotubeTrackObject get _track => arg!;
+    extends FamilyAsyncNotifier<SubtitleSimple, SonolythTrackObject?> {
+  SonolythTrackObject get _track => arg!;
 
   /// Lyrics credits: [lrclib.net](https://lrclib.net) and their contributors
   /// Thanks for their generous public API
@@ -134,12 +134,12 @@ class SyncedLyricsNotifier
 final syncedLyricsDelayProvider = StateProvider<int>((ref) => 0);
 
 final syncedLyricsProvider = AsyncNotifierProviderFamily<SyncedLyricsNotifier,
-    SubtitleSimple, SpotubeTrackObject?>(
+    SubtitleSimple, SonolythTrackObject?>(
   () => SyncedLyricsNotifier(),
 );
 
 final syncedLyricsMapProvider =
-    FutureProvider.family((ref, SpotubeTrackObject? track) async {
+    FutureProvider.family((ref, SonolythTrackObject? track) async {
   final syncedLyrics = await ref.watch(syncedLyricsProvider(track).future);
 
   final isStaticLyrics =

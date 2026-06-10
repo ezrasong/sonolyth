@@ -4,35 +4,35 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:media_kit/media_kit.dart';
-import 'package:spotube/extensions/list.dart';
-import 'package:spotube/models/database/database.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/audio_player/state.dart';
-import 'package:spotube/provider/blacklist_provider.dart';
-import 'package:spotube/provider/database/database.dart';
-import 'package:spotube/provider/discord_provider.dart';
-import 'package:spotube/provider/server/server.dart';
-import 'package:spotube/provider/server/sourced_track_provider.dart';
-import 'package:spotube/services/audio_player/audio_player.dart';
-import 'package:spotube/services/logger/logger.dart';
+import 'package:sonolyth/extensions/list.dart';
+import 'package:sonolyth/models/database/database.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/audio_player/state.dart';
+import 'package:sonolyth/provider/blacklist_provider.dart';
+import 'package:sonolyth/provider/database/database.dart';
+import 'package:sonolyth/provider/discord_provider.dart';
+import 'package:sonolyth/provider/server/server.dart';
+import 'package:sonolyth/provider/server/sourced_track_provider.dart';
+import 'package:sonolyth/services/audio_player/audio_player.dart';
+import 'package:sonolyth/services/logger/logger.dart';
 
 class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
   BlackListNotifier get _blacklist => ref.read(blacklistProvider.notifier);
 
-  void _assertAllowedTracks(Iterable<SpotubeTrackObject> tracks) {
+  void _assertAllowedTracks(Iterable<SonolythTrackObject> tracks) {
     assert(
       tracks.every(
         (track) =>
-            track is SpotubeFullTrackObject || track is SpotubeLocalTrackObject,
+            track is SonolythFullTrackObject || track is SonolythLocalTrackObject,
       ),
-      'All tracks must be either SpotubeFullTrackObject or SpotubeLocalTrackObject',
+      'All tracks must be either SonolythFullTrackObject or SonolythLocalTrackObject',
     );
   }
 
-  void _assertAllowedTrack(SpotubeTrackObject tracks) {
+  void _assertAllowedTrack(SonolythTrackObject tracks) {
     assert(
-      tracks is SpotubeFullTrackObject || tracks is SpotubeLocalTrackObject,
-      'Track must be either SpotubeFullTrackObject or SpotubeLocalTrackObject',
+      tracks is SonolythFullTrackObject || tracks is SonolythLocalTrackObject,
+      'Track must be either SonolythFullTrackObject or SonolythLocalTrackObject',
     );
   }
 
@@ -49,7 +49,7 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
               loopMode: audioPlayer.loopMode,
               shuffled: audioPlayer.isShuffled,
               collections: <String>[],
-              tracks: const Value(<SpotubeTrackObject>[]),
+              tracks: const Value(<SonolythTrackObject>[]),
               currentIndex: const Value(0),
               id: const Value(0),
             ),
@@ -156,7 +156,7 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
       audioPlayer.playlistStream.listen((playlist) async {
         try {
           final tracks =
-              playlist.medias.map((e) => SpotubeMedia.media(e).track).toList();
+              playlist.medias.map((e) => SonolythMedia.media(e).track).toList();
 
           state = state.copyWith(
             tracks: tracks,
@@ -229,7 +229,7 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
   }
 
   Future<void> addTracksAtFirst(
-    Iterable<SpotubeTrackObject> tracks, {
+    Iterable<SonolythTrackObject> tracks, {
     bool allowDuplicates = false,
   }) async {
     _assertAllowedTracks(tracks);
@@ -254,7 +254,7 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
       final track = addableTracks.elementAt(i);
 
       await audioPlayer.addTrackAt(
-        SpotubeMedia(track),
+        SonolythMedia(track),
         max(state.currentIndex, 0) + i + 1,
       );
     }
@@ -267,7 +267,7 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
     );
   }
 
-  Future<void> addTrack(SpotubeTrackObject track) async {
+  Future<void> addTrack(SonolythTrackObject track) async {
     _assertAllowedTrack(track);
 
     if (_blacklist.contains(track)) return;
@@ -277,7 +277,7 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
       tracks: [...state.tracks, track],
     );
 
-    await audioPlayer.addTrack(SpotubeMedia(track));
+    await audioPlayer.addTrack(SonolythMedia(track));
 
     await _updatePlayerState(
       AudioPlayerStateTableCompanion(
@@ -287,7 +287,7 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
     );
   }
 
-  Future<void> addTracks(Iterable<SpotubeTrackObject> tracks) async {
+  Future<void> addTracks(Iterable<SonolythTrackObject> tracks) async {
     _assertAllowedTracks(tracks);
 
     tracks = _blacklist.filter(tracks).toList();
@@ -296,7 +296,7 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
     );
 
     for (final track in tracks) {
-      await audioPlayer.addTrack(SpotubeMedia(track));
+      await audioPlayer.addTrack(SonolythMedia(track));
     }
 
     await _updatePlayerState(
@@ -351,18 +351,18 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
     );
   }
 
-  bool _compareTracks(SpotubeTrackObject a, SpotubeTrackObject b) {
+  bool _compareTracks(SonolythTrackObject a, SonolythTrackObject b) {
     if (a.runtimeType != b.runtimeType) {
       return false;
     }
 
-    return a is SpotubeLocalTrackObject && b is SpotubeLocalTrackObject
+    return a is SonolythLocalTrackObject && b is SonolythLocalTrackObject
         ? a.path == b.path
         : a.id == b.id;
   }
 
   Future<void> load(
-    List<SpotubeTrackObject> tracks, {
+    List<SonolythTrackObject> tracks, {
     int initialIndex = 0,
     bool autoPlay = false,
   }) async {
@@ -377,10 +377,10 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
     // Giving the initial track a boost so MediaKit won't skip
     // because of timeout
     final intendedActiveTrack = medias.elementAt(initialIndex);
-    if (intendedActiveTrack.track is! SpotubeLocalTrackObject) {
+    if (intendedActiveTrack.track is! SonolythLocalTrackObject) {
       ref.read(
         sourcedTrackProvider(
-          intendedActiveTrack.track as SpotubeFullTrackObject,
+          intendedActiveTrack.track as SonolythFullTrackObject,
         ).future,
       );
     }
@@ -409,7 +409,7 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
   }
 
   Future<void> swapActiveSource() async {
-    if (state.tracks.isEmpty || state.activeTrack is! SpotubeFullTrackObject) {
+    if (state.tracks.isEmpty || state.activeTrack is! SonolythFullTrackObject) {
       return;
     }
 
@@ -440,7 +440,7 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
     );
   }
 
-  Future<void> jumpToTrack(SpotubeTrackObject track) async {
+  Future<void> jumpToTrack(SonolythTrackObject track) async {
     final index =
         state.tracks.toList().indexWhere((element) => element.id == track.id);
     if (index == -1) return;

@@ -25,7 +25,7 @@ mixin _$AudioPlayerState {
   bool get shuffled => throw _privateConstructorUsedError;
   List<String> get collections => throw _privateConstructorUsedError;
   int get currentIndex => throw _privateConstructorUsedError;
-  List<SpotubeTrackObject> get tracks => throw _privateConstructorUsedError;
+  List<SonolythTrackObject> get tracks => throw _privateConstructorUsedError;
 
   /// Serializes this AudioPlayerState to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -49,7 +49,7 @@ abstract class $AudioPlayerStateCopyWith<$Res> {
       bool shuffled,
       List<String> collections,
       int currentIndex,
-      List<SpotubeTrackObject> tracks});
+      List<SonolythTrackObject> tracks});
 }
 
 /// @nodoc
@@ -98,7 +98,7 @@ class _$AudioPlayerStateCopyWithImpl<$Res, $Val extends AudioPlayerState>
       tracks: null == tracks
           ? _value.tracks
           : tracks // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeTrackObject>,
+              as List<SonolythTrackObject>,
     ) as $Val);
   }
 }
@@ -117,7 +117,7 @@ abstract class _$$AudioPlayerStateImplCopyWith<$Res>
       bool shuffled,
       List<String> collections,
       int currentIndex,
-      List<SpotubeTrackObject> tracks});
+      List<SonolythTrackObject> tracks});
 }
 
 /// @nodoc
@@ -164,7 +164,7 @@ class __$$AudioPlayerStateImplCopyWithImpl<$Res>
       tracks: null == tracks
           ? _value._tracks
           : tracks // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeTrackObject>,
+              as List<SonolythTrackObject>,
     ));
   }
 }
@@ -178,7 +178,7 @@ class _$AudioPlayerStateImpl extends _AudioPlayerState {
       required this.shuffled,
       required final List<String> collections,
       this.currentIndex = 0,
-      final List<SpotubeTrackObject> tracks = const []})
+      final List<SonolythTrackObject> tracks = const []})
       : _collections = collections,
         _tracks = tracks,
         super._();
@@ -203,10 +203,10 @@ class _$AudioPlayerStateImpl extends _AudioPlayerState {
   @override
   @JsonKey()
   final int currentIndex;
-  final List<SpotubeTrackObject> _tracks;
+  final List<SonolythTrackObject> _tracks;
   @override
   @JsonKey()
-  List<SpotubeTrackObject> get tracks {
+  List<SonolythTrackObject> get tracks {
     if (_tracks is EqualUnmodifiableListView) return _tracks;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_tracks);
@@ -269,7 +269,7 @@ abstract class _AudioPlayerState extends AudioPlayerState {
       required final bool shuffled,
       required final List<String> collections,
       final int currentIndex,
-      final List<SpotubeTrackObject> tracks}) = _$AudioPlayerStateImpl;
+      final List<SonolythTrackObject> tracks}) = _$AudioPlayerStateImpl;
   _AudioPlayerState._() : super._();
 
   factory _AudioPlayerState.fromJson(Map<String, dynamic> json) =
@@ -286,7 +286,7 @@ abstract class _AudioPlayerState extends AudioPlayerState {
   @override
   int get currentIndex;
   @override
-  List<SpotubeTrackObject> get tracks;
+  List<SonolythTrackObject> get tracks;
 
   /// Create a copy of AudioPlayerState
   /// with the given fields replaced by the non-null parameter values.

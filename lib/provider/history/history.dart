@@ -1,7 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:spotube/models/database/database.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/database/database.dart';
+import 'package:sonolyth/models/database/database.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/database/database.dart';
 
 class PlaybackHistoryActions {
   final Ref ref;
@@ -16,7 +16,7 @@ class PlaybackHistoryActions {
     });
   }
 
-  Future<void> addPlaylists(List<SpotubeSimplePlaylistObject> playlists) async {
+  Future<void> addPlaylists(List<SonolythSimplePlaylistObject> playlists) async {
     await _batchInsertHistoryEntries([
       for (final playlist in playlists)
         HistoryTableCompanion.insert(
@@ -27,7 +27,7 @@ class PlaybackHistoryActions {
     ]);
   }
 
-  Future<void> addAlbums(List<SpotubeSimpleAlbumObject> albums) async {
+  Future<void> addAlbums(List<SonolythSimpleAlbumObject> albums) async {
     await _batchInsertHistoryEntries([
       for (final albums in albums)
         HistoryTableCompanion.insert(
@@ -38,7 +38,7 @@ class PlaybackHistoryActions {
     ]);
   }
 
-  Future<void> addTracks(List<SpotubeTrackObject> tracks) async {
+  Future<void> addTracks(List<SonolythTrackObject> tracks) async {
     assert(
       tracks.every((t) => t.artists.every((a) => a.images != null)),
       'Track artists must have images',
@@ -54,7 +54,7 @@ class PlaybackHistoryActions {
     ]);
   }
 
-  Future<void> addTrack(SpotubeTrackObject track) async {
+  Future<void> addTrack(SonolythTrackObject track) async {
     assert(
       track.artists.every((a) => a.images != null),
       'Track artists must have images',

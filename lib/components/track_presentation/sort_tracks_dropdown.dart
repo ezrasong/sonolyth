@@ -1,8 +1,8 @@
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/pages/library/user_local_tracks/user_local_tracks.dart';
-import 'package:spotube/components/adaptive/adaptive_pop_sheet_list.dart';
-import 'package:spotube/extensions/context.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/pages/library/user_local_tracks/user_local_tracks.dart';
+import 'package:sonolyth/components/adaptive/adaptive_pop_sheet_list.dart';
+import 'package:sonolyth/extensions/context.dart';
 
 class SortTracksDropdown extends StatelessWidget {
   final SortBy? value;
@@ -22,7 +22,7 @@ class SortTracksDropdown extends StatelessWidget {
       ],
       onSelected: onChanged,
       tooltip: context.l10n.sort_tracks,
-      icon: const Icon(SpotubeIcons.sort),
+      icon: const Icon(SonolythIcons.sort),
       items: (context) => [
         AdaptiveMenuButton(
           value: SortBy.none,

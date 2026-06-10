@@ -5,12 +5,12 @@ import 'package:home_widget/home_widget.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:logger/logger.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/audio_player/audio_player.dart';
-import 'package:spotube/provider/server/server.dart';
-import 'package:spotube/services/audio_player/audio_player.dart';
-import 'package:spotube/services/logger/logger.dart';
-import 'package:spotube/utils/platform.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/server/server.dart';
+import 'package:sonolyth/services/audio_player/audio_player.dart';
+import 'package:sonolyth/services/logger/logger.dart';
+import 'package:sonolyth/utils/platform.dart';
 
 @pragma("vm:entry-point")
 Future<void> glanceBackgroundCallback(Uri? data) async {
@@ -71,7 +71,7 @@ Future<void> _updateWidget() async {
   }
 }
 
-Future<void> _sendActiveTrack(SpotubeTrackObject? track) async {
+Future<void> _sendActiveTrack(SonolythTrackObject? track) async {
   if (track == null) {
     await _saveWidgetData("activeTrack", null);
     await _updateWidget();

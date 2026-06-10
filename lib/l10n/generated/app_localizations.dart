@@ -1380,7 +1380,7 @@ abstract class AppLocalizations {
   /// No description provided for @duration.
   ///
   /// In en, this message translates to:
-  /// **'Duration (s)'**
+  /// **'Duration'**
   String get duration;
 
   /// No description provided for @tempo.

@@ -3,13 +3,13 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
-import 'package:spotube/collections/side_bar_tiles.dart';
-import 'package:spotube/models/database/database.dart';
-import 'package:spotube/extensions/constrains.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/modules/root/sidebar/sidebar_footer.dart';
+import 'package:sonolyth/collections/side_bar_tiles.dart';
+import 'package:sonolyth/models/database/database.dart';
+import 'package:sonolyth/extensions/constrains.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/modules/root/sidebar/sidebar_footer.dart';
 
-import 'package:spotube/provider/user_preferences/user_preferences_provider.dart';
+import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 
 class Sidebar extends HookConsumerWidget {
   final Widget child;

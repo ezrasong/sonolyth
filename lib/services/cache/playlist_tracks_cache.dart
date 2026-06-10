@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/services/logger/logger.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/services/logger/logger.dart';
 
 /// Disk cache for playlist track listings so reopening a playlist (or
 /// restarting the app) shows the full track list instantly while a
@@ -19,16 +19,16 @@ abstract class PlaylistTracksCache {
     return File(join(dir.path, '$playlistId.json'));
   }
 
-  static Future<SpotubePaginationResponseObject<SpotubeFullTrackObject>?> read(
+  static Future<SonolythPaginationResponseObject<SonolythFullTrackObject>?> read(
     String playlistId,
   ) async {
     try {
       final file = await _file(playlistId);
       if (!await file.exists()) return null;
       final json = jsonDecode(await file.readAsString());
-      return SpotubePaginationResponseObject.fromJson(
+      return SonolythPaginationResponseObject.fromJson(
         (json as Map).cast<String, Object?>(),
-        (item) => SpotubeFullTrackObject.fromJson(item),
+        (item) => SonolythFullTrackObject.fromJson(item),
       );
     } catch (e, stack) {
       AppLogger.reportError(e, stack);
@@ -38,7 +38,7 @@ abstract class PlaylistTracksCache {
 
   static Future<void> write(
     String playlistId,
-    SpotubePaginationResponseObject<SpotubeFullTrackObject> data,
+    SonolythPaginationResponseObject<SonolythFullTrackObject> data,
   ) async {
     try {
       final file = await _file(playlistId);

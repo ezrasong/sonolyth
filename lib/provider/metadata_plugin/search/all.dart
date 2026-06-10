@@ -1,10 +1,10 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/metadata_plugin/metadata_plugin_provider.dart';
-import 'package:spotube/services/metadata/errors/exceptions.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
+import 'package:sonolyth/services/metadata/errors/exceptions.dart';
 
 final metadataPluginSearchAllProvider =
-    FutureProvider.autoDispose.family<SpotubeSearchResponseObject, String>(
+    FutureProvider.autoDispose.family<SonolythSearchResponseObject, String>(
   (ref, query) async {
     final metadataPlugin = await ref.watch(metadataPluginProvider.future);
 

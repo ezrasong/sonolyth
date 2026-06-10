@@ -1,18 +1,18 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/metadata_plugin/metadata_plugin_provider.dart';
-import 'package:spotube/provider/metadata_plugin/utils/common.dart';
-import 'package:spotube/provider/metadata_plugin/utils/family_paginated.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
+import 'package:sonolyth/provider/metadata_plugin/utils/common.dart';
+import 'package:sonolyth/provider/metadata_plugin/utils/family_paginated.dart';
 
 class MetadataPluginSearchPlaylistsNotifier
-    extends AutoDisposeFamilyPaginatedAsyncNotifier<SpotubeSimplePlaylistObject,
+    extends AutoDisposeFamilyPaginatedAsyncNotifier<SonolythSimplePlaylistObject,
         String> {
   MetadataPluginSearchPlaylistsNotifier() : super();
 
   @override
   fetch(offset, limit) async {
     if (arg.isEmpty) {
-      return SpotubePaginationResponseObject<SpotubeSimplePlaylistObject>(
+      return SonolythPaginationResponseObject<SonolythSimplePlaylistObject>(
         limit: limit,
         nextOffset: null,
         total: 0,
@@ -42,7 +42,7 @@ class MetadataPluginSearchPlaylistsNotifier
 final metadataPluginSearchPlaylistsProvider =
     AutoDisposeAsyncNotifierProviderFamily<
         MetadataPluginSearchPlaylistsNotifier,
-        SpotubePaginationResponseObject<SpotubeSimplePlaylistObject>,
+        SonolythPaginationResponseObject<SonolythSimplePlaylistObject>,
         String>(
   () => MetadataPluginSearchPlaylistsNotifier(),
 );

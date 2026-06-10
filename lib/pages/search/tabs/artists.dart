@@ -4,15 +4,15 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:spotube/collections/fake.dart';
-import 'package:spotube/components/fallbacks/error_box.dart';
-import 'package:spotube/components/waypoint.dart';
-import 'package:spotube/extensions/constrains.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/modules/artist/artist_card.dart';
-import 'package:spotube/modules/search/loading.dart';
-import 'package:spotube/pages/search/search.dart';
-import 'package:spotube/provider/metadata_plugin/search/artists.dart';
+import 'package:sonolyth/collections/fake.dart';
+import 'package:sonolyth/components/fallbacks/error_box.dart';
+import 'package:sonolyth/components/waypoint.dart';
+import 'package:sonolyth/extensions/constrains.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/modules/artist/artist_card.dart';
+import 'package:sonolyth/modules/search/loading.dart';
+import 'package:sonolyth/pages/search/search.dart';
+import 'package:sonolyth/provider/metadata_plugin/search/artists.dart';
 
 class SearchPageArtistsTab extends HookConsumerWidget {
   const SearchPageArtistsTab({super.key});

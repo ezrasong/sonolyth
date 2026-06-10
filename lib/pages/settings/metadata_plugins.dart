@@ -8,20 +8,20 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/components/form/text_form_field.dart';
-import 'package:spotube/components/titlebar/titlebar.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/modules/metadata_plugins/installed_plugin.dart';
-import 'package:spotube/modules/metadata_plugins/plugin_repository.dart';
-import 'package:spotube/modules/spotiflac/extension_registry_section.dart';
-import 'package:spotube/provider/metadata_plugin/core/repositories.dart';
-import 'package:spotube/provider/metadata_plugin/metadata_plugin_provider.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/form/text_form_field.dart';
+import 'package:sonolyth/components/titlebar/titlebar.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/modules/metadata_plugins/installed_plugin.dart';
+import 'package:sonolyth/modules/metadata_plugins/plugin_repository.dart';
+import 'package:sonolyth/modules/spotiflac/extension_registry_section.dart';
+import 'package:sonolyth/provider/metadata_plugin/core/repositories.dart';
+import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:spotube/provider/metadata_plugin/utils/common.dart';
-import 'package:spotube/services/logger/logger.dart';
-import 'package:spotube/utils/platform.dart';
+import 'package:sonolyth/provider/metadata_plugin/utils/common.dart';
+import 'package:sonolyth/services/logger/logger.dart';
+import 'package:sonolyth/utils/platform.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
@@ -136,7 +136,7 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
                                     child: CircularProgressIndicator(
                                         strokeWidth: 2),
                                   )
-                                : const Icon(SpotubeIcons.download),
+                                : const Icon(SonolythIcons.download),
                             enabled: !isLoading.value,
                             onPressed: () async {
                               try {
@@ -167,7 +167,7 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
                                       return SurfaceCard(
                                         child: Basic(
                                           leading: const Icon(
-                                            SpotubeIcons.error,
+                                            SonolythIcons.error,
                                             color: Colors.red,
                                           ),
                                           title: Text(
@@ -192,7 +192,7 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
                           child: Text(context.l10n.upload_plugin_from_file),
                         ).call,
                         child: IconButton.primary(
-                          icon: const Icon(SpotubeIcons.upload),
+                          icon: const Icon(SonolythIcons.upload),
                           onPressed: () async {
                             Uint8List bytes;
 
@@ -346,7 +346,7 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
                               Row(
                                 spacing: 8,
                                 children: [
-                                  const Icon(SpotubeIcons.warning, size: 16),
+                                  const Icon(SonolythIcons.warning, size: 16),
                                   Text(
                                     context.l10n.disclaimer,
                                     style: const TextStyle(

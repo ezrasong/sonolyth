@@ -60,13 +60,13 @@ class $AssetsPluginsGen {
   const $AssetsPluginsGen();
 
   /// Directory path: assets/plugins/spotube-plugin-musicbrainz-listenbrainz
-  $AssetsPluginsSpotubePluginMusicbrainzListenbrainzGen
+  $AssetsPluginsSonolythPluginMusicbrainzListenbrainzGen
       get spotubePluginMusicbrainzListenbrainz =>
-          const $AssetsPluginsSpotubePluginMusicbrainzListenbrainzGen();
+          const $AssetsPluginsSonolythPluginMusicbrainzListenbrainzGen();
 
   /// Directory path: assets/plugins/spotube-plugin-youtube-audio
-  $AssetsPluginsSpotubePluginYoutubeAudioGen get spotubePluginYoutubeAudio =>
-      const $AssetsPluginsSpotubePluginYoutubeAudioGen();
+  $AssetsPluginsSonolythPluginYoutubeAudioGen get spotubePluginYoutubeAudio =>
+      const $AssetsPluginsSonolythPluginYoutubeAudioGen();
 }
 
 class $AssetsImagesLogosGen {
@@ -88,8 +88,8 @@ class $AssetsImagesLogosGen {
   List<AssetGenImage> get values => [dabMusic, invidious, jiosaavn];
 }
 
-class $AssetsPluginsSpotubePluginMusicbrainzListenbrainzGen {
-  const $AssetsPluginsSpotubePluginMusicbrainzListenbrainzGen();
+class $AssetsPluginsSonolythPluginMusicbrainzListenbrainzGen {
+  const $AssetsPluginsSonolythPluginMusicbrainzListenbrainzGen();
 
   /// File path: assets/plugins/spotube-plugin-musicbrainz-listenbrainz/plugin.smplug
   String get plugin =>
@@ -99,8 +99,8 @@ class $AssetsPluginsSpotubePluginMusicbrainzListenbrainzGen {
   List<String> get values => [plugin];
 }
 
-class $AssetsPluginsSpotubePluginYoutubeAudioGen {
-  const $AssetsPluginsSpotubePluginYoutubeAudioGen();
+class $AssetsPluginsSonolythPluginYoutubeAudioGen {
+  const $AssetsPluginsSonolythPluginYoutubeAudioGen();
 
   /// File path: assets/plugins/spotube-plugin-youtube-audio/plugin.smplug
   String get plugin =>

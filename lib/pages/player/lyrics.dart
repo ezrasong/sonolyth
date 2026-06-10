@@ -2,14 +2,14 @@ import 'package:auto_route/annotations.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/components/button/back_button.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/hooks/utils/use_palette_color.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/pages/lyrics/plain_lyrics.dart';
-import 'package:spotube/pages/lyrics/synced_lyrics.dart';
-import 'package:spotube/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/button/back_button.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/hooks/utils/use_palette_color.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/pages/lyrics/plain_lyrics.dart';
+import 'package:sonolyth/pages/lyrics/synced_lyrics.dart';
+import 'package:sonolyth/provider/audio_player/audio_player.dart';
 
 @RoutePage()
 class PlayerLyricsPage extends HookConsumerWidget {
@@ -46,7 +46,7 @@ class PlayerLyricsPage extends HookConsumerWidget {
         AppBar(
           leading: [tabbar],
           trailing: const [
-            BackButton(icon: SpotubeIcons.angleDown),
+            BackButton(icon: SonolythIcons.angleDown),
           ],
         ),
       ],

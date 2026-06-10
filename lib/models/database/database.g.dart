@@ -638,13 +638,13 @@ class $PreferencesTableTable extends PreferencesTable
           .withConverter<CloseBehavior>(
               $PreferencesTableTable.$convertercloseBehavior);
   @override
-  late final GeneratedColumnWithTypeConverter<SpotubeColor, String>
+  late final GeneratedColumnWithTypeConverter<SonolythColor, String>
       accentColorScheme = GeneratedColumn<String>(
               'accent_color_scheme', aliasedName, false,
               type: DriftSqlType.string,
               requiredDuringInsert: false,
               defaultValue: const Constant("android:0xff6750a4"))
-          .withConverter<SpotubeColor>(
+          .withConverter<SonolythColor>(
               $PreferencesTableTable.$converteraccentColorScheme);
   @override
   late final GeneratedColumnWithTypeConverter<LayoutMode, String> layoutMode =
@@ -967,8 +967,8 @@ class $PreferencesTableTable extends PreferencesTable
   static JsonTypeConverter2<CloseBehavior, String, String>
       $convertercloseBehavior =
       const EnumNameConverter<CloseBehavior>(CloseBehavior.values);
-  static TypeConverter<SpotubeColor, String> $converteraccentColorScheme =
-      const SpotubeColorConverter();
+  static TypeConverter<SonolythColor, String> $converteraccentColorScheme =
+      const SonolythColorConverter();
   static JsonTypeConverter2<LayoutMode, String, String> $converterlayoutMode =
       const EnumNameConverter<LayoutMode>(LayoutMode.values);
   static TypeConverter<Locale, String> $converterlocale =
@@ -997,7 +997,7 @@ class PreferencesTableData extends DataClass
   final bool systemTitleBar;
   final bool skipNonMusic;
   final CloseBehavior closeBehavior;
-  final SpotubeColor accentColorScheme;
+  final SonolythColor accentColorScheme;
   final LayoutMode layoutMode;
   final Locale locale;
   final Market market;
@@ -1145,7 +1145,7 @@ class PreferencesTableData extends DataClass
       closeBehavior: $PreferencesTableTable.$convertercloseBehavior
           .fromJson(serializer.fromJson<String>(json['closeBehavior'])),
       accentColorScheme:
-          serializer.fromJson<SpotubeColor>(json['accentColorScheme']),
+          serializer.fromJson<SonolythColor>(json['accentColorScheme']),
       layoutMode: $PreferencesTableTable.$converterlayoutMode
           .fromJson(serializer.fromJson<String>(json['layoutMode'])),
       locale: serializer.fromJson<Locale>(json['locale']),
@@ -1182,7 +1182,7 @@ class PreferencesTableData extends DataClass
       'skipNonMusic': serializer.toJson<bool>(skipNonMusic),
       'closeBehavior': serializer.toJson<String>(
           $PreferencesTableTable.$convertercloseBehavior.toJson(closeBehavior)),
-      'accentColorScheme': serializer.toJson<SpotubeColor>(accentColorScheme),
+      'accentColorScheme': serializer.toJson<SonolythColor>(accentColorScheme),
       'layoutMode': serializer.toJson<String>(
           $PreferencesTableTable.$converterlayoutMode.toJson(layoutMode)),
       'locale': serializer.toJson<Locale>(locale),
@@ -1217,7 +1217,7 @@ class PreferencesTableData extends DataClass
           bool? systemTitleBar,
           bool? skipNonMusic,
           CloseBehavior? closeBehavior,
-          SpotubeColor? accentColorScheme,
+          SonolythColor? accentColorScheme,
           LayoutMode? layoutMode,
           Locale? locale,
           Market? market,
@@ -1421,7 +1421,7 @@ class PreferencesTableCompanion extends UpdateCompanion<PreferencesTableData> {
   final Value<bool> systemTitleBar;
   final Value<bool> skipNonMusic;
   final Value<CloseBehavior> closeBehavior;
-  final Value<SpotubeColor> accentColorScheme;
+  final Value<SonolythColor> accentColorScheme;
   final Value<LayoutMode> layoutMode;
   final Value<Locale> locale;
   final Value<Market> market;
@@ -1555,7 +1555,7 @@ class PreferencesTableCompanion extends UpdateCompanion<PreferencesTableData> {
       Value<bool>? systemTitleBar,
       Value<bool>? skipNonMusic,
       Value<CloseBehavior>? closeBehavior,
-      Value<SpotubeColor>? accentColorScheme,
+      Value<SonolythColor>? accentColorScheme,
       Value<LayoutMode>? layoutMode,
       Value<Locale>? locale,
       Value<Market>? market,
@@ -2637,12 +2637,12 @@ class $AudioPlayerStateTableTable extends AudioPlayerStateTable
           .withConverter<List<String>>(
               $AudioPlayerStateTableTable.$convertercollections);
   @override
-  late final GeneratedColumnWithTypeConverter<List<SpotubeTrackObject>, String>
+  late final GeneratedColumnWithTypeConverter<List<SonolythTrackObject>, String>
       tracks = GeneratedColumn<String>('tracks', aliasedName, false,
               type: DriftSqlType.string,
               requiredDuringInsert: false,
               defaultValue: const Constant("[]"))
-          .withConverter<List<SpotubeTrackObject>>(
+          .withConverter<List<SonolythTrackObject>>(
               $AudioPlayerStateTableTable.$convertertracks);
   static const VerificationMeta _currentIndexMeta =
       const VerificationMeta('currentIndex');
@@ -2726,8 +2726,8 @@ class $AudioPlayerStateTableTable extends AudioPlayerStateTable
       const EnumNameConverter<PlaylistMode>(PlaylistMode.values);
   static TypeConverter<List<String>, String> $convertercollections =
       const StringListConverter();
-  static TypeConverter<List<SpotubeTrackObject>, String> $convertertracks =
-      const SpotubeTrackObjectListConverter();
+  static TypeConverter<List<SonolythTrackObject>, String> $convertertracks =
+      const SonolythTrackObjectListConverter();
 }
 
 class AudioPlayerStateTableData extends DataClass
@@ -2737,7 +2737,7 @@ class AudioPlayerStateTableData extends DataClass
   final PlaylistMode loopMode;
   final bool shuffled;
   final List<String> collections;
-  final List<SpotubeTrackObject> tracks;
+  final List<SonolythTrackObject> tracks;
   final int currentIndex;
   const AudioPlayerStateTableData(
       {required this.id,
@@ -2791,7 +2791,7 @@ class AudioPlayerStateTableData extends DataClass
           .fromJson(serializer.fromJson<String>(json['loopMode'])),
       shuffled: serializer.fromJson<bool>(json['shuffled']),
       collections: serializer.fromJson<List<String>>(json['collections']),
-      tracks: serializer.fromJson<List<SpotubeTrackObject>>(json['tracks']),
+      tracks: serializer.fromJson<List<SonolythTrackObject>>(json['tracks']),
       currentIndex: serializer.fromJson<int>(json['currentIndex']),
     );
   }
@@ -2805,7 +2805,7 @@ class AudioPlayerStateTableData extends DataClass
           $AudioPlayerStateTableTable.$converterloopMode.toJson(loopMode)),
       'shuffled': serializer.toJson<bool>(shuffled),
       'collections': serializer.toJson<List<String>>(collections),
-      'tracks': serializer.toJson<List<SpotubeTrackObject>>(tracks),
+      'tracks': serializer.toJson<List<SonolythTrackObject>>(tracks),
       'currentIndex': serializer.toJson<int>(currentIndex),
     };
   }
@@ -2816,7 +2816,7 @@ class AudioPlayerStateTableData extends DataClass
           PlaylistMode? loopMode,
           bool? shuffled,
           List<String>? collections,
-          List<SpotubeTrackObject>? tracks,
+          List<SonolythTrackObject>? tracks,
           int? currentIndex}) =>
       AudioPlayerStateTableData(
         id: id ?? this.id,
@@ -2880,7 +2880,7 @@ class AudioPlayerStateTableCompanion
   final Value<PlaylistMode> loopMode;
   final Value<bool> shuffled;
   final Value<List<String>> collections;
-  final Value<List<SpotubeTrackObject>> tracks;
+  final Value<List<SonolythTrackObject>> tracks;
   final Value<int> currentIndex;
   const AudioPlayerStateTableCompanion({
     this.id = const Value.absent(),
@@ -2929,7 +2929,7 @@ class AudioPlayerStateTableCompanion
       Value<PlaylistMode>? loopMode,
       Value<bool>? shuffled,
       Value<List<String>>? collections,
-      Value<List<SpotubeTrackObject>>? tracks,
+      Value<List<SonolythTrackObject>>? tracks,
       Value<int>? currentIndex}) {
     return AudioPlayerStateTableCompanion(
       id: id ?? this.id,
@@ -4491,7 +4491,7 @@ typedef $$PreferencesTableTableCreateCompanionBuilder
   Value<bool> systemTitleBar,
   Value<bool> skipNonMusic,
   Value<CloseBehavior> closeBehavior,
-  Value<SpotubeColor> accentColorScheme,
+  Value<SonolythColor> accentColorScheme,
   Value<LayoutMode> layoutMode,
   Value<Locale> locale,
   Value<Market> market,
@@ -4518,7 +4518,7 @@ typedef $$PreferencesTableTableUpdateCompanionBuilder
   Value<bool> systemTitleBar,
   Value<bool> skipNonMusic,
   Value<CloseBehavior> closeBehavior,
-  Value<SpotubeColor> accentColorScheme,
+  Value<SonolythColor> accentColorScheme,
   Value<LayoutMode> layoutMode,
   Value<Locale> locale,
   Value<Market> market,
@@ -4578,7 +4578,7 @@ class $$PreferencesTableTableFilterComposer
           column: $table.closeBehavior,
           builder: (column) => ColumnWithTypeConverterFilters(column));
 
-  ColumnWithTypeConverterFilters<SpotubeColor, SpotubeColor, String>
+  ColumnWithTypeConverterFilters<SonolythColor, SonolythColor, String>
       get accentColorScheme => $composableBuilder(
           column: $table.accentColorScheme,
           builder: (column) => ColumnWithTypeConverterFilters(column));
@@ -4778,7 +4778,7 @@ class $$PreferencesTableTableAnnotationComposer
       $composableBuilder(
           column: $table.closeBehavior, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<SpotubeColor, String>
+  GeneratedColumnWithTypeConverter<SonolythColor, String>
       get accentColorScheme => $composableBuilder(
           column: $table.accentColorScheme, builder: (column) => column);
 
@@ -4866,7 +4866,7 @@ class $$PreferencesTableTableTableManager extends RootTableManager<
             Value<bool> systemTitleBar = const Value.absent(),
             Value<bool> skipNonMusic = const Value.absent(),
             Value<CloseBehavior> closeBehavior = const Value.absent(),
-            Value<SpotubeColor> accentColorScheme = const Value.absent(),
+            Value<SonolythColor> accentColorScheme = const Value.absent(),
             Value<LayoutMode> layoutMode = const Value.absent(),
             Value<Locale> locale = const Value.absent(),
             Value<Market> market = const Value.absent(),
@@ -4919,7 +4919,7 @@ class $$PreferencesTableTableTableManager extends RootTableManager<
             Value<bool> systemTitleBar = const Value.absent(),
             Value<bool> skipNonMusic = const Value.absent(),
             Value<CloseBehavior> closeBehavior = const Value.absent(),
-            Value<SpotubeColor> accentColorScheme = const Value.absent(),
+            Value<SonolythColor> accentColorScheme = const Value.absent(),
             Value<LayoutMode> layoutMode = const Value.absent(),
             Value<Locale> locale = const Value.absent(),
             Value<Market> market = const Value.absent(),
@@ -5489,7 +5489,7 @@ typedef $$AudioPlayerStateTableTableCreateCompanionBuilder
   required PlaylistMode loopMode,
   required bool shuffled,
   required List<String> collections,
-  Value<List<SpotubeTrackObject>> tracks,
+  Value<List<SonolythTrackObject>> tracks,
   Value<int> currentIndex,
 });
 typedef $$AudioPlayerStateTableTableUpdateCompanionBuilder
@@ -5499,7 +5499,7 @@ typedef $$AudioPlayerStateTableTableUpdateCompanionBuilder
   Value<PlaylistMode> loopMode,
   Value<bool> shuffled,
   Value<List<String>> collections,
-  Value<List<SpotubeTrackObject>> tracks,
+  Value<List<SonolythTrackObject>> tracks,
   Value<int> currentIndex,
 });
 
@@ -5531,8 +5531,8 @@ class $$AudioPlayerStateTableTableFilterComposer
           column: $table.collections,
           builder: (column) => ColumnWithTypeConverterFilters(column));
 
-  ColumnWithTypeConverterFilters<List<SpotubeTrackObject>,
-          List<SpotubeTrackObject>, String>
+  ColumnWithTypeConverterFilters<List<SonolythTrackObject>,
+          List<SonolythTrackObject>, String>
       get tracks => $composableBuilder(
           column: $table.tracks,
           builder: (column) => ColumnWithTypeConverterFilters(column));
@@ -5598,7 +5598,7 @@ class $$AudioPlayerStateTableTableAnnotationComposer
       $composableBuilder(
           column: $table.collections, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<List<SpotubeTrackObject>, String>
+  GeneratedColumnWithTypeConverter<List<SonolythTrackObject>, String>
       get tracks => $composableBuilder(
           column: $table.tracks, builder: (column) => column);
 
@@ -5642,7 +5642,7 @@ class $$AudioPlayerStateTableTableTableManager extends RootTableManager<
             Value<PlaylistMode> loopMode = const Value.absent(),
             Value<bool> shuffled = const Value.absent(),
             Value<List<String>> collections = const Value.absent(),
-            Value<List<SpotubeTrackObject>> tracks = const Value.absent(),
+            Value<List<SonolythTrackObject>> tracks = const Value.absent(),
             Value<int> currentIndex = const Value.absent(),
           }) =>
               AudioPlayerStateTableCompanion(
@@ -5660,7 +5660,7 @@ class $$AudioPlayerStateTableTableTableManager extends RootTableManager<
             required PlaylistMode loopMode,
             required bool shuffled,
             required List<String> collections,
-            Value<List<SpotubeTrackObject>> tracks = const Value.absent(),
+            Value<List<SonolythTrackObject>> tracks = const Value.absent(),
             Value<int> currentIndex = const Value.absent(),
           }) =>
               AudioPlayerStateTableCompanion.insert(

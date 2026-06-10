@@ -3,11 +3,11 @@ import 'package:riverpod/src/async_notifier.dart';
 import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:spotube/models/metadata/metadata.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
 
-import 'package:spotube/provider/metadata_plugin/metadata_plugin_provider.dart';
-import 'package:spotube/services/metadata/errors/exceptions.dart';
-import 'package:spotube/services/metadata/metadata.dart';
+import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
+import 'package:sonolyth/services/metadata/errors/exceptions.dart';
+import 'package:sonolyth/services/metadata/metadata.dart';
 
 extension PaginationExtension<T> on AsyncValue<T> {
   bool get isLoadingNextPage => this is AsyncData && this is AsyncLoadingNext;
@@ -15,7 +15,7 @@ extension PaginationExtension<T> on AsyncValue<T> {
 
 mixin MetadataPluginMixin<K>
 // ignore: invalid_use_of_internal_member
-    on AsyncNotifierBase<SpotubePaginationResponseObject<K>> {
+    on AsyncNotifierBase<SonolythPaginationResponseObject<K>> {
   Future<MetadataPlugin> get metadataPlugin async {
     final plugin = await ref.read(metadataPluginProvider.future);
 

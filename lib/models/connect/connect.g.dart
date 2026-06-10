@@ -10,12 +10,12 @@ _$WebSocketLoadEventDataPlaylistImpl
     _$$WebSocketLoadEventDataPlaylistImplFromJson(Map json) =>
         _$WebSocketLoadEventDataPlaylistImpl(
           tracks: (json['tracks'] as List<dynamic>)
-              .map((e) => SpotubeTrackObject.fromJson(
+              .map((e) => SonolythTrackObject.fromJson(
                   Map<String, dynamic>.from(e as Map)))
               .toList(),
           collection: json['collection'] == null
               ? null
-              : SpotubeSimplePlaylistObject.fromJson(
+              : SonolythSimplePlaylistObject.fromJson(
                   Map<String, dynamic>.from(json['collection'] as Map)),
           initialIndex: (json['initialIndex'] as num?)?.toInt(),
           $type: json['runtimeType'] as String?,
@@ -35,11 +35,11 @@ _$WebSocketLoadEventDataAlbumImpl _$$WebSocketLoadEventDataAlbumImplFromJson(
     _$WebSocketLoadEventDataAlbumImpl(
       tracks: (json['tracks'] as List<dynamic>)
           .map((e) =>
-              SpotubeTrackObject.fromJson(Map<String, dynamic>.from(e as Map)))
+              SonolythTrackObject.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList(),
       collection: json['collection'] == null
           ? null
-          : SpotubeSimpleAlbumObject.fromJson(
+          : SonolythSimpleAlbumObject.fromJson(
               Map<String, dynamic>.from(json['collection'] as Map)),
       initialIndex: (json['initialIndex'] as num?)?.toInt(),
       $type: json['runtimeType'] as String?,

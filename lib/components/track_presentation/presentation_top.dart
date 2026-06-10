@@ -3,18 +3,18 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/components/heart_button/heart_button.dart';
-import 'package:spotube/components/image/universal_image.dart';
-import 'package:spotube/components/dialogs/confirm_download_dialog.dart';
-import 'package:spotube/components/track_presentation/presentation_props.dart';
-import 'package:spotube/components/track_presentation/use_action_callbacks.dart';
-import 'package:spotube/components/track_presentation/use_is_user_playlist.dart';
-import 'package:spotube/extensions/constrains.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/modules/playlist/playlist_create_dialog.dart';
-import 'package:spotube/provider/download_manager_provider.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/heart_button/heart_button.dart';
+import 'package:sonolyth/components/image/universal_image.dart';
+import 'package:sonolyth/components/dialogs/confirm_download_dialog.dart';
+import 'package:sonolyth/components/track_presentation/presentation_props.dart';
+import 'package:sonolyth/components/track_presentation/use_action_callbacks.dart';
+import 'package:sonolyth/components/track_presentation/use_is_user_playlist.dart';
+import 'package:sonolyth/extensions/constrains.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/modules/playlist/playlist_create_dialog.dart';
+import 'package:sonolyth/provider/download_manager_provider.dart';
 
 class TrackPresentationTopSection extends HookConsumerWidget {
   const TrackPresentationTopSection({super.key});
@@ -26,8 +26,8 @@ class TrackPresentationTopSection extends HookConsumerWidget {
     final scale = context.theme.scaling;
     final isUserPlaylist = useIsUserPlaylist(ref, options.collectionId);
     final collectionLabel = switch (options.collection) {
-      SpotubeSimpleAlbumObject() => "Album",
-      SpotubeSimplePlaylistObject() => "Playlist",
+      SonolythSimpleAlbumObject() => "Album",
+      SonolythSimplePlaylistObject() => "Playlist",
       _ => "Playlist",
     };
 
@@ -54,7 +54,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
       final tracks = options.tracks.isEmpty
           ? await options.pagination.onFetchAll()
           : options.tracks;
-      final fullTracks = tracks.whereType<SpotubeFullTrackObject>().toList();
+      final fullTracks = tracks.whereType<SonolythFullTrackObject>().toList();
       if (fullTracks.isEmpty) return;
 
       downloader.addAllToQueue(
@@ -67,7 +67,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
         location: ToastLocation.topRight,
         builder: (context, overlay) => SurfaceCard(
           child: Basic(
-            leading: const Icon(SpotubeIcons.download),
+            leading: const Icon(SonolythIcons.download),
             title: Text(context.l10n.download_count(fullTracks.length)),
           ),
         ),
@@ -82,7 +82,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
             child: Text(context.l10n.download_all),
           ).call,
           child: IconButton.outline(
-            icon: const Icon(SpotubeIcons.download),
+            icon: const Icon(SonolythIcons.download),
             shape: ButtonShape.circle,
             enabled: !options.pagination.isLoading,
             onPressed: onDownloadAll,
@@ -98,7 +98,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
                     child:
                         CircularProgressIndicator(onSurface: false, size: 20),
                   )
-                : const Icon(SpotubeIcons.shuffle),
+                : const Icon(SonolythIcons.shuffle),
             shape: ButtonShape.circle,
             enabled: !isLoading && !isActive,
             onPressed: onShuffle,
@@ -110,7 +110,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
               child: Text(context.l10n.add_to_queue),
             ).call,
             child: IconButton.secondary(
-              icon: const Icon(SpotubeIcons.queueAdd),
+              icon: const Icon(SonolythIcons.queueAdd),
               shape: ButtonShape.circle,
               enabled: !isLoading && !isActive,
               onPressed: onAddToQueue,
@@ -118,7 +118,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
           )
         else
           IconButton.ghost(
-            icon: const Icon(SpotubeIcons.queueAdd),
+            icon: const Icon(SonolythIcons.queueAdd),
             shape: ButtonShape.circle,
             enabled: !isLoading && !isActive,
             onPressed: onAddToQueue,
@@ -132,11 +132,11 @@ class TrackPresentationTopSection extends HookConsumerWidget {
             size: ButtonSize.large,
             shape: ButtonShape.circle,
             icon: switch ((isActive, isLoading)) {
-              (true, false) => const Icon(SpotubeIcons.pause),
+              (true, false) => const Icon(SonolythIcons.pause),
               (false, true) => const Center(
                   child: CircularProgressIndicator(onSurface: true, size: 18),
                 ),
-              _ => const Icon(SpotubeIcons.play),
+              _ => const Icon(SonolythIcons.play),
             },
             onPressed: onPlay,
             enabled: !isLoading && !isActive,
@@ -151,7 +151,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
         if (isUserPlaylist)
           IconButton.outline(
             size: ButtonSize.small,
-            icon: const Icon(SpotubeIcons.edit),
+            icon: const Icon(SonolythIcons.edit),
             onPressed: () {
               showDialog(
                 context: context,
@@ -170,7 +170,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
               child: Text(context.l10n.share),
             ).call,
             child: IconButton.outline(
-              icon: const Icon(SpotubeIcons.share),
+              icon: const Icon(SonolythIcons.share),
               size: ButtonSize.small,
               onPressed: () async {
                 await Clipboard.setData(

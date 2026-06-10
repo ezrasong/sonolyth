@@ -1,6 +1,6 @@
 import 'package:hetu_script/hetu_script.dart';
 import 'package:hetu_script/values.dart';
-import 'package:spotube/models/metadata/metadata.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
 
 class MetadataPluginSearchEndpoint {
   final Hetu hetu;
@@ -14,9 +14,9 @@ class MetadataPluginSearchEndpoint {
     return (hetuMetadataSearch.memberGet("chips") as List).cast<String>();
   }
 
-  Future<SpotubeSearchResponseObject> all(String query) async {
+  Future<SonolythSearchResponseObject> all(String query) async {
     if (query.isEmpty) {
-      return SpotubeSearchResponseObject(
+      return SonolythSearchResponseObject(
         albums: [],
         artists: [],
         playlists: [],
@@ -29,16 +29,16 @@ class MetadataPluginSearchEndpoint {
       positionalArgs: [query],
     ) as Map;
 
-    return SpotubeSearchResponseObject.fromJson(raw.cast<String, dynamic>());
+    return SonolythSearchResponseObject.fromJson(raw.cast<String, dynamic>());
   }
 
-  Future<SpotubePaginationResponseObject<SpotubeSimpleAlbumObject>> albums(
+  Future<SonolythPaginationResponseObject<SonolythSimpleAlbumObject>> albums(
     String query, {
     int? limit,
     int? offset,
   }) async {
     if (query.isEmpty) {
-      return SpotubePaginationResponseObject<SpotubeSimpleAlbumObject>(
+      return SonolythPaginationResponseObject<SonolythSimpleAlbumObject>(
         items: [],
         total: 0,
         limit: limit ?? 20,
@@ -56,19 +56,19 @@ class MetadataPluginSearchEndpoint {
       }..removeWhere((key, value) => value == null),
     ) as Map;
 
-    return SpotubePaginationResponseObject<SpotubeSimpleAlbumObject>.fromJson(
+    return SonolythPaginationResponseObject<SonolythSimpleAlbumObject>.fromJson(
       raw.cast<String, dynamic>(),
-      (json) => SpotubeSimpleAlbumObject.fromJson(json.cast<String, dynamic>()),
+      (json) => SonolythSimpleAlbumObject.fromJson(json.cast<String, dynamic>()),
     );
   }
 
-  Future<SpotubePaginationResponseObject<SpotubeFullArtistObject>> artists(
+  Future<SonolythPaginationResponseObject<SonolythFullArtistObject>> artists(
     String query, {
     int? limit,
     int? offset,
   }) async {
     if (query.isEmpty) {
-      return SpotubePaginationResponseObject<SpotubeFullArtistObject>(
+      return SonolythPaginationResponseObject<SonolythFullArtistObject>(
         items: [],
         total: 0,
         limit: limit ?? 20,
@@ -86,22 +86,22 @@ class MetadataPluginSearchEndpoint {
       }..removeWhere((key, value) => value == null),
     ) as Map;
 
-    return SpotubePaginationResponseObject<SpotubeFullArtistObject>.fromJson(
+    return SonolythPaginationResponseObject<SonolythFullArtistObject>.fromJson(
       raw.cast<String, dynamic>(),
-      (json) => SpotubeFullArtistObject.fromJson(
+      (json) => SonolythFullArtistObject.fromJson(
         json.cast<String, dynamic>(),
       ),
     );
   }
 
-  Future<SpotubePaginationResponseObject<SpotubeSimplePlaylistObject>>
+  Future<SonolythPaginationResponseObject<SonolythSimplePlaylistObject>>
       playlists(
     String query, {
     int? limit,
     int? offset,
   }) async {
     if (query.isEmpty) {
-      return SpotubePaginationResponseObject<SpotubeSimplePlaylistObject>(
+      return SonolythPaginationResponseObject<SonolythSimplePlaylistObject>(
         items: [],
         total: 0,
         limit: limit ?? 20,
@@ -119,22 +119,22 @@ class MetadataPluginSearchEndpoint {
       }..removeWhere((key, value) => value == null),
     ) as Map;
 
-    return SpotubePaginationResponseObject<
-        SpotubeSimplePlaylistObject>.fromJson(
+    return SonolythPaginationResponseObject<
+        SonolythSimplePlaylistObject>.fromJson(
       raw.cast<String, dynamic>(),
-      (json) => SpotubeSimplePlaylistObject.fromJson(
+      (json) => SonolythSimplePlaylistObject.fromJson(
         json.cast<String, dynamic>(),
       ),
     );
   }
 
-  Future<SpotubePaginationResponseObject<SpotubeFullTrackObject>> tracks(
+  Future<SonolythPaginationResponseObject<SonolythFullTrackObject>> tracks(
     String query, {
     int? limit,
     int? offset,
   }) async {
     if (query.isEmpty) {
-      return SpotubePaginationResponseObject<SpotubeFullTrackObject>(
+      return SonolythPaginationResponseObject<SonolythFullTrackObject>(
         items: [],
         total: 0,
         limit: limit ?? 20,
@@ -152,9 +152,9 @@ class MetadataPluginSearchEndpoint {
       }..removeWhere((key, value) => value == null),
     ) as Map;
 
-    return SpotubePaginationResponseObject<SpotubeFullTrackObject>.fromJson(
+    return SonolythPaginationResponseObject<SonolythFullTrackObject>.fromJson(
       raw.cast<String, dynamic>(),
-      (json) => SpotubeFullTrackObject.fromJson(json.cast<String, dynamic>()),
+      (json) => SonolythFullTrackObject.fromJson(json.cast<String, dynamic>()),
     );
   }
 }

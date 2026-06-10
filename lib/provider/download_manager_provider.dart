@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/services/logger/logger.dart';
-import 'package:spotube/services/spotiflac/spotiflac_downloader.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/services/logger/logger.dart';
+import 'package:sonolyth/services/spotiflac/spotiflac_downloader.dart';
 
 enum DownloadStatus {
   queued,
@@ -16,7 +16,7 @@ enum DownloadStatus {
 }
 
 class DownloadTask {
-  final SpotubeFullTrackObject track;
+  final SonolythFullTrackObject track;
   final DownloadStatus status;
   final CancelToken cancelToken;
   final int? totalSizeBytes;
@@ -35,7 +35,7 @@ class DownloadTask {
             downloadedBytesStreamController ?? StreamController.broadcast();
 
   DownloadTask copyWith({
-    SpotubeFullTrackObject? track,
+    SonolythFullTrackObject? track,
     DownloadStatus? status,
     CancelToken? cancelToken,
     int? totalSizeBytes,
@@ -71,7 +71,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
     return state.firstWhereOrNull((element) => element.track.id == trackId);
   }
 
-  void addToQueue(SpotubeFullTrackObject track) {
+  void addToQueue(SonolythFullTrackObject track) {
     if (state.any((element) => element.track.id == track.id)) return;
     state = [
       ...state,
@@ -86,7 +86,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
   }
 
   void addAllToQueue(
-    List<SpotubeFullTrackObject> tracks, {
+    List<SonolythFullTrackObject> tracks, {
     String? collectionUrl,
   }) {
     final queuedTrackIds = state.map((task) => task.track.id).toSet();
@@ -114,7 +114,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
     _startDownloading(); // No await should be invoked to avoid stuck UI
   }
 
-  void retry(SpotubeFullTrackObject track) {
+  void retry(SonolythFullTrackObject track) {
     if (state.firstWhereOrNull((e) => e.track.id == track.id)?.status
         case DownloadStatus.canceled || DownloadStatus.failed) {
       _setStatus(track, DownloadStatus.queued);
@@ -122,7 +122,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
     }
   }
 
-  void cancel(SpotubeFullTrackObject track) {
+  void cancel(SonolythFullTrackObject track) {
     if (state.firstWhereOrNull((e) => e.track.id == track.id)?.status ==
         DownloadStatus.failed) {
       return;
@@ -139,7 +139,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
     state = [];
   }
 
-  void _setStatus(SpotubeFullTrackObject track, DownloadStatus status) {
+  void _setStatus(SonolythFullTrackObject track, DownloadStatus status) {
     state = state.map((e) {
       if (e.track.id == track.id) {
         if ((status == DownloadStatus.canceled) && e.cancelToken.isCancelled) {
@@ -176,7 +176,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
 
   Future<void> _startCollectionDownload(
     String collectionUrl,
-    List<SpotubeFullTrackObject> tracks,
+    List<SonolythFullTrackObject> tracks,
   ) async {
     if (_isShowingDialog) return;
     _isShowingDialog = true;

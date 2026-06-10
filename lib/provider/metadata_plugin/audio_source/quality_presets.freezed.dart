@@ -21,7 +21,7 @@ AudioSourcePresetsState _$AudioSourcePresetsStateFromJson(
 
 /// @nodoc
 mixin _$AudioSourcePresetsState {
-  List<SpotubeAudioSourceContainerPreset> get presets =>
+  List<SonolythAudioSourceContainerPreset> get presets =>
       throw _privateConstructorUsedError;
   int get selectedStreamingQualityIndex => throw _privateConstructorUsedError;
   int get selectedStreamingContainerIndex => throw _privateConstructorUsedError;
@@ -46,7 +46,7 @@ abstract class $AudioSourcePresetsStateCopyWith<$Res> {
       _$AudioSourcePresetsStateCopyWithImpl<$Res, AudioSourcePresetsState>;
   @useResult
   $Res call(
-      {List<SpotubeAudioSourceContainerPreset> presets,
+      {List<SonolythAudioSourceContainerPreset> presets,
       int selectedStreamingQualityIndex,
       int selectedStreamingContainerIndex,
       int selectedDownloadingQualityIndex,
@@ -79,7 +79,7 @@ class _$AudioSourcePresetsStateCopyWithImpl<$Res,
       presets: null == presets
           ? _value.presets
           : presets // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeAudioSourceContainerPreset>,
+              as List<SonolythAudioSourceContainerPreset>,
       selectedStreamingQualityIndex: null == selectedStreamingQualityIndex
           ? _value.selectedStreamingQualityIndex
           : selectedStreamingQualityIndex // ignore: cast_nullable_to_non_nullable
@@ -111,7 +111,7 @@ abstract class _$$AudioSourcePresetsStateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {List<SpotubeAudioSourceContainerPreset> presets,
+      {List<SonolythAudioSourceContainerPreset> presets,
       int selectedStreamingQualityIndex,
       int selectedStreamingContainerIndex,
       int selectedDownloadingQualityIndex,
@@ -143,7 +143,7 @@ class __$$AudioSourcePresetsStateImplCopyWithImpl<$Res>
       presets: null == presets
           ? _value._presets
           : presets // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeAudioSourceContainerPreset>,
+              as List<SonolythAudioSourceContainerPreset>,
       selectedStreamingQualityIndex: null == selectedStreamingQualityIndex
           ? _value.selectedStreamingQualityIndex
           : selectedStreamingQualityIndex // ignore: cast_nullable_to_non_nullable
@@ -169,7 +169,7 @@ class __$$AudioSourcePresetsStateImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$AudioSourcePresetsStateImpl implements _AudioSourcePresetsState {
   _$AudioSourcePresetsStateImpl(
-      {final List<SpotubeAudioSourceContainerPreset> presets = const [],
+      {final List<SonolythAudioSourceContainerPreset> presets = const [],
       this.selectedStreamingQualityIndex = 0,
       this.selectedStreamingContainerIndex = 0,
       this.selectedDownloadingQualityIndex = 0,
@@ -179,10 +179,10 @@ class _$AudioSourcePresetsStateImpl implements _AudioSourcePresetsState {
   factory _$AudioSourcePresetsStateImpl.fromJson(Map<String, dynamic> json) =>
       _$$AudioSourcePresetsStateImplFromJson(json);
 
-  final List<SpotubeAudioSourceContainerPreset> _presets;
+  final List<SonolythAudioSourceContainerPreset> _presets;
   @override
   @JsonKey()
-  List<SpotubeAudioSourceContainerPreset> get presets {
+  List<SonolythAudioSourceContainerPreset> get presets {
     if (_presets is EqualUnmodifiableListView) return _presets;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_presets);
@@ -259,7 +259,7 @@ class _$AudioSourcePresetsStateImpl implements _AudioSourcePresetsState {
 
 abstract class _AudioSourcePresetsState implements AudioSourcePresetsState {
   factory _AudioSourcePresetsState(
-          {final List<SpotubeAudioSourceContainerPreset> presets,
+          {final List<SonolythAudioSourceContainerPreset> presets,
           final int selectedStreamingQualityIndex,
           final int selectedStreamingContainerIndex,
           final int selectedDownloadingQualityIndex,
@@ -270,7 +270,7 @@ abstract class _AudioSourcePresetsState implements AudioSourcePresetsState {
       _$AudioSourcePresetsStateImpl.fromJson;
 
   @override
-  List<SpotubeAudioSourceContainerPreset> get presets;
+  List<SonolythAudioSourceContainerPreset> get presets;
   @override
   int get selectedStreamingQualityIndex;
   @override

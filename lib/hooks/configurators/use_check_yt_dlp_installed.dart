@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/models/database/database.dart';
-import 'package:spotube/modules/settings/youtube_engine_not_installed_dialog.dart';
-import 'package:spotube/provider/user_preferences/user_preferences_provider.dart';
-import 'package:spotube/services/kv_store/kv_store.dart';
-import 'package:spotube/services/youtube_engine/yt_dlp_engine.dart';
+import 'package:sonolyth/models/database/database.dart';
+import 'package:sonolyth/modules/settings/youtube_engine_not_installed_dialog.dart';
+import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
+import 'package:sonolyth/services/kv_store/kv_store.dart';
+import 'package:sonolyth/services/youtube_engine/yt_dlp_engine.dart';
 
 void useCheckYtDlpInstalled(WidgetRef ref) {
   final context = useContext();

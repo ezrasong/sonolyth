@@ -1,5 +1,5 @@
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/collections/spotube_icons.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
 
 class BackButton extends StatelessWidget {
   final Color? color;
@@ -7,7 +7,7 @@ class BackButton extends StatelessWidget {
   const BackButton({
     super.key,
     this.color,
-    this.icon = SpotubeIcons.angleLeft,
+    this.icon = SonolythIcons.angleLeft,
   });
 
   @override

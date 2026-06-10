@@ -9,14 +9,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path/path.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/components/inter_scrollbar/inter_scrollbar.dart';
-import 'package:spotube/components/playbutton_view/playbutton_view.dart';
-import 'package:spotube/modules/library/local_folder/local_folder_item.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/provider/local_tracks/local_tracks_provider.dart';
-import 'package:spotube/provider/user_preferences/user_preferences_provider.dart';
-import 'package:spotube/utils/platform.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/inter_scrollbar/inter_scrollbar.dart';
+import 'package:sonolyth/components/playbutton_view/playbutton_view.dart';
+import 'package:sonolyth/modules/library/local_folder/local_folder_item.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/provider/local_tracks/local_tracks_provider.dart';
+import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
+import 'package:sonolyth/utils/platform.dart';
 
 enum SortBy {
   none,
@@ -114,14 +114,14 @@ class UserLocalLibraryPage extends HookConsumerWidget {
                               onChanged: (value) => searchText.value = value,
                               features: const [
                                 InputFeature.leading(
-                                    Icon(SpotubeIcons.filter)),
+                                    Icon(SonolythIcons.filter)),
                               ],
                               placeholder: Text(context.l10n.search),
                             ),
                           ),
                           const Gap(8),
                           Button.secondary(
-                            leading: const Icon(SpotubeIcons.folderAdd),
+                            leading: const Icon(SonolythIcons.folderAdd),
                             onPressed: addLocalLibraryLocation,
                             child: Text(context.l10n.add_library_location),
                           ),

@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotube/services/dio/dio.dart';
+import 'package:sonolyth/services/dio/dio.dart';
 
 const defaultSpotiFlacExtensionRegistryUrl =
     "https://raw.githubusercontent.com/zarzet/SpotiFLAC-Extension/main/registry.json";

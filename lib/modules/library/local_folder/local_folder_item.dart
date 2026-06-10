@@ -4,18 +4,18 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path/path.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/collections/routes.gr.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/components/image/universal_image.dart';
-import 'package:spotube/components/playbutton_view/playbutton_card.dart';
-import 'package:spotube/components/playbutton_view/playbutton_tile.dart';
-import 'package:spotube/components/track_presentation/presentation_actions.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/extensions/string.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/audio_player/audio_player.dart';
-import 'package:spotube/provider/local_tracks/local_tracks_provider.dart';
-import 'package:spotube/provider/user_preferences/user_preferences_provider.dart';
+import 'package:sonolyth/collections/routes.gr.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/image/universal_image.dart';
+import 'package:sonolyth/components/playbutton_view/playbutton_card.dart';
+import 'package:sonolyth/components/playbutton_view/playbutton_tile.dart';
+import 'package:sonolyth/components/track_presentation/presentation_actions.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/extensions/string.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/local_tracks/local_tracks_provider.dart';
+import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 
 class LocalFolderItem extends HookConsumerWidget {
   final String folder;
@@ -41,7 +41,7 @@ class LocalFolderItem extends HookConsumerWidget {
         (s) => s.whenData((tracks) => tracks[folder]),
       ),
     );
-    final tracks = trackSnapshot.value ?? <SpotubeLocalTrackObject>[];
+    final tracks = trackSnapshot.value ?? <SonolythLocalTrackObject>[];
 
     final playlist = ref.watch(audioPlayerProvider);
     final playlistNotifier = ref.read(audioPlayerProvider.notifier);
@@ -86,7 +86,7 @@ class LocalFolderItem extends HookConsumerWidget {
             children: [
               MenuButton(
                 leading: Icon(
-                  SpotubeIcons.folderRemove,
+                  SonolythIcons.folderRemove,
                   color: colorScheme.destructive,
                 ),
                 child: Text(context.l10n.remove_library_location),
@@ -124,7 +124,7 @@ class LocalFolderItem extends HookConsumerWidget {
         children: [
           Expanded(child: tile),
           IconButton.ghost(
-            icon: const Icon(SpotubeIcons.moreVertical),
+            icon: const Icon(SonolythIcons.moreVertical),
             size: ButtonSize.small,
             onPressed: showRemoveMenu,
           ),
@@ -150,7 +150,7 @@ class LocalFolderItem extends HookConsumerWidget {
           right: 5,
           top: 5,
           child: IconButton.secondary(
-            icon: const Icon(SpotubeIcons.moreVertical),
+            icon: const Icon(SonolythIcons.moreVertical),
             size: ButtonSize.small,
             onPressed: showRemoveMenu,
           ),
@@ -163,7 +163,7 @@ class LocalFolderItem extends HookConsumerWidget {
 /// Square cover for a folder: a collage of up to 4 album arts, or a folder
 /// icon when the folder has no scanned tracks yet.
 class _FolderArtCollage extends StatelessWidget {
-  final List<SpotubeLocalTrackObject> tracks;
+  final List<SonolythLocalTrackObject> tracks;
   const _FolderArtCollage({required this.tracks});
 
   @override
@@ -184,7 +184,7 @@ class _FolderArtCollage extends StatelessWidget {
         color: colorScheme.secondary,
         child: Center(
           child: Icon(
-            SpotubeIcons.folder,
+            SonolythIcons.folder,
             size: 60,
             color: colorScheme.mutedForeground,
           ),

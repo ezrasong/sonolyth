@@ -1,7 +1,7 @@
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotube/services/audio_player/audio_player.dart';
-import 'package:spotube/services/logger/logger.dart';
+import 'package:sonolyth/services/audio_player/audio_player.dart';
+import 'package:sonolyth/services/logger/logger.dart';
 
 int useSyncedLyrics(
   WidgetRef ref,

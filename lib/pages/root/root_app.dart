@@ -4,14 +4,14 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
-import 'package:spotube/modules/root/bottom_player.dart';
-import 'package:spotube/modules/root/sidebar/sidebar.dart';
-import 'package:spotube/modules/root/spotube_navigation_bar.dart';
-import 'package:spotube/hooks/configurators/use_endless_playback.dart';
-import 'package:spotube/modules/root/use_global_subscriptions.dart';
-import 'package:spotube/provider/glance/glance.dart';
-import 'package:spotube/services/kv_store/kv_store.dart';
-import 'package:spotube/services/logger/logger.dart';
+import 'package:sonolyth/modules/root/bottom_player.dart';
+import 'package:sonolyth/modules/root/sidebar/sidebar.dart';
+import 'package:sonolyth/modules/root/sonolyth_navigation_bar.dart';
+import 'package:sonolyth/hooks/configurators/use_endless_playback.dart';
+import 'package:sonolyth/modules/root/use_global_subscriptions.dart';
+import 'package:sonolyth/provider/glance/glance.dart';
+import 'package:sonolyth/services/kv_store/kv_store.dart';
+import 'package:sonolyth/services/logger/logger.dart';
 
 @RoutePage()
 class RootAppPage extends HookConsumerWidget {
@@ -77,7 +77,7 @@ class RootAppPage extends HookConsumerWidget {
         child: Scaffold(
           footers: const [
             BottomPlayer(),
-            SpotubeNavigationBar(),
+            SonolythNavigationBar(),
           ],
           floatingFooter: true,
           child: Sidebar(

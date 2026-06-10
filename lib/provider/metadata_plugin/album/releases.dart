@@ -1,12 +1,12 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/metadata_plugin/core/auth.dart';
-import 'package:spotube/provider/metadata_plugin/utils/paginated.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/metadata_plugin/core/auth.dart';
+import 'package:sonolyth/provider/metadata_plugin/utils/paginated.dart';
 
 class MetadataPluginAlbumReleasesNotifier
-    extends PaginatedAsyncNotifier<SpotubeSimpleAlbumObject> {
+    extends PaginatedAsyncNotifier<SonolythSimpleAlbumObject> {
   @override
-  Future<SpotubePaginationResponseObject<SpotubeSimpleAlbumObject>> fetch(
+  Future<SonolythPaginationResponseObject<SonolythSimpleAlbumObject>> fetch(
     int offset,
     int limit,
   ) async {
@@ -24,6 +24,6 @@ class MetadataPluginAlbumReleasesNotifier
 
 final metadataPluginAlbumReleasesProvider = AsyncNotifierProvider<
     MetadataPluginAlbumReleasesNotifier,
-    SpotubePaginationResponseObject<SpotubeSimpleAlbumObject>>(
+    SonolythPaginationResponseObject<SonolythSimpleAlbumObject>>(
   () => MetadataPluginAlbumReleasesNotifier(),
 );

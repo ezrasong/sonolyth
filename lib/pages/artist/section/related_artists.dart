@@ -1,10 +1,10 @@
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:spotube/collections/fake.dart';
-import 'package:spotube/components/fallbacks/error_box.dart';
-import 'package:spotube/modules/artist/artist_card.dart';
-import 'package:spotube/provider/metadata_plugin/artist/related.dart';
+import 'package:sonolyth/collections/fake.dart';
+import 'package:sonolyth/components/fallbacks/error_box.dart';
+import 'package:sonolyth/modules/artist/artist_card.dart';
+import 'package:sonolyth/provider/metadata_plugin/artist/related.dart';
 
 class ArtistPageRelatedArtists extends ConsumerWidget {
   final String artistId;

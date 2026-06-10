@@ -1,9 +1,9 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/utils/platform.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/utils/platform.dart';
 
 class GettingStartedPageGreetingSection extends HookConsumerWidget {
   final VoidCallback onNext;
@@ -18,7 +18,7 @@ class GettingStartedPageGreetingSection extends HookConsumerWidget {
           children: [
             const Spacer(),
             Icon(
-              SpotubeIcons.music,
+              SonolythIcons.music,
               color: material.Theme.of(context).colorScheme.primary,
               size: 84,
             ),

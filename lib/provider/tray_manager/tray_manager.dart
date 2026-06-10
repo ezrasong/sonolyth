@@ -1,7 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:spotube/provider/tray_manager/tray_menu.dart';
-import 'package:spotube/provider/user_preferences/user_preferences_provider.dart';
-import 'package:spotube/utils/platform.dart';
+import 'package:sonolyth/provider/tray_manager/tray_menu.dart';
+import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
+import 'package:sonolyth/utils/platform.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 

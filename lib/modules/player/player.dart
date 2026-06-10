@@ -5,25 +5,25 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
-import 'package:spotube/collections/assets.gen.dart';
-import 'package:spotube/collections/routes.gr.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/components/framework/app_pop_scope.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/modules/player/player_actions.dart';
-import 'package:spotube/modules/player/player_controls.dart';
-import 'package:spotube/modules/player/volume_slider.dart';
-import 'package:spotube/components/dialogs/track_details_dialog.dart';
-import 'package:spotube/components/links/artist_link.dart';
-import 'package:spotube/components/titlebar/titlebar.dart';
-import 'package:spotube/components/image/universal_image.dart';
-import 'package:spotube/extensions/constrains.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/modules/root/spotube_navigation_bar.dart';
-import 'package:spotube/provider/audio_player/audio_player.dart';
-import 'package:spotube/provider/metadata_plugin/audio_source/quality_label.dart';
-import 'package:spotube/provider/server/active_track_sources.dart';
-import 'package:spotube/provider/volume_provider.dart';
+import 'package:sonolyth/collections/assets.gen.dart';
+import 'package:sonolyth/collections/routes.gr.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/framework/app_pop_scope.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/modules/player/player_actions.dart';
+import 'package:sonolyth/modules/player/player_controls.dart';
+import 'package:sonolyth/modules/player/volume_slider.dart';
+import 'package:sonolyth/components/dialogs/track_details_dialog.dart';
+import 'package:sonolyth/components/links/artist_link.dart';
+import 'package:sonolyth/components/titlebar/titlebar.dart';
+import 'package:sonolyth/components/image/universal_image.dart';
+import 'package:sonolyth/extensions/constrains.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/modules/root/sonolyth_navigation_bar.dart';
+import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/metadata_plugin/audio_source/quality_label.dart';
+import 'package:sonolyth/provider/server/active_track_sources.dart';
+import 'package:sonolyth/provider/volume_provider.dart';
 
 class PlayerView extends HookConsumerWidget {
   final PanelController panelController;
@@ -41,7 +41,7 @@ class PlayerView extends HookConsumerWidget {
     final currentActiveTrack =
         ref.watch(audioPlayerProvider.select((s) => s.activeTrack));
     final currentActiveTrackSource = sourcedCurrentTrack.asData?.value?.source;
-    final isLocalTrack = currentActiveTrack is SpotubeLocalTrackObject;
+    final isLocalTrack = currentActiveTrack is SonolythLocalTrackObject;
     final mediaQuery = MediaQuery.sizeOf(context);
     final qualityLabel = ref.watch(audioSourceQualityLabelProvider);
 
@@ -103,7 +103,7 @@ class PlayerView extends HookConsumerWidget {
                 leading: [
                   IconButton.ghost(
                     size: const ButtonSize(1.2),
-                    icon: const Icon(SpotubeIcons.angleDown),
+                    icon: const Icon(SonolythIcons.angleDown),
                     onPressed: panelController.close,
                   )
                 ],
@@ -115,7 +115,7 @@ class PlayerView extends HookConsumerWidget {
                       ).call,
                       child: IconButton.ghost(
                         size: const ButtonSize(1.2),
-                        icon: const Icon(SpotubeIcons.info),
+                        icon: const Icon(SonolythIcons.info),
                         onPressed: currentActiveTrackSource == null
                             ? null
                             : () {
@@ -124,7 +124,7 @@ class PlayerView extends HookConsumerWidget {
                                     builder: (context) {
                                       return TrackDetailsDialog(
                                         track: currentActiveTrack
-                                            as SpotubeFullTrackObject,
+                                            as SonolythFullTrackObject,
                                       );
                                     });
                               },
@@ -216,7 +216,7 @@ class PlayerView extends HookConsumerWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: OutlineButton(
-                          leading: const Icon(SpotubeIcons.queue),
+                          leading: const Icon(SonolythIcons.queue),
                           child: Text(context.l10n.queue),
                           onPressed: () {
                             context.pushRoute(const PlayerQueueRoute());
@@ -226,7 +226,7 @@ class PlayerView extends HookConsumerWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: OutlineButton(
-                          leading: const Icon(SpotubeIcons.music),
+                          leading: const Icon(SonolythIcons.music),
                           child: Text(context.l10n.lyrics),
                           onPressed: () {
                             context.pushRoute(const PlayerLyricsRoute());
@@ -261,7 +261,7 @@ class PlayerView extends HookConsumerWidget {
                         return value.copyWith(fontWeight: FontWeight.w500);
                       },
                     ),
-                    leading: const Icon(SpotubeIcons.lightningOutlined),
+                    leading: const Icon(SonolythIcons.lightningOutlined),
                     child: Text(qualityLabel),
                   )
                 ],

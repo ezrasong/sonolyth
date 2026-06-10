@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:media_kit/media_kit.dart' hide Track;
-import 'package:spotube/models/metadata/metadata.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
 
 part 'state.freezed.dart';
 part 'state.g.dart';
@@ -15,7 +15,7 @@ class AudioPlayerState with _$AudioPlayerState {
     required bool shuffled,
     required List<String> collections,
     @Default(0) int currentIndex,
-    @Default([]) List<SpotubeTrackObject> tracks,
+    @Default([]) List<SonolythTrackObject> tracks,
   }) = _AudioPlayerState;
 
   factory AudioPlayerState({
@@ -24,12 +24,12 @@ class AudioPlayerState with _$AudioPlayerState {
     required bool shuffled,
     required List<String> collections,
     int currentIndex = 0,
-    List<SpotubeTrackObject> tracks = const [],
+    List<SonolythTrackObject> tracks = const [],
   }) {
     assert(
       tracks.every((track) =>
-          track is SpotubeFullTrackObject || track is SpotubeLocalTrackObject),
-      'All tracks must be either SpotubeFullTrackObject or SpotubeLocalTrackObject',
+          track is SonolythFullTrackObject || track is SonolythLocalTrackObject),
+      'All tracks must be either SonolythFullTrackObject or SonolythLocalTrackObject',
     );
 
     return AudioPlayerState._inner(
@@ -45,22 +45,22 @@ class AudioPlayerState with _$AudioPlayerState {
   factory AudioPlayerState.fromJson(Map<String, dynamic> json) =>
       _$AudioPlayerStateFromJson(json);
 
-  SpotubeTrackObject? get activeTrack {
+  SonolythTrackObject? get activeTrack {
     if (currentIndex < 0 || currentIndex >= tracks.length) return null;
     return tracks[currentIndex];
   }
 
-  bool containsTrack(SpotubeTrackObject track) {
+  bool containsTrack(SonolythTrackObject track) {
     return tracks.isNotEmpty &&
         tracks.any(
           (t) =>
-              t is SpotubeLocalTrackObject && track is SpotubeLocalTrackObject
+              t is SonolythLocalTrackObject && track is SonolythLocalTrackObject
                   ? t.path == track.path
                   : t.id == track.id,
         );
   }
 
-  bool containsTracks(List<SpotubeTrackObject> tracks) {
+  bool containsTracks(List<SonolythTrackObject> tracks) {
     return this.tracks.isNotEmpty && tracks.every(containsTrack);
   }
 

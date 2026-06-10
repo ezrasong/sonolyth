@@ -1,17 +1,17 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/components/adaptive/adaptive_pop_sheet_list.dart';
-import 'package:spotube/components/dialogs/confirm_download_dialog.dart';
-import 'package:spotube/components/dialogs/playlist_add_track_dialog.dart';
-import 'package:spotube/components/track_presentation/presentation_props.dart';
-import 'package:spotube/components/track_presentation/presentation_state.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/download_manager_provider.dart';
-import 'package:spotube/provider/history/history.dart';
-import 'package:spotube/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/adaptive/adaptive_pop_sheet_list.dart';
+import 'package:sonolyth/components/dialogs/confirm_download_dialog.dart';
+import 'package:sonolyth/components/dialogs/playlist_add_track_dialog.dart';
+import 'package:sonolyth/components/track_presentation/presentation_props.dart';
+import 'package:sonolyth/components/track_presentation/presentation_state.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/download_manager_provider.dart';
+import 'package:sonolyth/provider/history/history.dart';
+import 'package:sonolyth/provider/audio_player/audio_player.dart';
 
 ToastOverlay showToastForAction(
   BuildContext context,
@@ -19,20 +19,20 @@ ToastOverlay showToastForAction(
   int count,
 ) {
   final message = switch (action) {
-    "download" => (context.l10n.download_count(count), SpotubeIcons.download),
+    "download" => (context.l10n.download_count(count), SonolythIcons.download),
     "add-to-playlist" => (
         context.l10n.add_count_to_playlist(count),
-        SpotubeIcons.playlistAdd
+        SonolythIcons.playlistAdd
       ),
     "add-to-queue" => (
         context.l10n.add_count_to_queue(count),
-        SpotubeIcons.queueAdd
+        SonolythIcons.queueAdd
       ),
     "play-next" => (
         context.l10n.play_count_next(count),
-        SpotubeIcons.lightning
+        SonolythIcons.lightning
       ),
-    _ => ("", SpotubeIcons.error),
+    _ => ("", SonolythIcons.error),
   };
 
   return showToast(
@@ -46,7 +46,7 @@ ToastOverlay showToastForAction(
           leadingAlignment: Alignment.center,
           trailing: IconButton.ghost(
             size: ButtonSize.small,
-            icon: const Icon(SpotubeIcons.close),
+            icon: const Icon(SonolythIcons.close),
             onPressed: () {
               overlay.close();
             },
@@ -76,12 +76,12 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
 
     Future<void> actionDownloadTracks({
       required BuildContext context,
-      required List<SpotubeTrackObject> tracks,
+      required List<SonolythTrackObject> tracks,
       required String action,
       String? collectionUrl,
     }) async {
       final fullTrackObjects =
-          tracks.whereType<SpotubeFullTrackObject>().toList();
+          tracks.whereType<SonolythFullTrackObject>().toList();
       final confirmed = await showDialog<bool>(
             context: context,
             builder: (context) {
@@ -150,12 +150,12 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
             {
               playlistNotifier.addTracksAtFirst(tracks);
               playlistNotifier.addCollection(options.collectionId);
-              if (options.collection is SpotubeSimpleAlbumObject) {
+              if (options.collection is SonolythSimpleAlbumObject) {
                 historyNotifier.addAlbums(
-                    [options.collection as SpotubeSimpleAlbumObject]);
+                    [options.collection as SonolythSimpleAlbumObject]);
               } else {
                 historyNotifier.addPlaylists(
-                    [options.collection as SpotubeSimplePlaylistObject]);
+                    [options.collection as SonolythSimplePlaylistObject]);
               }
               notifier.deselectAllTracks();
               if (!context.mounted) return;
@@ -166,12 +166,12 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
             {
               playlistNotifier.addTracks(tracks);
               playlistNotifier.addCollection(options.collectionId);
-              if (options.collection is SpotubeSimpleAlbumObject) {
+              if (options.collection is SonolythSimpleAlbumObject) {
                 historyNotifier.addAlbums(
-                    [options.collection as SpotubeSimpleAlbumObject]);
+                    [options.collection as SonolythSimpleAlbumObject]);
               } else {
                 historyNotifier.addPlaylists(
-                    [options.collection as SpotubeSimplePlaylistObject]);
+                    [options.collection as SonolythSimplePlaylistObject]);
               }
               notifier.deselectAllTracks();
               if (!context.mounted) return;
@@ -183,12 +183,12 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
 
         if (!context.mounted) return;
       },
-      icon: const Icon(SpotubeIcons.moreVertical),
+      icon: const Icon(SonolythIcons.moreVertical),
       variance: ButtonVariance.outline,
       items: (context) => [
         AdaptiveMenuButton(
           value: "download",
-          leading: const Icon(SpotubeIcons.download),
+          leading: const Icon(SonolythIcons.download),
           child: selectedTracks.isEmpty ||
                   selectedTracks.length == options.tracks.length
               ? Text(
@@ -200,7 +200,7 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
         ),
         AdaptiveMenuButton(
           value: "add-to-playlist",
-          leading: const Icon(SpotubeIcons.playlistAdd),
+          leading: const Icon(SonolythIcons.playlistAdd),
           child: selectedTracks.isEmpty ||
                   selectedTracks.length == options.tracks.length
               ? Text(
@@ -212,7 +212,7 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
         ),
         AdaptiveMenuButton(
           value: "add-to-queue",
-          leading: const Icon(SpotubeIcons.queueAdd),
+          leading: const Icon(SonolythIcons.queueAdd),
           child: selectedTracks.isEmpty ||
                   selectedTracks.length == options.tracks.length
               ? Text(
@@ -224,7 +224,7 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
         ),
         AdaptiveMenuButton(
           value: "play-next",
-          leading: const Icon(SpotubeIcons.lightning),
+          leading: const Icon(SonolythIcons.lightning),
           child: selectedTracks.isEmpty ||
                   selectedTracks.length == options.tracks.length
               ? Text(

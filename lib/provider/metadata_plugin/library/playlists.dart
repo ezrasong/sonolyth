@@ -1,14 +1,14 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/metadata_plugin/core/auth.dart';
-import 'package:spotube/provider/metadata_plugin/metadata_plugin_provider.dart';
-import 'package:spotube/provider/metadata_plugin/tracks/playlist.dart';
-import 'package:spotube/provider/metadata_plugin/utils/paginated.dart';
-import 'package:spotube/services/metadata/errors/exceptions.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/metadata_plugin/core/auth.dart';
+import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
+import 'package:sonolyth/provider/metadata_plugin/tracks/playlist.dart';
+import 'package:sonolyth/provider/metadata_plugin/utils/paginated.dart';
+import 'package:sonolyth/services/metadata/errors/exceptions.dart';
 
 class MetadataPluginSavedPlaylistsNotifier
-    extends PaginatedAsyncNotifier<SpotubeSimplePlaylistObject> {
+    extends PaginatedAsyncNotifier<SonolythSimplePlaylistObject> {
   MetadataPluginSavedPlaylistsNotifier() : super();
 
   @override
@@ -29,7 +29,7 @@ class MetadataPluginSavedPlaylistsNotifier
     return playlists;
   }
 
-  void updatePlaylist(SpotubeSimplePlaylistObject playlist) {
+  void updatePlaylist(SonolythSimplePlaylistObject playlist) {
     if (state.value == null) return;
 
     if (state.value!.items.none((e) => e.id == playlist.id)) return;
@@ -43,7 +43,7 @@ class MetadataPluginSavedPlaylistsNotifier
     );
   }
 
-  Future<void> addFavorite(SpotubeSimplePlaylistObject playlist) async {
+  Future<void> addFavorite(SonolythSimplePlaylistObject playlist) async {
     if (state.value == null) return;
 
     final oldState = state.value;
@@ -65,7 +65,7 @@ class MetadataPluginSavedPlaylistsNotifier
     }
   }
 
-  Future<void> removeFavorite(SpotubeSimplePlaylistObject playlist) async {
+  Future<void> removeFavorite(SonolythSimplePlaylistObject playlist) async {
     if (state.value == null) return;
 
     final oldState = state.value;
@@ -121,7 +121,7 @@ class MetadataPluginSavedPlaylistsNotifier
 
 final metadataPluginSavedPlaylistsProvider = AsyncNotifierProvider<
     MetadataPluginSavedPlaylistsNotifier,
-    SpotubePaginationResponseObject<SpotubeSimplePlaylistObject>>(
+    SonolythPaginationResponseObject<SonolythSimplePlaylistObject>>(
   () => MetadataPluginSavedPlaylistsNotifier(),
 );
 

@@ -16,7 +16,7 @@ _$AudioPlayerStateImpl _$$AudioPlayerStateImplFromJson(Map json) =>
           .toList(),
       currentIndex: (json['currentIndex'] as num?)?.toInt() ?? 0,
       tracks: (json['tracks'] as List<dynamic>?)
-              ?.map((e) => SpotubeTrackObject.fromJson(
+              ?.map((e) => SonolythTrackObject.fromJson(
                   Map<String, dynamic>.from(e as Map)))
               .toList() ??
           const [],

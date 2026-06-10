@@ -4,22 +4,22 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
-import 'package:spotube/collections/routes.gr.dart';
+import 'package:sonolyth/collections/routes.gr.dart';
 
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/extensions/constrains.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/modules/player/player_queue.dart';
-import 'package:spotube/modules/player/sibling_tracks_sheet.dart';
-import 'package:spotube/components/adaptive/adaptive_pop_sheet_list.dart';
-import 'package:spotube/components/heart_button/heart_button.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/extensions/duration.dart';
-import 'package:spotube/provider/download_manager_provider.dart';
-import 'package:spotube/provider/audio_player/audio_player.dart';
-import 'package:spotube/provider/local_tracks/local_tracks_provider.dart';
-import 'package:spotube/provider/metadata_plugin/core/auth.dart';
-import 'package:spotube/provider/sleep_timer_provider.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/extensions/constrains.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/modules/player/player_queue.dart';
+import 'package:sonolyth/modules/player/sibling_tracks_sheet.dart';
+import 'package:sonolyth/components/adaptive/adaptive_pop_sheet_list.dart';
+import 'package:sonolyth/components/heart_button/heart_button.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/extensions/duration.dart';
+import 'package:sonolyth/provider/download_manager_provider.dart';
+import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/local_tracks/local_tracks_provider.dart';
+import 'package:sonolyth/provider/metadata_plugin/core/auth.dart';
+import 'package:sonolyth/provider/sleep_timer_provider.dart';
 
 class PlayerActions extends HookConsumerWidget {
   final MainAxisAlignment mainAxisAlignment;
@@ -38,11 +38,11 @@ class PlayerActions extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final playlist = ref.watch(audioPlayerProvider);
-    final isLocalTrack = playlist.activeTrack is SpotubeLocalTrackObject;
+    final isLocalTrack = playlist.activeTrack is SonolythLocalTrackObject;
     ref.watch(downloadManagerProvider);
     final downloader = ref.watch(downloadManagerProvider.notifier);
     final isInQueue = useMemoized(() {
-      if (playlist.activeTrack is! SpotubeFullTrackObject) return false;
+      if (playlist.activeTrack is! SonolythFullTrackObject) return false;
       final downloadTask =
           downloader.getTaskByTrackId(playlist.activeTrack!.id);
       return const [
@@ -89,7 +89,7 @@ class PlayerActions extends HookConsumerWidget {
           Tooltip(
             tooltip: TooltipContainer(child: Text(context.l10n.queue)).call,
             child: IconButton.ghost(
-              icon: const Icon(SpotubeIcons.queue),
+              icon: const Icon(SonolythIcons.queue),
               enabled: playlist.activeTrack != null,
               onPressed: () {
                 openDrawer(
@@ -128,7 +128,7 @@ class PlayerActions extends HookConsumerWidget {
             ).call,
             child: IconButton.ghost(
               enabled: playlist.activeTrack != null,
-              icon: const Icon(SpotubeIcons.alternativeRoute),
+              icon: const Icon(SonolythIcons.alternativeRoute),
               onPressed: () {
                 final screenSize = MediaQuery.sizeOf(context);
                 if (screenSize.mdAndUp) {
@@ -170,11 +170,11 @@ class PlayerActions extends HookConsumerWidget {
                       .call,
               child: IconButton.ghost(
                 icon: Icon(
-                  isDownloaded ? SpotubeIcons.done : SpotubeIcons.download,
+                  isDownloaded ? SonolythIcons.done : SonolythIcons.download,
                 ),
                 onPressed: playlist.activeTrack != null
                     ? () => downloader.addToQueue(
-                        playlist.activeTrack! as SpotubeFullTrackObject)
+                        playlist.activeTrack! as SonolythFullTrackObject)
                     : null,
               ),
             ),
@@ -189,7 +189,7 @@ class PlayerActions extends HookConsumerWidget {
             Text(context.l10n.sleep_timer),
           ],
           icon: Icon(
-            SpotubeIcons.timer,
+            SonolythIcons.timer,
             color: sleepTimer != null ? Colors.red : null,
           ),
           onSelected: (value) {
@@ -217,7 +217,7 @@ class PlayerActions extends HookConsumerWidget {
                     return AlertDialog(
                       trailing: IconButton.ghost(
                         size: ButtonSize.xSmall,
-                        icon: const Icon(SpotubeIcons.close),
+                        icon: const Icon(SonolythIcons.close),
                         onPressed: () {
                           Navigator.of(context).pop();
                         },

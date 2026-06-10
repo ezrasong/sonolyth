@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:spotube/models/metadata/metadata.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
 
 class DiscordNotifier extends AsyncNotifier<void> {
   @override
   FutureOr<void> build() {}
 
-  Future<void> updatePresence(SpotubeTrackObject track) async {}
+  Future<void> updatePresence(SonolythTrackObject track) async {}
 
   Future<void> clear() async {}
 

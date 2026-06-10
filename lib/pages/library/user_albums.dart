@@ -8,18 +8,18 @@ import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/components/fallbacks/error_box.dart';
-import 'package:spotube/components/fallbacks/no_default_metadata_plugin.dart';
-import 'package:spotube/components/playbutton_view/playbutton_view.dart';
-import 'package:spotube/modules/album/album_card.dart';
-import 'package:spotube/components/inter_scrollbar/inter_scrollbar.dart';
-import 'package:spotube/components/fallbacks/anonymous_fallback.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/provider/metadata_plugin/core/auth.dart';
-import 'package:spotube/provider/metadata_plugin/library/albums.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/fallbacks/error_box.dart';
+import 'package:sonolyth/components/fallbacks/no_default_metadata_plugin.dart';
+import 'package:sonolyth/components/playbutton_view/playbutton_view.dart';
+import 'package:sonolyth/modules/album/album_card.dart';
+import 'package:sonolyth/components/inter_scrollbar/inter_scrollbar.dart';
+import 'package:sonolyth/components/fallbacks/anonymous_fallback.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/provider/metadata_plugin/core/auth.dart';
+import 'package:sonolyth/provider/metadata_plugin/library/albums.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:spotube/services/metadata/errors/exceptions.dart';
+import 'package:sonolyth/services/metadata/errors/exceptions.dart';
 
 @RoutePage()
 class UserAlbumsPage extends HookConsumerWidget {
@@ -97,7 +97,7 @@ class UserAlbumsPage extends HookConsumerWidget {
                       child: TextField(
                         onChanged: (value) => searchText.value = value,
                         features: const [
-                          InputFeature.leading(Icon(SpotubeIcons.filter))
+                          InputFeature.leading(Icon(SonolythIcons.filter))
                         ],
                         placeholder: Text(context.l10n.filter_albums),
                       ),

@@ -1,34 +1,34 @@
 part of 'metadata.dart';
 
 @freezed
-class SpotubeFullPlaylistObject with _$SpotubeFullPlaylistObject {
-  factory SpotubeFullPlaylistObject({
+class SonolythFullPlaylistObject with _$SonolythFullPlaylistObject {
+  factory SonolythFullPlaylistObject({
     required String id,
     required String name,
     required String description,
     required String externalUri,
-    required SpotubeUserObject owner,
-    @Default([]) List<SpotubeImageObject> images,
-    @Default([]) List<SpotubeUserObject> collaborators,
+    required SonolythUserObject owner,
+    @Default([]) List<SonolythImageObject> images,
+    @Default([]) List<SonolythUserObject> collaborators,
     @Default(false) bool collaborative,
     @Default(false) bool public,
-  }) = _SpotubeFullPlaylistObject;
+  }) = _SonolythFullPlaylistObject;
 
-  factory SpotubeFullPlaylistObject.fromJson(Map<String, dynamic> json) =>
-      _$SpotubeFullPlaylistObjectFromJson(json);
+  factory SonolythFullPlaylistObject.fromJson(Map<String, dynamic> json) =>
+      _$SonolythFullPlaylistObjectFromJson(json);
 }
 
 @freezed
-class SpotubeSimplePlaylistObject with _$SpotubeSimplePlaylistObject {
-  factory SpotubeSimplePlaylistObject({
+class SonolythSimplePlaylistObject with _$SonolythSimplePlaylistObject {
+  factory SonolythSimplePlaylistObject({
     required String id,
     required String name,
     required String description,
     required String externalUri,
-    required SpotubeUserObject owner,
-    @Default([]) List<SpotubeImageObject> images,
-  }) = _SpotubeSimplePlaylistObject;
+    required SonolythUserObject owner,
+    @Default([]) List<SonolythImageObject> images,
+  }) = _SonolythSimplePlaylistObject;
 
-  factory SpotubeSimplePlaylistObject.fromJson(Map<String, dynamic> json) =>
-      _$SpotubeSimplePlaylistObjectFromJson(json);
+  factory SonolythSimplePlaylistObject.fromJson(Map<String, dynamic> json) =>
+      _$SonolythSimplePlaylistObjectFromJson(json);
 }

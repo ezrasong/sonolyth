@@ -14,115 +14,115 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
-SpotubeAudioSourceContainerPreset _$SpotubeAudioSourceContainerPresetFromJson(
+SonolythAudioSourceContainerPreset _$SonolythAudioSourceContainerPresetFromJson(
     Map<String, dynamic> json) {
   switch (json['type']) {
     case 'lossy':
-      return SpotubeAudioSourceContainerPresetLossy.fromJson(json);
+      return SonolythAudioSourceContainerPresetLossy.fromJson(json);
     case 'lossless':
-      return SpotubeAudioSourceContainerPresetLossless.fromJson(json);
+      return SonolythAudioSourceContainerPresetLossless.fromJson(json);
 
     default:
       throw CheckedFromJsonException(
           json,
           'type',
-          'SpotubeAudioSourceContainerPreset',
+          'SonolythAudioSourceContainerPreset',
           'Invalid union type "${json['type']}"!');
   }
 }
 
 /// @nodoc
-mixin _$SpotubeAudioSourceContainerPreset {
-  SpotubeMediaCompressionType get type => throw _privateConstructorUsedError;
+mixin _$SonolythAudioSourceContainerPreset {
+  SonolythMediaCompressionType get type => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   List<Object> get qualities => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLossyContainerQuality> qualities)
+    required TResult Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLossyContainerQuality> qualities)
         lossy,
-    required TResult Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLosslessContainerQuality> qualities)
+    required TResult Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLosslessContainerQuality> qualities)
         lossless,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLossyContainerQuality> qualities)?
+    TResult? Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLossyContainerQuality> qualities)?
         lossy,
-    TResult? Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLosslessContainerQuality> qualities)?
+    TResult? Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLosslessContainerQuality> qualities)?
         lossless,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLossyContainerQuality> qualities)?
+    TResult Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLossyContainerQuality> qualities)?
         lossy,
-    TResult Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLosslessContainerQuality> qualities)?
+    TResult Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLosslessContainerQuality> qualities)?
         lossless,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(SpotubeAudioSourceContainerPresetLossy value)
+    required TResult Function(SonolythAudioSourceContainerPresetLossy value)
         lossy,
-    required TResult Function(SpotubeAudioSourceContainerPresetLossless value)
+    required TResult Function(SonolythAudioSourceContainerPresetLossless value)
         lossless,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(SpotubeAudioSourceContainerPresetLossy value)? lossy,
-    TResult? Function(SpotubeAudioSourceContainerPresetLossless value)?
+    TResult? Function(SonolythAudioSourceContainerPresetLossy value)? lossy,
+    TResult? Function(SonolythAudioSourceContainerPresetLossless value)?
         lossless,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(SpotubeAudioSourceContainerPresetLossy value)? lossy,
-    TResult Function(SpotubeAudioSourceContainerPresetLossless value)? lossless,
+    TResult Function(SonolythAudioSourceContainerPresetLossy value)? lossy,
+    TResult Function(SonolythAudioSourceContainerPresetLossless value)? lossless,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubeAudioSourceContainerPreset to a JSON map.
+  /// Serializes this SonolythAudioSourceContainerPreset to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubeAudioSourceContainerPreset
+  /// Create a copy of SonolythAudioSourceContainerPreset
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubeAudioSourceContainerPresetCopyWith<SpotubeAudioSourceContainerPreset>
+  $SonolythAudioSourceContainerPresetCopyWith<SonolythAudioSourceContainerPreset>
       get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubeAudioSourceContainerPresetCopyWith<$Res> {
-  factory $SpotubeAudioSourceContainerPresetCopyWith(
-          SpotubeAudioSourceContainerPreset value,
-          $Res Function(SpotubeAudioSourceContainerPreset) then) =
-      _$SpotubeAudioSourceContainerPresetCopyWithImpl<$Res,
-          SpotubeAudioSourceContainerPreset>;
+abstract class $SonolythAudioSourceContainerPresetCopyWith<$Res> {
+  factory $SonolythAudioSourceContainerPresetCopyWith(
+          SonolythAudioSourceContainerPreset value,
+          $Res Function(SonolythAudioSourceContainerPreset) then) =
+      _$SonolythAudioSourceContainerPresetCopyWithImpl<$Res,
+          SonolythAudioSourceContainerPreset>;
   @useResult
-  $Res call({SpotubeMediaCompressionType type, String name});
+  $Res call({SonolythMediaCompressionType type, String name});
 }
 
 /// @nodoc
-class _$SpotubeAudioSourceContainerPresetCopyWithImpl<$Res,
-        $Val extends SpotubeAudioSourceContainerPreset>
-    implements $SpotubeAudioSourceContainerPresetCopyWith<$Res> {
-  _$SpotubeAudioSourceContainerPresetCopyWithImpl(this._value, this._then);
+class _$SonolythAudioSourceContainerPresetCopyWithImpl<$Res,
+        $Val extends SonolythAudioSourceContainerPreset>
+    implements $SonolythAudioSourceContainerPresetCopyWith<$Res> {
+  _$SonolythAudioSourceContainerPresetCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubeAudioSourceContainerPreset
+  /// Create a copy of SonolythAudioSourceContainerPreset
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -134,7 +134,7 @@ class _$SpotubeAudioSourceContainerPresetCopyWithImpl<$Res,
       type: null == type
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
-              as SpotubeMediaCompressionType,
+              as SonolythMediaCompressionType,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -144,31 +144,31 @@ class _$SpotubeAudioSourceContainerPresetCopyWithImpl<$Res,
 }
 
 /// @nodoc
-abstract class _$$SpotubeAudioSourceContainerPresetLossyImplCopyWith<$Res>
-    implements $SpotubeAudioSourceContainerPresetCopyWith<$Res> {
-  factory _$$SpotubeAudioSourceContainerPresetLossyImplCopyWith(
-          _$SpotubeAudioSourceContainerPresetLossyImpl value,
-          $Res Function(_$SpotubeAudioSourceContainerPresetLossyImpl) then) =
-      __$$SpotubeAudioSourceContainerPresetLossyImplCopyWithImpl<$Res>;
+abstract class _$$SonolythAudioSourceContainerPresetLossyImplCopyWith<$Res>
+    implements $SonolythAudioSourceContainerPresetCopyWith<$Res> {
+  factory _$$SonolythAudioSourceContainerPresetLossyImplCopyWith(
+          _$SonolythAudioSourceContainerPresetLossyImpl value,
+          $Res Function(_$SonolythAudioSourceContainerPresetLossyImpl) then) =
+      __$$SonolythAudioSourceContainerPresetLossyImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
-      {SpotubeMediaCompressionType type,
+      {SonolythMediaCompressionType type,
       String name,
-      List<SpotubeAudioLossyContainerQuality> qualities});
+      List<SonolythAudioLossyContainerQuality> qualities});
 }
 
 /// @nodoc
-class __$$SpotubeAudioSourceContainerPresetLossyImplCopyWithImpl<$Res>
-    extends _$SpotubeAudioSourceContainerPresetCopyWithImpl<$Res,
-        _$SpotubeAudioSourceContainerPresetLossyImpl>
-    implements _$$SpotubeAudioSourceContainerPresetLossyImplCopyWith<$Res> {
-  __$$SpotubeAudioSourceContainerPresetLossyImplCopyWithImpl(
-      _$SpotubeAudioSourceContainerPresetLossyImpl _value,
-      $Res Function(_$SpotubeAudioSourceContainerPresetLossyImpl) _then)
+class __$$SonolythAudioSourceContainerPresetLossyImplCopyWithImpl<$Res>
+    extends _$SonolythAudioSourceContainerPresetCopyWithImpl<$Res,
+        _$SonolythAudioSourceContainerPresetLossyImpl>
+    implements _$$SonolythAudioSourceContainerPresetLossyImplCopyWith<$Res> {
+  __$$SonolythAudioSourceContainerPresetLossyImplCopyWithImpl(
+      _$SonolythAudioSourceContainerPresetLossyImpl _value,
+      $Res Function(_$SonolythAudioSourceContainerPresetLossyImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeAudioSourceContainerPreset
+  /// Create a copy of SonolythAudioSourceContainerPreset
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -177,11 +177,11 @@ class __$$SpotubeAudioSourceContainerPresetLossyImplCopyWithImpl<$Res>
     Object? name = null,
     Object? qualities = null,
   }) {
-    return _then(_$SpotubeAudioSourceContainerPresetLossyImpl(
+    return _then(_$SonolythAudioSourceContainerPresetLossyImpl(
       type: null == type
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
-              as SpotubeMediaCompressionType,
+              as SonolythMediaCompressionType,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -189,33 +189,33 @@ class __$$SpotubeAudioSourceContainerPresetLossyImplCopyWithImpl<$Res>
       qualities: null == qualities
           ? _value._qualities
           : qualities // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeAudioLossyContainerQuality>,
+              as List<SonolythAudioLossyContainerQuality>,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeAudioSourceContainerPresetLossyImpl
-    extends SpotubeAudioSourceContainerPresetLossy {
-  _$SpotubeAudioSourceContainerPresetLossyImpl(
+class _$SonolythAudioSourceContainerPresetLossyImpl
+    extends SonolythAudioSourceContainerPresetLossy {
+  _$SonolythAudioSourceContainerPresetLossyImpl(
       {required this.type,
       required this.name,
-      required final List<SpotubeAudioLossyContainerQuality> qualities})
+      required final List<SonolythAudioLossyContainerQuality> qualities})
       : _qualities = qualities,
         super._();
 
-  factory _$SpotubeAudioSourceContainerPresetLossyImpl.fromJson(
+  factory _$SonolythAudioSourceContainerPresetLossyImpl.fromJson(
           Map<String, dynamic> json) =>
-      _$$SpotubeAudioSourceContainerPresetLossyImplFromJson(json);
+      _$$SonolythAudioSourceContainerPresetLossyImplFromJson(json);
 
   @override
-  final SpotubeMediaCompressionType type;
+  final SonolythMediaCompressionType type;
   @override
   final String name;
-  final List<SpotubeAudioLossyContainerQuality> _qualities;
+  final List<SonolythAudioLossyContainerQuality> _qualities;
   @override
-  List<SpotubeAudioLossyContainerQuality> get qualities {
+  List<SonolythAudioLossyContainerQuality> get qualities {
     if (_qualities is EqualUnmodifiableListView) return _qualities;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_qualities);
@@ -223,14 +223,14 @@ class _$SpotubeAudioSourceContainerPresetLossyImpl
 
   @override
   String toString() {
-    return 'SpotubeAudioSourceContainerPreset.lossy(type: $type, name: $name, qualities: $qualities)';
+    return 'SonolythAudioSourceContainerPreset.lossy(type: $type, name: $name, qualities: $qualities)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeAudioSourceContainerPresetLossyImpl &&
+            other is _$SonolythAudioSourceContainerPresetLossyImpl &&
             (identical(other.type, type) || other.type == type) &&
             (identical(other.name, name) || other.name == name) &&
             const DeepCollectionEquality()
@@ -242,25 +242,25 @@ class _$SpotubeAudioSourceContainerPresetLossyImpl
   int get hashCode => Object.hash(
       runtimeType, type, name, const DeepCollectionEquality().hash(_qualities));
 
-  /// Create a copy of SpotubeAudioSourceContainerPreset
+  /// Create a copy of SonolythAudioSourceContainerPreset
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeAudioSourceContainerPresetLossyImplCopyWith<
-          _$SpotubeAudioSourceContainerPresetLossyImpl>
+  _$$SonolythAudioSourceContainerPresetLossyImplCopyWith<
+          _$SonolythAudioSourceContainerPresetLossyImpl>
       get copyWith =>
-          __$$SpotubeAudioSourceContainerPresetLossyImplCopyWithImpl<
-              _$SpotubeAudioSourceContainerPresetLossyImpl>(this, _$identity);
+          __$$SonolythAudioSourceContainerPresetLossyImplCopyWithImpl<
+              _$SonolythAudioSourceContainerPresetLossyImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLossyContainerQuality> qualities)
+    required TResult Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLossyContainerQuality> qualities)
         lossy,
-    required TResult Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLosslessContainerQuality> qualities)
+    required TResult Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLosslessContainerQuality> qualities)
         lossless,
   }) {
     return lossy(type, name, qualities);
@@ -269,11 +269,11 @@ class _$SpotubeAudioSourceContainerPresetLossyImpl
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLossyContainerQuality> qualities)?
+    TResult? Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLossyContainerQuality> qualities)?
         lossy,
-    TResult? Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLosslessContainerQuality> qualities)?
+    TResult? Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLosslessContainerQuality> qualities)?
         lossless,
   }) {
     return lossy?.call(type, name, qualities);
@@ -282,11 +282,11 @@ class _$SpotubeAudioSourceContainerPresetLossyImpl
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLossyContainerQuality> qualities)?
+    TResult Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLossyContainerQuality> qualities)?
         lossy,
-    TResult Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLosslessContainerQuality> qualities)?
+    TResult Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLosslessContainerQuality> qualities)?
         lossless,
     required TResult orElse(),
   }) {
@@ -299,9 +299,9 @@ class _$SpotubeAudioSourceContainerPresetLossyImpl
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(SpotubeAudioSourceContainerPresetLossy value)
+    required TResult Function(SonolythAudioSourceContainerPresetLossy value)
         lossy,
-    required TResult Function(SpotubeAudioSourceContainerPresetLossless value)
+    required TResult Function(SonolythAudioSourceContainerPresetLossless value)
         lossless,
   }) {
     return lossy(this);
@@ -310,8 +310,8 @@ class _$SpotubeAudioSourceContainerPresetLossyImpl
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(SpotubeAudioSourceContainerPresetLossy value)? lossy,
-    TResult? Function(SpotubeAudioSourceContainerPresetLossless value)?
+    TResult? Function(SonolythAudioSourceContainerPresetLossy value)? lossy,
+    TResult? Function(SonolythAudioSourceContainerPresetLossless value)?
         lossless,
   }) {
     return lossy?.call(this);
@@ -320,8 +320,8 @@ class _$SpotubeAudioSourceContainerPresetLossyImpl
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(SpotubeAudioSourceContainerPresetLossy value)? lossy,
-    TResult Function(SpotubeAudioSourceContainerPresetLossless value)? lossless,
+    TResult Function(SonolythAudioSourceContainerPresetLossy value)? lossy,
+    TResult Function(SonolythAudioSourceContainerPresetLossless value)? lossless,
     required TResult orElse(),
   }) {
     if (lossy != null) {
@@ -332,67 +332,67 @@ class _$SpotubeAudioSourceContainerPresetLossyImpl
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeAudioSourceContainerPresetLossyImplToJson(
+    return _$$SonolythAudioSourceContainerPresetLossyImplToJson(
       this,
     );
   }
 }
 
-abstract class SpotubeAudioSourceContainerPresetLossy
-    extends SpotubeAudioSourceContainerPreset {
-  factory SpotubeAudioSourceContainerPresetLossy(
-          {required final SpotubeMediaCompressionType type,
+abstract class SonolythAudioSourceContainerPresetLossy
+    extends SonolythAudioSourceContainerPreset {
+  factory SonolythAudioSourceContainerPresetLossy(
+          {required final SonolythMediaCompressionType type,
           required final String name,
-          required final List<SpotubeAudioLossyContainerQuality> qualities}) =
-      _$SpotubeAudioSourceContainerPresetLossyImpl;
-  SpotubeAudioSourceContainerPresetLossy._() : super._();
+          required final List<SonolythAudioLossyContainerQuality> qualities}) =
+      _$SonolythAudioSourceContainerPresetLossyImpl;
+  SonolythAudioSourceContainerPresetLossy._() : super._();
 
-  factory SpotubeAudioSourceContainerPresetLossy.fromJson(
+  factory SonolythAudioSourceContainerPresetLossy.fromJson(
           Map<String, dynamic> json) =
-      _$SpotubeAudioSourceContainerPresetLossyImpl.fromJson;
+      _$SonolythAudioSourceContainerPresetLossyImpl.fromJson;
 
   @override
-  SpotubeMediaCompressionType get type;
+  SonolythMediaCompressionType get type;
   @override
   String get name;
   @override
-  List<SpotubeAudioLossyContainerQuality> get qualities;
+  List<SonolythAudioLossyContainerQuality> get qualities;
 
-  /// Create a copy of SpotubeAudioSourceContainerPreset
+  /// Create a copy of SonolythAudioSourceContainerPreset
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeAudioSourceContainerPresetLossyImplCopyWith<
-          _$SpotubeAudioSourceContainerPresetLossyImpl>
+  _$$SonolythAudioSourceContainerPresetLossyImplCopyWith<
+          _$SonolythAudioSourceContainerPresetLossyImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$SpotubeAudioSourceContainerPresetLosslessImplCopyWith<$Res>
-    implements $SpotubeAudioSourceContainerPresetCopyWith<$Res> {
-  factory _$$SpotubeAudioSourceContainerPresetLosslessImplCopyWith(
-          _$SpotubeAudioSourceContainerPresetLosslessImpl value,
-          $Res Function(_$SpotubeAudioSourceContainerPresetLosslessImpl) then) =
-      __$$SpotubeAudioSourceContainerPresetLosslessImplCopyWithImpl<$Res>;
+abstract class _$$SonolythAudioSourceContainerPresetLosslessImplCopyWith<$Res>
+    implements $SonolythAudioSourceContainerPresetCopyWith<$Res> {
+  factory _$$SonolythAudioSourceContainerPresetLosslessImplCopyWith(
+          _$SonolythAudioSourceContainerPresetLosslessImpl value,
+          $Res Function(_$SonolythAudioSourceContainerPresetLosslessImpl) then) =
+      __$$SonolythAudioSourceContainerPresetLosslessImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
-      {SpotubeMediaCompressionType type,
+      {SonolythMediaCompressionType type,
       String name,
-      List<SpotubeAudioLosslessContainerQuality> qualities});
+      List<SonolythAudioLosslessContainerQuality> qualities});
 }
 
 /// @nodoc
-class __$$SpotubeAudioSourceContainerPresetLosslessImplCopyWithImpl<$Res>
-    extends _$SpotubeAudioSourceContainerPresetCopyWithImpl<$Res,
-        _$SpotubeAudioSourceContainerPresetLosslessImpl>
-    implements _$$SpotubeAudioSourceContainerPresetLosslessImplCopyWith<$Res> {
-  __$$SpotubeAudioSourceContainerPresetLosslessImplCopyWithImpl(
-      _$SpotubeAudioSourceContainerPresetLosslessImpl _value,
-      $Res Function(_$SpotubeAudioSourceContainerPresetLosslessImpl) _then)
+class __$$SonolythAudioSourceContainerPresetLosslessImplCopyWithImpl<$Res>
+    extends _$SonolythAudioSourceContainerPresetCopyWithImpl<$Res,
+        _$SonolythAudioSourceContainerPresetLosslessImpl>
+    implements _$$SonolythAudioSourceContainerPresetLosslessImplCopyWith<$Res> {
+  __$$SonolythAudioSourceContainerPresetLosslessImplCopyWithImpl(
+      _$SonolythAudioSourceContainerPresetLosslessImpl _value,
+      $Res Function(_$SonolythAudioSourceContainerPresetLosslessImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeAudioSourceContainerPreset
+  /// Create a copy of SonolythAudioSourceContainerPreset
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -401,11 +401,11 @@ class __$$SpotubeAudioSourceContainerPresetLosslessImplCopyWithImpl<$Res>
     Object? name = null,
     Object? qualities = null,
   }) {
-    return _then(_$SpotubeAudioSourceContainerPresetLosslessImpl(
+    return _then(_$SonolythAudioSourceContainerPresetLosslessImpl(
       type: null == type
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
-              as SpotubeMediaCompressionType,
+              as SonolythMediaCompressionType,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -413,33 +413,33 @@ class __$$SpotubeAudioSourceContainerPresetLosslessImplCopyWithImpl<$Res>
       qualities: null == qualities
           ? _value._qualities
           : qualities // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeAudioLosslessContainerQuality>,
+              as List<SonolythAudioLosslessContainerQuality>,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeAudioSourceContainerPresetLosslessImpl
-    extends SpotubeAudioSourceContainerPresetLossless {
-  _$SpotubeAudioSourceContainerPresetLosslessImpl(
+class _$SonolythAudioSourceContainerPresetLosslessImpl
+    extends SonolythAudioSourceContainerPresetLossless {
+  _$SonolythAudioSourceContainerPresetLosslessImpl(
       {required this.type,
       required this.name,
-      required final List<SpotubeAudioLosslessContainerQuality> qualities})
+      required final List<SonolythAudioLosslessContainerQuality> qualities})
       : _qualities = qualities,
         super._();
 
-  factory _$SpotubeAudioSourceContainerPresetLosslessImpl.fromJson(
+  factory _$SonolythAudioSourceContainerPresetLosslessImpl.fromJson(
           Map<String, dynamic> json) =>
-      _$$SpotubeAudioSourceContainerPresetLosslessImplFromJson(json);
+      _$$SonolythAudioSourceContainerPresetLosslessImplFromJson(json);
 
   @override
-  final SpotubeMediaCompressionType type;
+  final SonolythMediaCompressionType type;
   @override
   final String name;
-  final List<SpotubeAudioLosslessContainerQuality> _qualities;
+  final List<SonolythAudioLosslessContainerQuality> _qualities;
   @override
-  List<SpotubeAudioLosslessContainerQuality> get qualities {
+  List<SonolythAudioLosslessContainerQuality> get qualities {
     if (_qualities is EqualUnmodifiableListView) return _qualities;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_qualities);
@@ -447,14 +447,14 @@ class _$SpotubeAudioSourceContainerPresetLosslessImpl
 
   @override
   String toString() {
-    return 'SpotubeAudioSourceContainerPreset.lossless(type: $type, name: $name, qualities: $qualities)';
+    return 'SonolythAudioSourceContainerPreset.lossless(type: $type, name: $name, qualities: $qualities)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeAudioSourceContainerPresetLosslessImpl &&
+            other is _$SonolythAudioSourceContainerPresetLosslessImpl &&
             (identical(other.type, type) || other.type == type) &&
             (identical(other.name, name) || other.name == name) &&
             const DeepCollectionEquality()
@@ -466,26 +466,26 @@ class _$SpotubeAudioSourceContainerPresetLosslessImpl
   int get hashCode => Object.hash(
       runtimeType, type, name, const DeepCollectionEquality().hash(_qualities));
 
-  /// Create a copy of SpotubeAudioSourceContainerPreset
+  /// Create a copy of SonolythAudioSourceContainerPreset
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeAudioSourceContainerPresetLosslessImplCopyWith<
-          _$SpotubeAudioSourceContainerPresetLosslessImpl>
+  _$$SonolythAudioSourceContainerPresetLosslessImplCopyWith<
+          _$SonolythAudioSourceContainerPresetLosslessImpl>
       get copyWith =>
-          __$$SpotubeAudioSourceContainerPresetLosslessImplCopyWithImpl<
-                  _$SpotubeAudioSourceContainerPresetLosslessImpl>(
+          __$$SonolythAudioSourceContainerPresetLosslessImplCopyWithImpl<
+                  _$SonolythAudioSourceContainerPresetLosslessImpl>(
               this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLossyContainerQuality> qualities)
+    required TResult Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLossyContainerQuality> qualities)
         lossy,
-    required TResult Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLosslessContainerQuality> qualities)
+    required TResult Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLosslessContainerQuality> qualities)
         lossless,
   }) {
     return lossless(type, name, qualities);
@@ -494,11 +494,11 @@ class _$SpotubeAudioSourceContainerPresetLosslessImpl
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLossyContainerQuality> qualities)?
+    TResult? Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLossyContainerQuality> qualities)?
         lossy,
-    TResult? Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLosslessContainerQuality> qualities)?
+    TResult? Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLosslessContainerQuality> qualities)?
         lossless,
   }) {
     return lossless?.call(type, name, qualities);
@@ -507,11 +507,11 @@ class _$SpotubeAudioSourceContainerPresetLosslessImpl
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLossyContainerQuality> qualities)?
+    TResult Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLossyContainerQuality> qualities)?
         lossy,
-    TResult Function(SpotubeMediaCompressionType type, String name,
-            List<SpotubeAudioLosslessContainerQuality> qualities)?
+    TResult Function(SonolythMediaCompressionType type, String name,
+            List<SonolythAudioLosslessContainerQuality> qualities)?
         lossless,
     required TResult orElse(),
   }) {
@@ -524,9 +524,9 @@ class _$SpotubeAudioSourceContainerPresetLosslessImpl
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(SpotubeAudioSourceContainerPresetLossy value)
+    required TResult Function(SonolythAudioSourceContainerPresetLossy value)
         lossy,
-    required TResult Function(SpotubeAudioSourceContainerPresetLossless value)
+    required TResult Function(SonolythAudioSourceContainerPresetLossless value)
         lossless,
   }) {
     return lossless(this);
@@ -535,8 +535,8 @@ class _$SpotubeAudioSourceContainerPresetLosslessImpl
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(SpotubeAudioSourceContainerPresetLossy value)? lossy,
-    TResult? Function(SpotubeAudioSourceContainerPresetLossless value)?
+    TResult? Function(SonolythAudioSourceContainerPresetLossy value)? lossy,
+    TResult? Function(SonolythAudioSourceContainerPresetLossless value)?
         lossless,
   }) {
     return lossless?.call(this);
@@ -545,8 +545,8 @@ class _$SpotubeAudioSourceContainerPresetLosslessImpl
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(SpotubeAudioSourceContainerPresetLossy value)? lossy,
-    TResult Function(SpotubeAudioSourceContainerPresetLossless value)? lossless,
+    TResult Function(SonolythAudioSourceContainerPresetLossy value)? lossy,
+    TResult Function(SonolythAudioSourceContainerPresetLossless value)? lossless,
     required TResult orElse(),
   }) {
     if (lossless != null) {
@@ -557,83 +557,83 @@ class _$SpotubeAudioSourceContainerPresetLosslessImpl
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeAudioSourceContainerPresetLosslessImplToJson(
+    return _$$SonolythAudioSourceContainerPresetLosslessImplToJson(
       this,
     );
   }
 }
 
-abstract class SpotubeAudioSourceContainerPresetLossless
-    extends SpotubeAudioSourceContainerPreset {
-  factory SpotubeAudioSourceContainerPresetLossless(
-      {required final SpotubeMediaCompressionType type,
+abstract class SonolythAudioSourceContainerPresetLossless
+    extends SonolythAudioSourceContainerPreset {
+  factory SonolythAudioSourceContainerPresetLossless(
+      {required final SonolythMediaCompressionType type,
       required final String name,
-      required final List<SpotubeAudioLosslessContainerQuality>
-          qualities}) = _$SpotubeAudioSourceContainerPresetLosslessImpl;
-  SpotubeAudioSourceContainerPresetLossless._() : super._();
+      required final List<SonolythAudioLosslessContainerQuality>
+          qualities}) = _$SonolythAudioSourceContainerPresetLosslessImpl;
+  SonolythAudioSourceContainerPresetLossless._() : super._();
 
-  factory SpotubeAudioSourceContainerPresetLossless.fromJson(
+  factory SonolythAudioSourceContainerPresetLossless.fromJson(
           Map<String, dynamic> json) =
-      _$SpotubeAudioSourceContainerPresetLosslessImpl.fromJson;
+      _$SonolythAudioSourceContainerPresetLosslessImpl.fromJson;
 
   @override
-  SpotubeMediaCompressionType get type;
+  SonolythMediaCompressionType get type;
   @override
   String get name;
   @override
-  List<SpotubeAudioLosslessContainerQuality> get qualities;
+  List<SonolythAudioLosslessContainerQuality> get qualities;
 
-  /// Create a copy of SpotubeAudioSourceContainerPreset
+  /// Create a copy of SonolythAudioSourceContainerPreset
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeAudioSourceContainerPresetLosslessImplCopyWith<
-          _$SpotubeAudioSourceContainerPresetLosslessImpl>
+  _$$SonolythAudioSourceContainerPresetLosslessImplCopyWith<
+          _$SonolythAudioSourceContainerPresetLosslessImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
-SpotubeAudioLossyContainerQuality _$SpotubeAudioLossyContainerQualityFromJson(
+SonolythAudioLossyContainerQuality _$SonolythAudioLossyContainerQualityFromJson(
     Map<String, dynamic> json) {
-  return _SpotubeAudioLossyContainerQuality.fromJson(json);
+  return _SonolythAudioLossyContainerQuality.fromJson(json);
 }
 
 /// @nodoc
-mixin _$SpotubeAudioLossyContainerQuality {
+mixin _$SonolythAudioLossyContainerQuality {
   int get bitrate => throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubeAudioLossyContainerQuality to a JSON map.
+  /// Serializes this SonolythAudioLossyContainerQuality to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubeAudioLossyContainerQuality
+  /// Create a copy of SonolythAudioLossyContainerQuality
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubeAudioLossyContainerQualityCopyWith<SpotubeAudioLossyContainerQuality>
+  $SonolythAudioLossyContainerQualityCopyWith<SonolythAudioLossyContainerQuality>
       get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubeAudioLossyContainerQualityCopyWith<$Res> {
-  factory $SpotubeAudioLossyContainerQualityCopyWith(
-          SpotubeAudioLossyContainerQuality value,
-          $Res Function(SpotubeAudioLossyContainerQuality) then) =
-      _$SpotubeAudioLossyContainerQualityCopyWithImpl<$Res,
-          SpotubeAudioLossyContainerQuality>;
+abstract class $SonolythAudioLossyContainerQualityCopyWith<$Res> {
+  factory $SonolythAudioLossyContainerQualityCopyWith(
+          SonolythAudioLossyContainerQuality value,
+          $Res Function(SonolythAudioLossyContainerQuality) then) =
+      _$SonolythAudioLossyContainerQualityCopyWithImpl<$Res,
+          SonolythAudioLossyContainerQuality>;
   @useResult
   $Res call({int bitrate});
 }
 
 /// @nodoc
-class _$SpotubeAudioLossyContainerQualityCopyWithImpl<$Res,
-        $Val extends SpotubeAudioLossyContainerQuality>
-    implements $SpotubeAudioLossyContainerQualityCopyWith<$Res> {
-  _$SpotubeAudioLossyContainerQualityCopyWithImpl(this._value, this._then);
+class _$SonolythAudioLossyContainerQualityCopyWithImpl<$Res,
+        $Val extends SonolythAudioLossyContainerQuality>
+    implements $SonolythAudioLossyContainerQualityCopyWith<$Res> {
+  _$SonolythAudioLossyContainerQualityCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubeAudioLossyContainerQuality
+  /// Create a copy of SonolythAudioLossyContainerQuality
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -650,35 +650,35 @@ class _$SpotubeAudioLossyContainerQualityCopyWithImpl<$Res,
 }
 
 /// @nodoc
-abstract class _$$SpotubeAudioLossyContainerQualityImplCopyWith<$Res>
-    implements $SpotubeAudioLossyContainerQualityCopyWith<$Res> {
-  factory _$$SpotubeAudioLossyContainerQualityImplCopyWith(
-          _$SpotubeAudioLossyContainerQualityImpl value,
-          $Res Function(_$SpotubeAudioLossyContainerQualityImpl) then) =
-      __$$SpotubeAudioLossyContainerQualityImplCopyWithImpl<$Res>;
+abstract class _$$SonolythAudioLossyContainerQualityImplCopyWith<$Res>
+    implements $SonolythAudioLossyContainerQualityCopyWith<$Res> {
+  factory _$$SonolythAudioLossyContainerQualityImplCopyWith(
+          _$SonolythAudioLossyContainerQualityImpl value,
+          $Res Function(_$SonolythAudioLossyContainerQualityImpl) then) =
+      __$$SonolythAudioLossyContainerQualityImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({int bitrate});
 }
 
 /// @nodoc
-class __$$SpotubeAudioLossyContainerQualityImplCopyWithImpl<$Res>
-    extends _$SpotubeAudioLossyContainerQualityCopyWithImpl<$Res,
-        _$SpotubeAudioLossyContainerQualityImpl>
-    implements _$$SpotubeAudioLossyContainerQualityImplCopyWith<$Res> {
-  __$$SpotubeAudioLossyContainerQualityImplCopyWithImpl(
-      _$SpotubeAudioLossyContainerQualityImpl _value,
-      $Res Function(_$SpotubeAudioLossyContainerQualityImpl) _then)
+class __$$SonolythAudioLossyContainerQualityImplCopyWithImpl<$Res>
+    extends _$SonolythAudioLossyContainerQualityCopyWithImpl<$Res,
+        _$SonolythAudioLossyContainerQualityImpl>
+    implements _$$SonolythAudioLossyContainerQualityImplCopyWith<$Res> {
+  __$$SonolythAudioLossyContainerQualityImplCopyWithImpl(
+      _$SonolythAudioLossyContainerQualityImpl _value,
+      $Res Function(_$SonolythAudioLossyContainerQualityImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeAudioLossyContainerQuality
+  /// Create a copy of SonolythAudioLossyContainerQuality
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? bitrate = null,
   }) {
-    return _then(_$SpotubeAudioLossyContainerQualityImpl(
+    return _then(_$SonolythAudioLossyContainerQualityImpl(
       bitrate: null == bitrate
           ? _value.bitrate
           : bitrate // ignore: cast_nullable_to_non_nullable
@@ -689,13 +689,13 @@ class __$$SpotubeAudioLossyContainerQualityImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeAudioLossyContainerQualityImpl
-    extends _SpotubeAudioLossyContainerQuality {
-  _$SpotubeAudioLossyContainerQualityImpl({required this.bitrate}) : super._();
+class _$SonolythAudioLossyContainerQualityImpl
+    extends _SonolythAudioLossyContainerQuality {
+  _$SonolythAudioLossyContainerQualityImpl({required this.bitrate}) : super._();
 
-  factory _$SpotubeAudioLossyContainerQualityImpl.fromJson(
+  factory _$SonolythAudioLossyContainerQualityImpl.fromJson(
           Map<String, dynamic> json) =>
-      _$$SpotubeAudioLossyContainerQualityImplFromJson(json);
+      _$$SonolythAudioLossyContainerQualityImplFromJson(json);
 
   @override
   final int bitrate;
@@ -704,7 +704,7 @@ class _$SpotubeAudioLossyContainerQualityImpl
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeAudioLossyContainerQualityImpl &&
+            other is _$SonolythAudioLossyContainerQualityImpl &&
             (identical(other.bitrate, bitrate) || other.bitrate == bitrate));
   }
 
@@ -712,90 +712,90 @@ class _$SpotubeAudioLossyContainerQualityImpl
   @override
   int get hashCode => Object.hash(runtimeType, bitrate);
 
-  /// Create a copy of SpotubeAudioLossyContainerQuality
+  /// Create a copy of SonolythAudioLossyContainerQuality
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeAudioLossyContainerQualityImplCopyWith<
-          _$SpotubeAudioLossyContainerQualityImpl>
-      get copyWith => __$$SpotubeAudioLossyContainerQualityImplCopyWithImpl<
-          _$SpotubeAudioLossyContainerQualityImpl>(this, _$identity);
+  _$$SonolythAudioLossyContainerQualityImplCopyWith<
+          _$SonolythAudioLossyContainerQualityImpl>
+      get copyWith => __$$SonolythAudioLossyContainerQualityImplCopyWithImpl<
+          _$SonolythAudioLossyContainerQualityImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeAudioLossyContainerQualityImplToJson(
+    return _$$SonolythAudioLossyContainerQualityImplToJson(
       this,
     );
   }
 }
 
-abstract class _SpotubeAudioLossyContainerQuality
-    extends SpotubeAudioLossyContainerQuality {
-  factory _SpotubeAudioLossyContainerQuality({required final int bitrate}) =
-      _$SpotubeAudioLossyContainerQualityImpl;
-  _SpotubeAudioLossyContainerQuality._() : super._();
+abstract class _SonolythAudioLossyContainerQuality
+    extends SonolythAudioLossyContainerQuality {
+  factory _SonolythAudioLossyContainerQuality({required final int bitrate}) =
+      _$SonolythAudioLossyContainerQualityImpl;
+  _SonolythAudioLossyContainerQuality._() : super._();
 
-  factory _SpotubeAudioLossyContainerQuality.fromJson(
+  factory _SonolythAudioLossyContainerQuality.fromJson(
           Map<String, dynamic> json) =
-      _$SpotubeAudioLossyContainerQualityImpl.fromJson;
+      _$SonolythAudioLossyContainerQualityImpl.fromJson;
 
   @override
   int get bitrate;
 
-  /// Create a copy of SpotubeAudioLossyContainerQuality
+  /// Create a copy of SonolythAudioLossyContainerQuality
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeAudioLossyContainerQualityImplCopyWith<
-          _$SpotubeAudioLossyContainerQualityImpl>
+  _$$SonolythAudioLossyContainerQualityImplCopyWith<
+          _$SonolythAudioLossyContainerQualityImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
-SpotubeAudioLosslessContainerQuality
-    _$SpotubeAudioLosslessContainerQualityFromJson(Map<String, dynamic> json) {
-  return _SpotubeAudioLosslessContainerQuality.fromJson(json);
+SonolythAudioLosslessContainerQuality
+    _$SonolythAudioLosslessContainerQualityFromJson(Map<String, dynamic> json) {
+  return _SonolythAudioLosslessContainerQuality.fromJson(json);
 }
 
 /// @nodoc
-mixin _$SpotubeAudioLosslessContainerQuality {
+mixin _$SonolythAudioLosslessContainerQuality {
   int get bitDepth => throw _privateConstructorUsedError; // bit
   int get sampleRate => throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubeAudioLosslessContainerQuality to a JSON map.
+  /// Serializes this SonolythAudioLosslessContainerQuality to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubeAudioLosslessContainerQuality
+  /// Create a copy of SonolythAudioLosslessContainerQuality
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubeAudioLosslessContainerQualityCopyWith<
-          SpotubeAudioLosslessContainerQuality>
+  $SonolythAudioLosslessContainerQualityCopyWith<
+          SonolythAudioLosslessContainerQuality>
       get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubeAudioLosslessContainerQualityCopyWith<$Res> {
-  factory $SpotubeAudioLosslessContainerQualityCopyWith(
-          SpotubeAudioLosslessContainerQuality value,
-          $Res Function(SpotubeAudioLosslessContainerQuality) then) =
-      _$SpotubeAudioLosslessContainerQualityCopyWithImpl<$Res,
-          SpotubeAudioLosslessContainerQuality>;
+abstract class $SonolythAudioLosslessContainerQualityCopyWith<$Res> {
+  factory $SonolythAudioLosslessContainerQualityCopyWith(
+          SonolythAudioLosslessContainerQuality value,
+          $Res Function(SonolythAudioLosslessContainerQuality) then) =
+      _$SonolythAudioLosslessContainerQualityCopyWithImpl<$Res,
+          SonolythAudioLosslessContainerQuality>;
   @useResult
   $Res call({int bitDepth, int sampleRate});
 }
 
 /// @nodoc
-class _$SpotubeAudioLosslessContainerQualityCopyWithImpl<$Res,
-        $Val extends SpotubeAudioLosslessContainerQuality>
-    implements $SpotubeAudioLosslessContainerQualityCopyWith<$Res> {
-  _$SpotubeAudioLosslessContainerQualityCopyWithImpl(this._value, this._then);
+class _$SonolythAudioLosslessContainerQualityCopyWithImpl<$Res,
+        $Val extends SonolythAudioLosslessContainerQuality>
+    implements $SonolythAudioLosslessContainerQualityCopyWith<$Res> {
+  _$SonolythAudioLosslessContainerQualityCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubeAudioLosslessContainerQuality
+  /// Create a copy of SonolythAudioLosslessContainerQuality
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -817,28 +817,28 @@ class _$SpotubeAudioLosslessContainerQualityCopyWithImpl<$Res,
 }
 
 /// @nodoc
-abstract class _$$SpotubeAudioLosslessContainerQualityImplCopyWith<$Res>
-    implements $SpotubeAudioLosslessContainerQualityCopyWith<$Res> {
-  factory _$$SpotubeAudioLosslessContainerQualityImplCopyWith(
-          _$SpotubeAudioLosslessContainerQualityImpl value,
-          $Res Function(_$SpotubeAudioLosslessContainerQualityImpl) then) =
-      __$$SpotubeAudioLosslessContainerQualityImplCopyWithImpl<$Res>;
+abstract class _$$SonolythAudioLosslessContainerQualityImplCopyWith<$Res>
+    implements $SonolythAudioLosslessContainerQualityCopyWith<$Res> {
+  factory _$$SonolythAudioLosslessContainerQualityImplCopyWith(
+          _$SonolythAudioLosslessContainerQualityImpl value,
+          $Res Function(_$SonolythAudioLosslessContainerQualityImpl) then) =
+      __$$SonolythAudioLosslessContainerQualityImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({int bitDepth, int sampleRate});
 }
 
 /// @nodoc
-class __$$SpotubeAudioLosslessContainerQualityImplCopyWithImpl<$Res>
-    extends _$SpotubeAudioLosslessContainerQualityCopyWithImpl<$Res,
-        _$SpotubeAudioLosslessContainerQualityImpl>
-    implements _$$SpotubeAudioLosslessContainerQualityImplCopyWith<$Res> {
-  __$$SpotubeAudioLosslessContainerQualityImplCopyWithImpl(
-      _$SpotubeAudioLosslessContainerQualityImpl _value,
-      $Res Function(_$SpotubeAudioLosslessContainerQualityImpl) _then)
+class __$$SonolythAudioLosslessContainerQualityImplCopyWithImpl<$Res>
+    extends _$SonolythAudioLosslessContainerQualityCopyWithImpl<$Res,
+        _$SonolythAudioLosslessContainerQualityImpl>
+    implements _$$SonolythAudioLosslessContainerQualityImplCopyWith<$Res> {
+  __$$SonolythAudioLosslessContainerQualityImplCopyWithImpl(
+      _$SonolythAudioLosslessContainerQualityImpl _value,
+      $Res Function(_$SonolythAudioLosslessContainerQualityImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeAudioLosslessContainerQuality
+  /// Create a copy of SonolythAudioLosslessContainerQuality
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -846,7 +846,7 @@ class __$$SpotubeAudioLosslessContainerQualityImplCopyWithImpl<$Res>
     Object? bitDepth = null,
     Object? sampleRate = null,
   }) {
-    return _then(_$SpotubeAudioLosslessContainerQualityImpl(
+    return _then(_$SonolythAudioLosslessContainerQualityImpl(
       bitDepth: null == bitDepth
           ? _value.bitDepth
           : bitDepth // ignore: cast_nullable_to_non_nullable
@@ -861,15 +861,15 @@ class __$$SpotubeAudioLosslessContainerQualityImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeAudioLosslessContainerQualityImpl
-    extends _SpotubeAudioLosslessContainerQuality {
-  _$SpotubeAudioLosslessContainerQualityImpl(
+class _$SonolythAudioLosslessContainerQualityImpl
+    extends _SonolythAudioLosslessContainerQuality {
+  _$SonolythAudioLosslessContainerQualityImpl(
       {required this.bitDepth, required this.sampleRate})
       : super._();
 
-  factory _$SpotubeAudioLosslessContainerQualityImpl.fromJson(
+  factory _$SonolythAudioLosslessContainerQualityImpl.fromJson(
           Map<String, dynamic> json) =>
-      _$$SpotubeAudioLosslessContainerQualityImplFromJson(json);
+      _$$SonolythAudioLosslessContainerQualityImplFromJson(json);
 
   @override
   final int bitDepth;
@@ -881,7 +881,7 @@ class _$SpotubeAudioLosslessContainerQualityImpl
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeAudioLosslessContainerQualityImpl &&
+            other is _$SonolythAudioLosslessContainerQualityImpl &&
             (identical(other.bitDepth, bitDepth) ||
                 other.bitDepth == bitDepth) &&
             (identical(other.sampleRate, sampleRate) ||
@@ -892,56 +892,56 @@ class _$SpotubeAudioLosslessContainerQualityImpl
   @override
   int get hashCode => Object.hash(runtimeType, bitDepth, sampleRate);
 
-  /// Create a copy of SpotubeAudioLosslessContainerQuality
+  /// Create a copy of SonolythAudioLosslessContainerQuality
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeAudioLosslessContainerQualityImplCopyWith<
-          _$SpotubeAudioLosslessContainerQualityImpl>
-      get copyWith => __$$SpotubeAudioLosslessContainerQualityImplCopyWithImpl<
-          _$SpotubeAudioLosslessContainerQualityImpl>(this, _$identity);
+  _$$SonolythAudioLosslessContainerQualityImplCopyWith<
+          _$SonolythAudioLosslessContainerQualityImpl>
+      get copyWith => __$$SonolythAudioLosslessContainerQualityImplCopyWithImpl<
+          _$SonolythAudioLosslessContainerQualityImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeAudioLosslessContainerQualityImplToJson(
+    return _$$SonolythAudioLosslessContainerQualityImplToJson(
       this,
     );
   }
 }
 
-abstract class _SpotubeAudioLosslessContainerQuality
-    extends SpotubeAudioLosslessContainerQuality {
-  factory _SpotubeAudioLosslessContainerQuality(
+abstract class _SonolythAudioLosslessContainerQuality
+    extends SonolythAudioLosslessContainerQuality {
+  factory _SonolythAudioLosslessContainerQuality(
           {required final int bitDepth, required final int sampleRate}) =
-      _$SpotubeAudioLosslessContainerQualityImpl;
-  _SpotubeAudioLosslessContainerQuality._() : super._();
+      _$SonolythAudioLosslessContainerQualityImpl;
+  _SonolythAudioLosslessContainerQuality._() : super._();
 
-  factory _SpotubeAudioLosslessContainerQuality.fromJson(
+  factory _SonolythAudioLosslessContainerQuality.fromJson(
           Map<String, dynamic> json) =
-      _$SpotubeAudioLosslessContainerQualityImpl.fromJson;
+      _$SonolythAudioLosslessContainerQualityImpl.fromJson;
 
   @override
   int get bitDepth; // bit
   @override
   int get sampleRate;
 
-  /// Create a copy of SpotubeAudioLosslessContainerQuality
+  /// Create a copy of SonolythAudioLosslessContainerQuality
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeAudioLosslessContainerQualityImplCopyWith<
-          _$SpotubeAudioLosslessContainerQualityImpl>
+  _$$SonolythAudioLosslessContainerQualityImplCopyWith<
+          _$SonolythAudioLosslessContainerQualityImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
-SpotubeAudioSourceMatchObject _$SpotubeAudioSourceMatchObjectFromJson(
+SonolythAudioSourceMatchObject _$SonolythAudioSourceMatchObjectFromJson(
     Map<String, dynamic> json) {
-  return _SpotubeAudioSourceMatchObject.fromJson(json);
+  return _SonolythAudioSourceMatchObject.fromJson(json);
 }
 
 /// @nodoc
-mixin _$SpotubeAudioSourceMatchObject {
+mixin _$SonolythAudioSourceMatchObject {
   String get id => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
   List<String> get artists => throw _privateConstructorUsedError;
@@ -949,23 +949,23 @@ mixin _$SpotubeAudioSourceMatchObject {
   String? get thumbnail => throw _privateConstructorUsedError;
   String get externalUri => throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubeAudioSourceMatchObject to a JSON map.
+  /// Serializes this SonolythAudioSourceMatchObject to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubeAudioSourceMatchObject
+  /// Create a copy of SonolythAudioSourceMatchObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubeAudioSourceMatchObjectCopyWith<SpotubeAudioSourceMatchObject>
+  $SonolythAudioSourceMatchObjectCopyWith<SonolythAudioSourceMatchObject>
       get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubeAudioSourceMatchObjectCopyWith<$Res> {
-  factory $SpotubeAudioSourceMatchObjectCopyWith(
-          SpotubeAudioSourceMatchObject value,
-          $Res Function(SpotubeAudioSourceMatchObject) then) =
-      _$SpotubeAudioSourceMatchObjectCopyWithImpl<$Res,
-          SpotubeAudioSourceMatchObject>;
+abstract class $SonolythAudioSourceMatchObjectCopyWith<$Res> {
+  factory $SonolythAudioSourceMatchObjectCopyWith(
+          SonolythAudioSourceMatchObject value,
+          $Res Function(SonolythAudioSourceMatchObject) then) =
+      _$SonolythAudioSourceMatchObjectCopyWithImpl<$Res,
+          SonolythAudioSourceMatchObject>;
   @useResult
   $Res call(
       {String id,
@@ -977,17 +977,17 @@ abstract class $SpotubeAudioSourceMatchObjectCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$SpotubeAudioSourceMatchObjectCopyWithImpl<$Res,
-        $Val extends SpotubeAudioSourceMatchObject>
-    implements $SpotubeAudioSourceMatchObjectCopyWith<$Res> {
-  _$SpotubeAudioSourceMatchObjectCopyWithImpl(this._value, this._then);
+class _$SonolythAudioSourceMatchObjectCopyWithImpl<$Res,
+        $Val extends SonolythAudioSourceMatchObject>
+    implements $SonolythAudioSourceMatchObjectCopyWith<$Res> {
+  _$SonolythAudioSourceMatchObjectCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubeAudioSourceMatchObject
+  /// Create a copy of SonolythAudioSourceMatchObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -1029,12 +1029,12 @@ class _$SpotubeAudioSourceMatchObjectCopyWithImpl<$Res,
 }
 
 /// @nodoc
-abstract class _$$SpotubeAudioSourceMatchObjectImplCopyWith<$Res>
-    implements $SpotubeAudioSourceMatchObjectCopyWith<$Res> {
-  factory _$$SpotubeAudioSourceMatchObjectImplCopyWith(
-          _$SpotubeAudioSourceMatchObjectImpl value,
-          $Res Function(_$SpotubeAudioSourceMatchObjectImpl) then) =
-      __$$SpotubeAudioSourceMatchObjectImplCopyWithImpl<$Res>;
+abstract class _$$SonolythAudioSourceMatchObjectImplCopyWith<$Res>
+    implements $SonolythAudioSourceMatchObjectCopyWith<$Res> {
+  factory _$$SonolythAudioSourceMatchObjectImplCopyWith(
+          _$SonolythAudioSourceMatchObjectImpl value,
+          $Res Function(_$SonolythAudioSourceMatchObjectImpl) then) =
+      __$$SonolythAudioSourceMatchObjectImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -1047,16 +1047,16 @@ abstract class _$$SpotubeAudioSourceMatchObjectImplCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$SpotubeAudioSourceMatchObjectImplCopyWithImpl<$Res>
-    extends _$SpotubeAudioSourceMatchObjectCopyWithImpl<$Res,
-        _$SpotubeAudioSourceMatchObjectImpl>
-    implements _$$SpotubeAudioSourceMatchObjectImplCopyWith<$Res> {
-  __$$SpotubeAudioSourceMatchObjectImplCopyWithImpl(
-      _$SpotubeAudioSourceMatchObjectImpl _value,
-      $Res Function(_$SpotubeAudioSourceMatchObjectImpl) _then)
+class __$$SonolythAudioSourceMatchObjectImplCopyWithImpl<$Res>
+    extends _$SonolythAudioSourceMatchObjectCopyWithImpl<$Res,
+        _$SonolythAudioSourceMatchObjectImpl>
+    implements _$$SonolythAudioSourceMatchObjectImplCopyWith<$Res> {
+  __$$SonolythAudioSourceMatchObjectImplCopyWithImpl(
+      _$SonolythAudioSourceMatchObjectImpl _value,
+      $Res Function(_$SonolythAudioSourceMatchObjectImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeAudioSourceMatchObject
+  /// Create a copy of SonolythAudioSourceMatchObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -1068,7 +1068,7 @@ class __$$SpotubeAudioSourceMatchObjectImplCopyWithImpl<$Res>
     Object? thumbnail = freezed,
     Object? externalUri = null,
   }) {
-    return _then(_$SpotubeAudioSourceMatchObjectImpl(
+    return _then(_$SonolythAudioSourceMatchObjectImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -1099,9 +1099,9 @@ class __$$SpotubeAudioSourceMatchObjectImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeAudioSourceMatchObjectImpl
-    implements _SpotubeAudioSourceMatchObject {
-  _$SpotubeAudioSourceMatchObjectImpl(
+class _$SonolythAudioSourceMatchObjectImpl
+    implements _SonolythAudioSourceMatchObject {
+  _$SonolythAudioSourceMatchObjectImpl(
       {required this.id,
       required this.title,
       required final List<String> artists,
@@ -1110,9 +1110,9 @@ class _$SpotubeAudioSourceMatchObjectImpl
       required this.externalUri})
       : _artists = artists;
 
-  factory _$SpotubeAudioSourceMatchObjectImpl.fromJson(
+  factory _$SonolythAudioSourceMatchObjectImpl.fromJson(
           Map<String, dynamic> json) =>
-      _$$SpotubeAudioSourceMatchObjectImplFromJson(json);
+      _$$SonolythAudioSourceMatchObjectImplFromJson(json);
 
   @override
   final String id;
@@ -1135,14 +1135,14 @@ class _$SpotubeAudioSourceMatchObjectImpl
 
   @override
   String toString() {
-    return 'SpotubeAudioSourceMatchObject(id: $id, title: $title, artists: $artists, duration: $duration, thumbnail: $thumbnail, externalUri: $externalUri)';
+    return 'SonolythAudioSourceMatchObject(id: $id, title: $title, artists: $artists, duration: $duration, thumbnail: $thumbnail, externalUri: $externalUri)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeAudioSourceMatchObjectImpl &&
+            other is _$SonolythAudioSourceMatchObjectImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.title, title) || other.title == title) &&
             const DeepCollectionEquality().equals(other._artists, _artists) &&
@@ -1165,36 +1165,36 @@ class _$SpotubeAudioSourceMatchObjectImpl
       thumbnail,
       externalUri);
 
-  /// Create a copy of SpotubeAudioSourceMatchObject
+  /// Create a copy of SonolythAudioSourceMatchObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeAudioSourceMatchObjectImplCopyWith<
-          _$SpotubeAudioSourceMatchObjectImpl>
-      get copyWith => __$$SpotubeAudioSourceMatchObjectImplCopyWithImpl<
-          _$SpotubeAudioSourceMatchObjectImpl>(this, _$identity);
+  _$$SonolythAudioSourceMatchObjectImplCopyWith<
+          _$SonolythAudioSourceMatchObjectImpl>
+      get copyWith => __$$SonolythAudioSourceMatchObjectImplCopyWithImpl<
+          _$SonolythAudioSourceMatchObjectImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeAudioSourceMatchObjectImplToJson(
+    return _$$SonolythAudioSourceMatchObjectImplToJson(
       this,
     );
   }
 }
 
-abstract class _SpotubeAudioSourceMatchObject
-    implements SpotubeAudioSourceMatchObject {
-  factory _SpotubeAudioSourceMatchObject(
+abstract class _SonolythAudioSourceMatchObject
+    implements SonolythAudioSourceMatchObject {
+  factory _SonolythAudioSourceMatchObject(
       {required final String id,
       required final String title,
       required final List<String> artists,
       required final Duration duration,
       final String? thumbnail,
-      required final String externalUri}) = _$SpotubeAudioSourceMatchObjectImpl;
+      required final String externalUri}) = _$SonolythAudioSourceMatchObjectImpl;
 
-  factory _SpotubeAudioSourceMatchObject.fromJson(Map<String, dynamic> json) =
-      _$SpotubeAudioSourceMatchObjectImpl.fromJson;
+  factory _SonolythAudioSourceMatchObject.fromJson(Map<String, dynamic> json) =
+      _$SonolythAudioSourceMatchObjectImpl.fromJson;
 
   @override
   String get id;
@@ -1209,52 +1209,52 @@ abstract class _SpotubeAudioSourceMatchObject
   @override
   String get externalUri;
 
-  /// Create a copy of SpotubeAudioSourceMatchObject
+  /// Create a copy of SonolythAudioSourceMatchObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeAudioSourceMatchObjectImplCopyWith<
-          _$SpotubeAudioSourceMatchObjectImpl>
+  _$$SonolythAudioSourceMatchObjectImplCopyWith<
+          _$SonolythAudioSourceMatchObjectImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
-SpotubeAudioSourceStreamObject _$SpotubeAudioSourceStreamObjectFromJson(
+SonolythAudioSourceStreamObject _$SonolythAudioSourceStreamObjectFromJson(
     Map<String, dynamic> json) {
-  return _SpotubeAudioSourceStreamObject.fromJson(json);
+  return _SonolythAudioSourceStreamObject.fromJson(json);
 }
 
 /// @nodoc
-mixin _$SpotubeAudioSourceStreamObject {
+mixin _$SonolythAudioSourceStreamObject {
   String get url => throw _privateConstructorUsedError;
   String get container => throw _privateConstructorUsedError;
-  SpotubeMediaCompressionType get type => throw _privateConstructorUsedError;
+  SonolythMediaCompressionType get type => throw _privateConstructorUsedError;
   String? get codec => throw _privateConstructorUsedError;
   double? get bitrate => throw _privateConstructorUsedError;
   int? get bitDepth => throw _privateConstructorUsedError;
   double? get sampleRate => throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubeAudioSourceStreamObject to a JSON map.
+  /// Serializes this SonolythAudioSourceStreamObject to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubeAudioSourceStreamObject
+  /// Create a copy of SonolythAudioSourceStreamObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubeAudioSourceStreamObjectCopyWith<SpotubeAudioSourceStreamObject>
+  $SonolythAudioSourceStreamObjectCopyWith<SonolythAudioSourceStreamObject>
       get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubeAudioSourceStreamObjectCopyWith<$Res> {
-  factory $SpotubeAudioSourceStreamObjectCopyWith(
-          SpotubeAudioSourceStreamObject value,
-          $Res Function(SpotubeAudioSourceStreamObject) then) =
-      _$SpotubeAudioSourceStreamObjectCopyWithImpl<$Res,
-          SpotubeAudioSourceStreamObject>;
+abstract class $SonolythAudioSourceStreamObjectCopyWith<$Res> {
+  factory $SonolythAudioSourceStreamObjectCopyWith(
+          SonolythAudioSourceStreamObject value,
+          $Res Function(SonolythAudioSourceStreamObject) then) =
+      _$SonolythAudioSourceStreamObjectCopyWithImpl<$Res,
+          SonolythAudioSourceStreamObject>;
   @useResult
   $Res call(
       {String url,
       String container,
-      SpotubeMediaCompressionType type,
+      SonolythMediaCompressionType type,
       String? codec,
       double? bitrate,
       int? bitDepth,
@@ -1262,17 +1262,17 @@ abstract class $SpotubeAudioSourceStreamObjectCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$SpotubeAudioSourceStreamObjectCopyWithImpl<$Res,
-        $Val extends SpotubeAudioSourceStreamObject>
-    implements $SpotubeAudioSourceStreamObjectCopyWith<$Res> {
-  _$SpotubeAudioSourceStreamObjectCopyWithImpl(this._value, this._then);
+class _$SonolythAudioSourceStreamObjectCopyWithImpl<$Res,
+        $Val extends SonolythAudioSourceStreamObject>
+    implements $SonolythAudioSourceStreamObjectCopyWith<$Res> {
+  _$SonolythAudioSourceStreamObjectCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubeAudioSourceStreamObject
+  /// Create a copy of SonolythAudioSourceStreamObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -1297,7 +1297,7 @@ class _$SpotubeAudioSourceStreamObjectCopyWithImpl<$Res,
       type: null == type
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
-              as SpotubeMediaCompressionType,
+              as SonolythMediaCompressionType,
       codec: freezed == codec
           ? _value.codec
           : codec // ignore: cast_nullable_to_non_nullable
@@ -1319,18 +1319,18 @@ class _$SpotubeAudioSourceStreamObjectCopyWithImpl<$Res,
 }
 
 /// @nodoc
-abstract class _$$SpotubeAudioSourceStreamObjectImplCopyWith<$Res>
-    implements $SpotubeAudioSourceStreamObjectCopyWith<$Res> {
-  factory _$$SpotubeAudioSourceStreamObjectImplCopyWith(
-          _$SpotubeAudioSourceStreamObjectImpl value,
-          $Res Function(_$SpotubeAudioSourceStreamObjectImpl) then) =
-      __$$SpotubeAudioSourceStreamObjectImplCopyWithImpl<$Res>;
+abstract class _$$SonolythAudioSourceStreamObjectImplCopyWith<$Res>
+    implements $SonolythAudioSourceStreamObjectCopyWith<$Res> {
+  factory _$$SonolythAudioSourceStreamObjectImplCopyWith(
+          _$SonolythAudioSourceStreamObjectImpl value,
+          $Res Function(_$SonolythAudioSourceStreamObjectImpl) then) =
+      __$$SonolythAudioSourceStreamObjectImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
       {String url,
       String container,
-      SpotubeMediaCompressionType type,
+      SonolythMediaCompressionType type,
       String? codec,
       double? bitrate,
       int? bitDepth,
@@ -1338,16 +1338,16 @@ abstract class _$$SpotubeAudioSourceStreamObjectImplCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$SpotubeAudioSourceStreamObjectImplCopyWithImpl<$Res>
-    extends _$SpotubeAudioSourceStreamObjectCopyWithImpl<$Res,
-        _$SpotubeAudioSourceStreamObjectImpl>
-    implements _$$SpotubeAudioSourceStreamObjectImplCopyWith<$Res> {
-  __$$SpotubeAudioSourceStreamObjectImplCopyWithImpl(
-      _$SpotubeAudioSourceStreamObjectImpl _value,
-      $Res Function(_$SpotubeAudioSourceStreamObjectImpl) _then)
+class __$$SonolythAudioSourceStreamObjectImplCopyWithImpl<$Res>
+    extends _$SonolythAudioSourceStreamObjectCopyWithImpl<$Res,
+        _$SonolythAudioSourceStreamObjectImpl>
+    implements _$$SonolythAudioSourceStreamObjectImplCopyWith<$Res> {
+  __$$SonolythAudioSourceStreamObjectImplCopyWithImpl(
+      _$SonolythAudioSourceStreamObjectImpl _value,
+      $Res Function(_$SonolythAudioSourceStreamObjectImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeAudioSourceStreamObject
+  /// Create a copy of SonolythAudioSourceStreamObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -1360,7 +1360,7 @@ class __$$SpotubeAudioSourceStreamObjectImplCopyWithImpl<$Res>
     Object? bitDepth = freezed,
     Object? sampleRate = freezed,
   }) {
-    return _then(_$SpotubeAudioSourceStreamObjectImpl(
+    return _then(_$SonolythAudioSourceStreamObjectImpl(
       url: null == url
           ? _value.url
           : url // ignore: cast_nullable_to_non_nullable
@@ -1372,7 +1372,7 @@ class __$$SpotubeAudioSourceStreamObjectImplCopyWithImpl<$Res>
       type: null == type
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
-              as SpotubeMediaCompressionType,
+              as SonolythMediaCompressionType,
       codec: freezed == codec
           ? _value.codec
           : codec // ignore: cast_nullable_to_non_nullable
@@ -1395,9 +1395,9 @@ class __$$SpotubeAudioSourceStreamObjectImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeAudioSourceStreamObjectImpl
-    implements _SpotubeAudioSourceStreamObject {
-  _$SpotubeAudioSourceStreamObjectImpl(
+class _$SonolythAudioSourceStreamObjectImpl
+    implements _SonolythAudioSourceStreamObject {
+  _$SonolythAudioSourceStreamObjectImpl(
       {required this.url,
       required this.container,
       required this.type,
@@ -1406,16 +1406,16 @@ class _$SpotubeAudioSourceStreamObjectImpl
       this.bitDepth,
       this.sampleRate});
 
-  factory _$SpotubeAudioSourceStreamObjectImpl.fromJson(
+  factory _$SonolythAudioSourceStreamObjectImpl.fromJson(
           Map<String, dynamic> json) =>
-      _$$SpotubeAudioSourceStreamObjectImplFromJson(json);
+      _$$SonolythAudioSourceStreamObjectImplFromJson(json);
 
   @override
   final String url;
   @override
   final String container;
   @override
-  final SpotubeMediaCompressionType type;
+  final SonolythMediaCompressionType type;
   @override
   final String? codec;
   @override
@@ -1427,14 +1427,14 @@ class _$SpotubeAudioSourceStreamObjectImpl
 
   @override
   String toString() {
-    return 'SpotubeAudioSourceStreamObject(url: $url, container: $container, type: $type, codec: $codec, bitrate: $bitrate, bitDepth: $bitDepth, sampleRate: $sampleRate)';
+    return 'SonolythAudioSourceStreamObject(url: $url, container: $container, type: $type, codec: $codec, bitrate: $bitrate, bitDepth: $bitDepth, sampleRate: $sampleRate)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeAudioSourceStreamObjectImpl &&
+            other is _$SonolythAudioSourceStreamObjectImpl &&
             (identical(other.url, url) || other.url == url) &&
             (identical(other.container, container) ||
                 other.container == container) &&
@@ -1452,44 +1452,44 @@ class _$SpotubeAudioSourceStreamObjectImpl
   int get hashCode => Object.hash(
       runtimeType, url, container, type, codec, bitrate, bitDepth, sampleRate);
 
-  /// Create a copy of SpotubeAudioSourceStreamObject
+  /// Create a copy of SonolythAudioSourceStreamObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeAudioSourceStreamObjectImplCopyWith<
-          _$SpotubeAudioSourceStreamObjectImpl>
-      get copyWith => __$$SpotubeAudioSourceStreamObjectImplCopyWithImpl<
-          _$SpotubeAudioSourceStreamObjectImpl>(this, _$identity);
+  _$$SonolythAudioSourceStreamObjectImplCopyWith<
+          _$SonolythAudioSourceStreamObjectImpl>
+      get copyWith => __$$SonolythAudioSourceStreamObjectImplCopyWithImpl<
+          _$SonolythAudioSourceStreamObjectImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeAudioSourceStreamObjectImplToJson(
+    return _$$SonolythAudioSourceStreamObjectImplToJson(
       this,
     );
   }
 }
 
-abstract class _SpotubeAudioSourceStreamObject
-    implements SpotubeAudioSourceStreamObject {
-  factory _SpotubeAudioSourceStreamObject(
+abstract class _SonolythAudioSourceStreamObject
+    implements SonolythAudioSourceStreamObject {
+  factory _SonolythAudioSourceStreamObject(
       {required final String url,
       required final String container,
-      required final SpotubeMediaCompressionType type,
+      required final SonolythMediaCompressionType type,
       final String? codec,
       final double? bitrate,
       final int? bitDepth,
-      final double? sampleRate}) = _$SpotubeAudioSourceStreamObjectImpl;
+      final double? sampleRate}) = _$SonolythAudioSourceStreamObjectImpl;
 
-  factory _SpotubeAudioSourceStreamObject.fromJson(Map<String, dynamic> json) =
-      _$SpotubeAudioSourceStreamObjectImpl.fromJson;
+  factory _SonolythAudioSourceStreamObject.fromJson(Map<String, dynamic> json) =
+      _$SonolythAudioSourceStreamObjectImpl.fromJson;
 
   @override
   String get url;
   @override
   String get container;
   @override
-  SpotubeMediaCompressionType get type;
+  SonolythMediaCompressionType get type;
   @override
   String? get codec;
   @override
@@ -1499,75 +1499,75 @@ abstract class _SpotubeAudioSourceStreamObject
   @override
   double? get sampleRate;
 
-  /// Create a copy of SpotubeAudioSourceStreamObject
+  /// Create a copy of SonolythAudioSourceStreamObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeAudioSourceStreamObjectImplCopyWith<
-          _$SpotubeAudioSourceStreamObjectImpl>
+  _$$SonolythAudioSourceStreamObjectImplCopyWith<
+          _$SonolythAudioSourceStreamObjectImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
-SpotubeFullAlbumObject _$SpotubeFullAlbumObjectFromJson(
+SonolythFullAlbumObject _$SonolythFullAlbumObjectFromJson(
     Map<String, dynamic> json) {
-  return _SpotubeFullAlbumObject.fromJson(json);
+  return _SonolythFullAlbumObject.fromJson(json);
 }
 
 /// @nodoc
-mixin _$SpotubeFullAlbumObject {
+mixin _$SonolythFullAlbumObject {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
-  List<SpotubeSimpleArtistObject> get artists =>
+  List<SonolythSimpleArtistObject> get artists =>
       throw _privateConstructorUsedError;
-  List<SpotubeImageObject> get images => throw _privateConstructorUsedError;
+  List<SonolythImageObject> get images => throw _privateConstructorUsedError;
   String get releaseDate => throw _privateConstructorUsedError;
   String get externalUri => throw _privateConstructorUsedError;
   int get totalTracks => throw _privateConstructorUsedError;
-  SpotubeAlbumType get albumType => throw _privateConstructorUsedError;
+  SonolythAlbumType get albumType => throw _privateConstructorUsedError;
   String? get recordLabel => throw _privateConstructorUsedError;
   List<String>? get genres => throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubeFullAlbumObject to a JSON map.
+  /// Serializes this SonolythFullAlbumObject to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubeFullAlbumObject
+  /// Create a copy of SonolythFullAlbumObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubeFullAlbumObjectCopyWith<SpotubeFullAlbumObject> get copyWith =>
+  $SonolythFullAlbumObjectCopyWith<SonolythFullAlbumObject> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubeFullAlbumObjectCopyWith<$Res> {
-  factory $SpotubeFullAlbumObjectCopyWith(SpotubeFullAlbumObject value,
-          $Res Function(SpotubeFullAlbumObject) then) =
-      _$SpotubeFullAlbumObjectCopyWithImpl<$Res, SpotubeFullAlbumObject>;
+abstract class $SonolythFullAlbumObjectCopyWith<$Res> {
+  factory $SonolythFullAlbumObjectCopyWith(SonolythFullAlbumObject value,
+          $Res Function(SonolythFullAlbumObject) then) =
+      _$SonolythFullAlbumObjectCopyWithImpl<$Res, SonolythFullAlbumObject>;
   @useResult
   $Res call(
       {String id,
       String name,
-      List<SpotubeSimpleArtistObject> artists,
-      List<SpotubeImageObject> images,
+      List<SonolythSimpleArtistObject> artists,
+      List<SonolythImageObject> images,
       String releaseDate,
       String externalUri,
       int totalTracks,
-      SpotubeAlbumType albumType,
+      SonolythAlbumType albumType,
       String? recordLabel,
       List<String>? genres});
 }
 
 /// @nodoc
-class _$SpotubeFullAlbumObjectCopyWithImpl<$Res,
-        $Val extends SpotubeFullAlbumObject>
-    implements $SpotubeFullAlbumObjectCopyWith<$Res> {
-  _$SpotubeFullAlbumObjectCopyWithImpl(this._value, this._then);
+class _$SonolythFullAlbumObjectCopyWithImpl<$Res,
+        $Val extends SonolythFullAlbumObject>
+    implements $SonolythFullAlbumObjectCopyWith<$Res> {
+  _$SonolythFullAlbumObjectCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubeFullAlbumObject
+  /// Create a copy of SonolythFullAlbumObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -1595,11 +1595,11 @@ class _$SpotubeFullAlbumObjectCopyWithImpl<$Res,
       artists: null == artists
           ? _value.artists
           : artists // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeSimpleArtistObject>,
+              as List<SonolythSimpleArtistObject>,
       images: null == images
           ? _value.images
           : images // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeImageObject>,
+              as List<SonolythImageObject>,
       releaseDate: null == releaseDate
           ? _value.releaseDate
           : releaseDate // ignore: cast_nullable_to_non_nullable
@@ -1615,7 +1615,7 @@ class _$SpotubeFullAlbumObjectCopyWithImpl<$Res,
       albumType: null == albumType
           ? _value.albumType
           : albumType // ignore: cast_nullable_to_non_nullable
-              as SpotubeAlbumType,
+              as SonolythAlbumType,
       recordLabel: freezed == recordLabel
           ? _value.recordLabel
           : recordLabel // ignore: cast_nullable_to_non_nullable
@@ -1629,38 +1629,38 @@ class _$SpotubeFullAlbumObjectCopyWithImpl<$Res,
 }
 
 /// @nodoc
-abstract class _$$SpotubeFullAlbumObjectImplCopyWith<$Res>
-    implements $SpotubeFullAlbumObjectCopyWith<$Res> {
-  factory _$$SpotubeFullAlbumObjectImplCopyWith(
-          _$SpotubeFullAlbumObjectImpl value,
-          $Res Function(_$SpotubeFullAlbumObjectImpl) then) =
-      __$$SpotubeFullAlbumObjectImplCopyWithImpl<$Res>;
+abstract class _$$SonolythFullAlbumObjectImplCopyWith<$Res>
+    implements $SonolythFullAlbumObjectCopyWith<$Res> {
+  factory _$$SonolythFullAlbumObjectImplCopyWith(
+          _$SonolythFullAlbumObjectImpl value,
+          $Res Function(_$SonolythFullAlbumObjectImpl) then) =
+      __$$SonolythFullAlbumObjectImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
       {String id,
       String name,
-      List<SpotubeSimpleArtistObject> artists,
-      List<SpotubeImageObject> images,
+      List<SonolythSimpleArtistObject> artists,
+      List<SonolythImageObject> images,
       String releaseDate,
       String externalUri,
       int totalTracks,
-      SpotubeAlbumType albumType,
+      SonolythAlbumType albumType,
       String? recordLabel,
       List<String>? genres});
 }
 
 /// @nodoc
-class __$$SpotubeFullAlbumObjectImplCopyWithImpl<$Res>
-    extends _$SpotubeFullAlbumObjectCopyWithImpl<$Res,
-        _$SpotubeFullAlbumObjectImpl>
-    implements _$$SpotubeFullAlbumObjectImplCopyWith<$Res> {
-  __$$SpotubeFullAlbumObjectImplCopyWithImpl(
-      _$SpotubeFullAlbumObjectImpl _value,
-      $Res Function(_$SpotubeFullAlbumObjectImpl) _then)
+class __$$SonolythFullAlbumObjectImplCopyWithImpl<$Res>
+    extends _$SonolythFullAlbumObjectCopyWithImpl<$Res,
+        _$SonolythFullAlbumObjectImpl>
+    implements _$$SonolythFullAlbumObjectImplCopyWith<$Res> {
+  __$$SonolythFullAlbumObjectImplCopyWithImpl(
+      _$SonolythFullAlbumObjectImpl _value,
+      $Res Function(_$SonolythFullAlbumObjectImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeFullAlbumObject
+  /// Create a copy of SonolythFullAlbumObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -1676,7 +1676,7 @@ class __$$SpotubeFullAlbumObjectImplCopyWithImpl<$Res>
     Object? recordLabel = freezed,
     Object? genres = freezed,
   }) {
-    return _then(_$SpotubeFullAlbumObjectImpl(
+    return _then(_$SonolythFullAlbumObjectImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -1688,11 +1688,11 @@ class __$$SpotubeFullAlbumObjectImplCopyWithImpl<$Res>
       artists: null == artists
           ? _value._artists
           : artists // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeSimpleArtistObject>,
+              as List<SonolythSimpleArtistObject>,
       images: null == images
           ? _value._images
           : images // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeImageObject>,
+              as List<SonolythImageObject>,
       releaseDate: null == releaseDate
           ? _value.releaseDate
           : releaseDate // ignore: cast_nullable_to_non_nullable
@@ -1708,7 +1708,7 @@ class __$$SpotubeFullAlbumObjectImplCopyWithImpl<$Res>
       albumType: null == albumType
           ? _value.albumType
           : albumType // ignore: cast_nullable_to_non_nullable
-              as SpotubeAlbumType,
+              as SonolythAlbumType,
       recordLabel: freezed == recordLabel
           ? _value.recordLabel
           : recordLabel // ignore: cast_nullable_to_non_nullable
@@ -1723,12 +1723,12 @@ class __$$SpotubeFullAlbumObjectImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeFullAlbumObjectImpl implements _SpotubeFullAlbumObject {
-  _$SpotubeFullAlbumObjectImpl(
+class _$SonolythFullAlbumObjectImpl implements _SonolythFullAlbumObject {
+  _$SonolythFullAlbumObjectImpl(
       {required this.id,
       required this.name,
-      required final List<SpotubeSimpleArtistObject> artists,
-      final List<SpotubeImageObject> images = const [],
+      required final List<SonolythSimpleArtistObject> artists,
+      final List<SonolythImageObject> images = const [],
       required this.releaseDate,
       required this.externalUri,
       required this.totalTracks,
@@ -1739,25 +1739,25 @@ class _$SpotubeFullAlbumObjectImpl implements _SpotubeFullAlbumObject {
         _images = images,
         _genres = genres;
 
-  factory _$SpotubeFullAlbumObjectImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SpotubeFullAlbumObjectImplFromJson(json);
+  factory _$SonolythFullAlbumObjectImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SonolythFullAlbumObjectImplFromJson(json);
 
   @override
   final String id;
   @override
   final String name;
-  final List<SpotubeSimpleArtistObject> _artists;
+  final List<SonolythSimpleArtistObject> _artists;
   @override
-  List<SpotubeSimpleArtistObject> get artists {
+  List<SonolythSimpleArtistObject> get artists {
     if (_artists is EqualUnmodifiableListView) return _artists;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_artists);
   }
 
-  final List<SpotubeImageObject> _images;
+  final List<SonolythImageObject> _images;
   @override
   @JsonKey()
-  List<SpotubeImageObject> get images {
+  List<SonolythImageObject> get images {
     if (_images is EqualUnmodifiableListView) return _images;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_images);
@@ -1770,7 +1770,7 @@ class _$SpotubeFullAlbumObjectImpl implements _SpotubeFullAlbumObject {
   @override
   final int totalTracks;
   @override
-  final SpotubeAlbumType albumType;
+  final SonolythAlbumType albumType;
   @override
   final String? recordLabel;
   final List<String>? _genres;
@@ -1785,14 +1785,14 @@ class _$SpotubeFullAlbumObjectImpl implements _SpotubeFullAlbumObject {
 
   @override
   String toString() {
-    return 'SpotubeFullAlbumObject(id: $id, name: $name, artists: $artists, images: $images, releaseDate: $releaseDate, externalUri: $externalUri, totalTracks: $totalTracks, albumType: $albumType, recordLabel: $recordLabel, genres: $genres)';
+    return 'SonolythFullAlbumObject(id: $id, name: $name, artists: $artists, images: $images, releaseDate: $releaseDate, externalUri: $externalUri, totalTracks: $totalTracks, albumType: $albumType, recordLabel: $recordLabel, genres: $genres)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeFullAlbumObjectImpl &&
+            other is _$SonolythFullAlbumObjectImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             const DeepCollectionEquality().equals(other._artists, _artists) &&
@@ -1825,47 +1825,47 @@ class _$SpotubeFullAlbumObjectImpl implements _SpotubeFullAlbumObject {
       recordLabel,
       const DeepCollectionEquality().hash(_genres));
 
-  /// Create a copy of SpotubeFullAlbumObject
+  /// Create a copy of SonolythFullAlbumObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeFullAlbumObjectImplCopyWith<_$SpotubeFullAlbumObjectImpl>
-      get copyWith => __$$SpotubeFullAlbumObjectImplCopyWithImpl<
-          _$SpotubeFullAlbumObjectImpl>(this, _$identity);
+  _$$SonolythFullAlbumObjectImplCopyWith<_$SonolythFullAlbumObjectImpl>
+      get copyWith => __$$SonolythFullAlbumObjectImplCopyWithImpl<
+          _$SonolythFullAlbumObjectImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeFullAlbumObjectImplToJson(
+    return _$$SonolythFullAlbumObjectImplToJson(
       this,
     );
   }
 }
 
-abstract class _SpotubeFullAlbumObject implements SpotubeFullAlbumObject {
-  factory _SpotubeFullAlbumObject(
+abstract class _SonolythFullAlbumObject implements SonolythFullAlbumObject {
+  factory _SonolythFullAlbumObject(
       {required final String id,
       required final String name,
-      required final List<SpotubeSimpleArtistObject> artists,
-      final List<SpotubeImageObject> images,
+      required final List<SonolythSimpleArtistObject> artists,
+      final List<SonolythImageObject> images,
       required final String releaseDate,
       required final String externalUri,
       required final int totalTracks,
-      required final SpotubeAlbumType albumType,
+      required final SonolythAlbumType albumType,
       final String? recordLabel,
-      final List<String>? genres}) = _$SpotubeFullAlbumObjectImpl;
+      final List<String>? genres}) = _$SonolythFullAlbumObjectImpl;
 
-  factory _SpotubeFullAlbumObject.fromJson(Map<String, dynamic> json) =
-      _$SpotubeFullAlbumObjectImpl.fromJson;
+  factory _SonolythFullAlbumObject.fromJson(Map<String, dynamic> json) =
+      _$SonolythFullAlbumObjectImpl.fromJson;
 
   @override
   String get id;
   @override
   String get name;
   @override
-  List<SpotubeSimpleArtistObject> get artists;
+  List<SonolythSimpleArtistObject> get artists;
   @override
-  List<SpotubeImageObject> get images;
+  List<SonolythImageObject> get images;
   @override
   String get releaseDate;
   @override
@@ -1873,74 +1873,74 @@ abstract class _SpotubeFullAlbumObject implements SpotubeFullAlbumObject {
   @override
   int get totalTracks;
   @override
-  SpotubeAlbumType get albumType;
+  SonolythAlbumType get albumType;
   @override
   String? get recordLabel;
   @override
   List<String>? get genres;
 
-  /// Create a copy of SpotubeFullAlbumObject
+  /// Create a copy of SonolythFullAlbumObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeFullAlbumObjectImplCopyWith<_$SpotubeFullAlbumObjectImpl>
+  _$$SonolythFullAlbumObjectImplCopyWith<_$SonolythFullAlbumObjectImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
-SpotubeSimpleAlbumObject _$SpotubeSimpleAlbumObjectFromJson(
+SonolythSimpleAlbumObject _$SonolythSimpleAlbumObjectFromJson(
     Map<String, dynamic> json) {
-  return _SpotubeSimpleAlbumObject.fromJson(json);
+  return _SonolythSimpleAlbumObject.fromJson(json);
 }
 
 /// @nodoc
-mixin _$SpotubeSimpleAlbumObject {
+mixin _$SonolythSimpleAlbumObject {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String get externalUri => throw _privateConstructorUsedError;
-  List<SpotubeSimpleArtistObject> get artists =>
+  List<SonolythSimpleArtistObject> get artists =>
       throw _privateConstructorUsedError;
-  List<SpotubeImageObject> get images => throw _privateConstructorUsedError;
-  SpotubeAlbumType get albumType => throw _privateConstructorUsedError;
+  List<SonolythImageObject> get images => throw _privateConstructorUsedError;
+  SonolythAlbumType get albumType => throw _privateConstructorUsedError;
   String? get releaseDate => throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubeSimpleAlbumObject to a JSON map.
+  /// Serializes this SonolythSimpleAlbumObject to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubeSimpleAlbumObject
+  /// Create a copy of SonolythSimpleAlbumObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubeSimpleAlbumObjectCopyWith<SpotubeSimpleAlbumObject> get copyWith =>
+  $SonolythSimpleAlbumObjectCopyWith<SonolythSimpleAlbumObject> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubeSimpleAlbumObjectCopyWith<$Res> {
-  factory $SpotubeSimpleAlbumObjectCopyWith(SpotubeSimpleAlbumObject value,
-          $Res Function(SpotubeSimpleAlbumObject) then) =
-      _$SpotubeSimpleAlbumObjectCopyWithImpl<$Res, SpotubeSimpleAlbumObject>;
+abstract class $SonolythSimpleAlbumObjectCopyWith<$Res> {
+  factory $SonolythSimpleAlbumObjectCopyWith(SonolythSimpleAlbumObject value,
+          $Res Function(SonolythSimpleAlbumObject) then) =
+      _$SonolythSimpleAlbumObjectCopyWithImpl<$Res, SonolythSimpleAlbumObject>;
   @useResult
   $Res call(
       {String id,
       String name,
       String externalUri,
-      List<SpotubeSimpleArtistObject> artists,
-      List<SpotubeImageObject> images,
-      SpotubeAlbumType albumType,
+      List<SonolythSimpleArtistObject> artists,
+      List<SonolythImageObject> images,
+      SonolythAlbumType albumType,
       String? releaseDate});
 }
 
 /// @nodoc
-class _$SpotubeSimpleAlbumObjectCopyWithImpl<$Res,
-        $Val extends SpotubeSimpleAlbumObject>
-    implements $SpotubeSimpleAlbumObjectCopyWith<$Res> {
-  _$SpotubeSimpleAlbumObjectCopyWithImpl(this._value, this._then);
+class _$SonolythSimpleAlbumObjectCopyWithImpl<$Res,
+        $Val extends SonolythSimpleAlbumObject>
+    implements $SonolythSimpleAlbumObjectCopyWith<$Res> {
+  _$SonolythSimpleAlbumObjectCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubeSimpleAlbumObject
+  /// Create a copy of SonolythSimpleAlbumObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -1969,15 +1969,15 @@ class _$SpotubeSimpleAlbumObjectCopyWithImpl<$Res,
       artists: null == artists
           ? _value.artists
           : artists // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeSimpleArtistObject>,
+              as List<SonolythSimpleArtistObject>,
       images: null == images
           ? _value.images
           : images // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeImageObject>,
+              as List<SonolythImageObject>,
       albumType: null == albumType
           ? _value.albumType
           : albumType // ignore: cast_nullable_to_non_nullable
-              as SpotubeAlbumType,
+              as SonolythAlbumType,
       releaseDate: freezed == releaseDate
           ? _value.releaseDate
           : releaseDate // ignore: cast_nullable_to_non_nullable
@@ -1987,35 +1987,35 @@ class _$SpotubeSimpleAlbumObjectCopyWithImpl<$Res,
 }
 
 /// @nodoc
-abstract class _$$SpotubeSimpleAlbumObjectImplCopyWith<$Res>
-    implements $SpotubeSimpleAlbumObjectCopyWith<$Res> {
-  factory _$$SpotubeSimpleAlbumObjectImplCopyWith(
-          _$SpotubeSimpleAlbumObjectImpl value,
-          $Res Function(_$SpotubeSimpleAlbumObjectImpl) then) =
-      __$$SpotubeSimpleAlbumObjectImplCopyWithImpl<$Res>;
+abstract class _$$SonolythSimpleAlbumObjectImplCopyWith<$Res>
+    implements $SonolythSimpleAlbumObjectCopyWith<$Res> {
+  factory _$$SonolythSimpleAlbumObjectImplCopyWith(
+          _$SonolythSimpleAlbumObjectImpl value,
+          $Res Function(_$SonolythSimpleAlbumObjectImpl) then) =
+      __$$SonolythSimpleAlbumObjectImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
       {String id,
       String name,
       String externalUri,
-      List<SpotubeSimpleArtistObject> artists,
-      List<SpotubeImageObject> images,
-      SpotubeAlbumType albumType,
+      List<SonolythSimpleArtistObject> artists,
+      List<SonolythImageObject> images,
+      SonolythAlbumType albumType,
       String? releaseDate});
 }
 
 /// @nodoc
-class __$$SpotubeSimpleAlbumObjectImplCopyWithImpl<$Res>
-    extends _$SpotubeSimpleAlbumObjectCopyWithImpl<$Res,
-        _$SpotubeSimpleAlbumObjectImpl>
-    implements _$$SpotubeSimpleAlbumObjectImplCopyWith<$Res> {
-  __$$SpotubeSimpleAlbumObjectImplCopyWithImpl(
-      _$SpotubeSimpleAlbumObjectImpl _value,
-      $Res Function(_$SpotubeSimpleAlbumObjectImpl) _then)
+class __$$SonolythSimpleAlbumObjectImplCopyWithImpl<$Res>
+    extends _$SonolythSimpleAlbumObjectCopyWithImpl<$Res,
+        _$SonolythSimpleAlbumObjectImpl>
+    implements _$$SonolythSimpleAlbumObjectImplCopyWith<$Res> {
+  __$$SonolythSimpleAlbumObjectImplCopyWithImpl(
+      _$SonolythSimpleAlbumObjectImpl _value,
+      $Res Function(_$SonolythSimpleAlbumObjectImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeSimpleAlbumObject
+  /// Create a copy of SonolythSimpleAlbumObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -2028,7 +2028,7 @@ class __$$SpotubeSimpleAlbumObjectImplCopyWithImpl<$Res>
     Object? albumType = null,
     Object? releaseDate = freezed,
   }) {
-    return _then(_$SpotubeSimpleAlbumObjectImpl(
+    return _then(_$SonolythSimpleAlbumObjectImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -2044,15 +2044,15 @@ class __$$SpotubeSimpleAlbumObjectImplCopyWithImpl<$Res>
       artists: null == artists
           ? _value._artists
           : artists // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeSimpleArtistObject>,
+              as List<SonolythSimpleArtistObject>,
       images: null == images
           ? _value._images
           : images // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeImageObject>,
+              as List<SonolythImageObject>,
       albumType: null == albumType
           ? _value.albumType
           : albumType // ignore: cast_nullable_to_non_nullable
-              as SpotubeAlbumType,
+              as SonolythAlbumType,
       releaseDate: freezed == releaseDate
           ? _value.releaseDate
           : releaseDate // ignore: cast_nullable_to_non_nullable
@@ -2063,20 +2063,20 @@ class __$$SpotubeSimpleAlbumObjectImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeSimpleAlbumObjectImpl implements _SpotubeSimpleAlbumObject {
-  _$SpotubeSimpleAlbumObjectImpl(
+class _$SonolythSimpleAlbumObjectImpl implements _SonolythSimpleAlbumObject {
+  _$SonolythSimpleAlbumObjectImpl(
       {required this.id,
       required this.name,
       required this.externalUri,
-      required final List<SpotubeSimpleArtistObject> artists,
-      final List<SpotubeImageObject> images = const [],
+      required final List<SonolythSimpleArtistObject> artists,
+      final List<SonolythImageObject> images = const [],
       required this.albumType,
       this.releaseDate})
       : _artists = artists,
         _images = images;
 
-  factory _$SpotubeSimpleAlbumObjectImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SpotubeSimpleAlbumObjectImplFromJson(json);
+  factory _$SonolythSimpleAlbumObjectImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SonolythSimpleAlbumObjectImplFromJson(json);
 
   @override
   final String id;
@@ -2084,38 +2084,38 @@ class _$SpotubeSimpleAlbumObjectImpl implements _SpotubeSimpleAlbumObject {
   final String name;
   @override
   final String externalUri;
-  final List<SpotubeSimpleArtistObject> _artists;
+  final List<SonolythSimpleArtistObject> _artists;
   @override
-  List<SpotubeSimpleArtistObject> get artists {
+  List<SonolythSimpleArtistObject> get artists {
     if (_artists is EqualUnmodifiableListView) return _artists;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_artists);
   }
 
-  final List<SpotubeImageObject> _images;
+  final List<SonolythImageObject> _images;
   @override
   @JsonKey()
-  List<SpotubeImageObject> get images {
+  List<SonolythImageObject> get images {
     if (_images is EqualUnmodifiableListView) return _images;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_images);
   }
 
   @override
-  final SpotubeAlbumType albumType;
+  final SonolythAlbumType albumType;
   @override
   final String? releaseDate;
 
   @override
   String toString() {
-    return 'SpotubeSimpleAlbumObject(id: $id, name: $name, externalUri: $externalUri, artists: $artists, images: $images, albumType: $albumType, releaseDate: $releaseDate)';
+    return 'SonolythSimpleAlbumObject(id: $id, name: $name, externalUri: $externalUri, artists: $artists, images: $images, albumType: $albumType, releaseDate: $releaseDate)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeSimpleAlbumObjectImpl &&
+            other is _$SonolythSimpleAlbumObjectImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.externalUri, externalUri) ||
@@ -2140,35 +2140,35 @@ class _$SpotubeSimpleAlbumObjectImpl implements _SpotubeSimpleAlbumObject {
       albumType,
       releaseDate);
 
-  /// Create a copy of SpotubeSimpleAlbumObject
+  /// Create a copy of SonolythSimpleAlbumObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeSimpleAlbumObjectImplCopyWith<_$SpotubeSimpleAlbumObjectImpl>
-      get copyWith => __$$SpotubeSimpleAlbumObjectImplCopyWithImpl<
-          _$SpotubeSimpleAlbumObjectImpl>(this, _$identity);
+  _$$SonolythSimpleAlbumObjectImplCopyWith<_$SonolythSimpleAlbumObjectImpl>
+      get copyWith => __$$SonolythSimpleAlbumObjectImplCopyWithImpl<
+          _$SonolythSimpleAlbumObjectImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeSimpleAlbumObjectImplToJson(
+    return _$$SonolythSimpleAlbumObjectImplToJson(
       this,
     );
   }
 }
 
-abstract class _SpotubeSimpleAlbumObject implements SpotubeSimpleAlbumObject {
-  factory _SpotubeSimpleAlbumObject(
+abstract class _SonolythSimpleAlbumObject implements SonolythSimpleAlbumObject {
+  factory _SonolythSimpleAlbumObject(
       {required final String id,
       required final String name,
       required final String externalUri,
-      required final List<SpotubeSimpleArtistObject> artists,
-      final List<SpotubeImageObject> images,
-      required final SpotubeAlbumType albumType,
-      final String? releaseDate}) = _$SpotubeSimpleAlbumObjectImpl;
+      required final List<SonolythSimpleArtistObject> artists,
+      final List<SonolythImageObject> images,
+      required final SonolythAlbumType albumType,
+      final String? releaseDate}) = _$SonolythSimpleAlbumObjectImpl;
 
-  factory _SpotubeSimpleAlbumObject.fromJson(Map<String, dynamic> json) =
-      _$SpotubeSimpleAlbumObjectImpl.fromJson;
+  factory _SonolythSimpleAlbumObject.fromJson(Map<String, dynamic> json) =
+      _$SonolythSimpleAlbumObjectImpl.fromJson;
 
   @override
   String get id;
@@ -2177,73 +2177,73 @@ abstract class _SpotubeSimpleAlbumObject implements SpotubeSimpleAlbumObject {
   @override
   String get externalUri;
   @override
-  List<SpotubeSimpleArtistObject> get artists;
+  List<SonolythSimpleArtistObject> get artists;
   @override
-  List<SpotubeImageObject> get images;
+  List<SonolythImageObject> get images;
   @override
-  SpotubeAlbumType get albumType;
+  SonolythAlbumType get albumType;
   @override
   String? get releaseDate;
 
-  /// Create a copy of SpotubeSimpleAlbumObject
+  /// Create a copy of SonolythSimpleAlbumObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeSimpleAlbumObjectImplCopyWith<_$SpotubeSimpleAlbumObjectImpl>
+  _$$SonolythSimpleAlbumObjectImplCopyWith<_$SonolythSimpleAlbumObjectImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
-SpotubeFullArtistObject _$SpotubeFullArtistObjectFromJson(
+SonolythFullArtistObject _$SonolythFullArtistObjectFromJson(
     Map<String, dynamic> json) {
-  return _SpotubeFullArtistObject.fromJson(json);
+  return _SonolythFullArtistObject.fromJson(json);
 }
 
 /// @nodoc
-mixin _$SpotubeFullArtistObject {
+mixin _$SonolythFullArtistObject {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String get externalUri => throw _privateConstructorUsedError;
-  List<SpotubeImageObject> get images => throw _privateConstructorUsedError;
+  List<SonolythImageObject> get images => throw _privateConstructorUsedError;
   List<String>? get genres => throw _privateConstructorUsedError;
   int? get followers => throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubeFullArtistObject to a JSON map.
+  /// Serializes this SonolythFullArtistObject to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubeFullArtistObject
+  /// Create a copy of SonolythFullArtistObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubeFullArtistObjectCopyWith<SpotubeFullArtistObject> get copyWith =>
+  $SonolythFullArtistObjectCopyWith<SonolythFullArtistObject> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubeFullArtistObjectCopyWith<$Res> {
-  factory $SpotubeFullArtistObjectCopyWith(SpotubeFullArtistObject value,
-          $Res Function(SpotubeFullArtistObject) then) =
-      _$SpotubeFullArtistObjectCopyWithImpl<$Res, SpotubeFullArtistObject>;
+abstract class $SonolythFullArtistObjectCopyWith<$Res> {
+  factory $SonolythFullArtistObjectCopyWith(SonolythFullArtistObject value,
+          $Res Function(SonolythFullArtistObject) then) =
+      _$SonolythFullArtistObjectCopyWithImpl<$Res, SonolythFullArtistObject>;
   @useResult
   $Res call(
       {String id,
       String name,
       String externalUri,
-      List<SpotubeImageObject> images,
+      List<SonolythImageObject> images,
       List<String>? genres,
       int? followers});
 }
 
 /// @nodoc
-class _$SpotubeFullArtistObjectCopyWithImpl<$Res,
-        $Val extends SpotubeFullArtistObject>
-    implements $SpotubeFullArtistObjectCopyWith<$Res> {
-  _$SpotubeFullArtistObjectCopyWithImpl(this._value, this._then);
+class _$SonolythFullArtistObjectCopyWithImpl<$Res,
+        $Val extends SonolythFullArtistObject>
+    implements $SonolythFullArtistObjectCopyWith<$Res> {
+  _$SonolythFullArtistObjectCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubeFullArtistObject
+  /// Create a copy of SonolythFullArtistObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -2271,7 +2271,7 @@ class _$SpotubeFullArtistObjectCopyWithImpl<$Res,
       images: null == images
           ? _value.images
           : images // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeImageObject>,
+              as List<SonolythImageObject>,
       genres: freezed == genres
           ? _value.genres
           : genres // ignore: cast_nullable_to_non_nullable
@@ -2285,34 +2285,34 @@ class _$SpotubeFullArtistObjectCopyWithImpl<$Res,
 }
 
 /// @nodoc
-abstract class _$$SpotubeFullArtistObjectImplCopyWith<$Res>
-    implements $SpotubeFullArtistObjectCopyWith<$Res> {
-  factory _$$SpotubeFullArtistObjectImplCopyWith(
-          _$SpotubeFullArtistObjectImpl value,
-          $Res Function(_$SpotubeFullArtistObjectImpl) then) =
-      __$$SpotubeFullArtistObjectImplCopyWithImpl<$Res>;
+abstract class _$$SonolythFullArtistObjectImplCopyWith<$Res>
+    implements $SonolythFullArtistObjectCopyWith<$Res> {
+  factory _$$SonolythFullArtistObjectImplCopyWith(
+          _$SonolythFullArtistObjectImpl value,
+          $Res Function(_$SonolythFullArtistObjectImpl) then) =
+      __$$SonolythFullArtistObjectImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
       {String id,
       String name,
       String externalUri,
-      List<SpotubeImageObject> images,
+      List<SonolythImageObject> images,
       List<String>? genres,
       int? followers});
 }
 
 /// @nodoc
-class __$$SpotubeFullArtistObjectImplCopyWithImpl<$Res>
-    extends _$SpotubeFullArtistObjectCopyWithImpl<$Res,
-        _$SpotubeFullArtistObjectImpl>
-    implements _$$SpotubeFullArtistObjectImplCopyWith<$Res> {
-  __$$SpotubeFullArtistObjectImplCopyWithImpl(
-      _$SpotubeFullArtistObjectImpl _value,
-      $Res Function(_$SpotubeFullArtistObjectImpl) _then)
+class __$$SonolythFullArtistObjectImplCopyWithImpl<$Res>
+    extends _$SonolythFullArtistObjectCopyWithImpl<$Res,
+        _$SonolythFullArtistObjectImpl>
+    implements _$$SonolythFullArtistObjectImplCopyWith<$Res> {
+  __$$SonolythFullArtistObjectImplCopyWithImpl(
+      _$SonolythFullArtistObjectImpl _value,
+      $Res Function(_$SonolythFullArtistObjectImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeFullArtistObject
+  /// Create a copy of SonolythFullArtistObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -2324,7 +2324,7 @@ class __$$SpotubeFullArtistObjectImplCopyWithImpl<$Res>
     Object? genres = freezed,
     Object? followers = freezed,
   }) {
-    return _then(_$SpotubeFullArtistObjectImpl(
+    return _then(_$SonolythFullArtistObjectImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -2340,7 +2340,7 @@ class __$$SpotubeFullArtistObjectImplCopyWithImpl<$Res>
       images: null == images
           ? _value._images
           : images // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeImageObject>,
+              as List<SonolythImageObject>,
       genres: freezed == genres
           ? _value._genres
           : genres // ignore: cast_nullable_to_non_nullable
@@ -2355,19 +2355,19 @@ class __$$SpotubeFullArtistObjectImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeFullArtistObjectImpl implements _SpotubeFullArtistObject {
-  _$SpotubeFullArtistObjectImpl(
+class _$SonolythFullArtistObjectImpl implements _SonolythFullArtistObject {
+  _$SonolythFullArtistObjectImpl(
       {required this.id,
       required this.name,
       required this.externalUri,
-      final List<SpotubeImageObject> images = const [],
+      final List<SonolythImageObject> images = const [],
       final List<String>? genres,
       this.followers})
       : _images = images,
         _genres = genres;
 
-  factory _$SpotubeFullArtistObjectImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SpotubeFullArtistObjectImplFromJson(json);
+  factory _$SonolythFullArtistObjectImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SonolythFullArtistObjectImplFromJson(json);
 
   @override
   final String id;
@@ -2375,10 +2375,10 @@ class _$SpotubeFullArtistObjectImpl implements _SpotubeFullArtistObject {
   final String name;
   @override
   final String externalUri;
-  final List<SpotubeImageObject> _images;
+  final List<SonolythImageObject> _images;
   @override
   @JsonKey()
-  List<SpotubeImageObject> get images {
+  List<SonolythImageObject> get images {
     if (_images is EqualUnmodifiableListView) return _images;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_images);
@@ -2399,14 +2399,14 @@ class _$SpotubeFullArtistObjectImpl implements _SpotubeFullArtistObject {
 
   @override
   String toString() {
-    return 'SpotubeFullArtistObject(id: $id, name: $name, externalUri: $externalUri, images: $images, genres: $genres, followers: $followers)';
+    return 'SonolythFullArtistObject(id: $id, name: $name, externalUri: $externalUri, images: $images, genres: $genres, followers: $followers)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeFullArtistObjectImpl &&
+            other is _$SonolythFullArtistObjectImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.externalUri, externalUri) ||
@@ -2428,34 +2428,34 @@ class _$SpotubeFullArtistObjectImpl implements _SpotubeFullArtistObject {
       const DeepCollectionEquality().hash(_genres),
       followers);
 
-  /// Create a copy of SpotubeFullArtistObject
+  /// Create a copy of SonolythFullArtistObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeFullArtistObjectImplCopyWith<_$SpotubeFullArtistObjectImpl>
-      get copyWith => __$$SpotubeFullArtistObjectImplCopyWithImpl<
-          _$SpotubeFullArtistObjectImpl>(this, _$identity);
+  _$$SonolythFullArtistObjectImplCopyWith<_$SonolythFullArtistObjectImpl>
+      get copyWith => __$$SonolythFullArtistObjectImplCopyWithImpl<
+          _$SonolythFullArtistObjectImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeFullArtistObjectImplToJson(
+    return _$$SonolythFullArtistObjectImplToJson(
       this,
     );
   }
 }
 
-abstract class _SpotubeFullArtistObject implements SpotubeFullArtistObject {
-  factory _SpotubeFullArtistObject(
+abstract class _SonolythFullArtistObject implements SonolythFullArtistObject {
+  factory _SonolythFullArtistObject(
       {required final String id,
       required final String name,
       required final String externalUri,
-      final List<SpotubeImageObject> images,
+      final List<SonolythImageObject> images,
       final List<String>? genres,
-      final int? followers}) = _$SpotubeFullArtistObjectImpl;
+      final int? followers}) = _$SonolythFullArtistObjectImpl;
 
-  factory _SpotubeFullArtistObject.fromJson(Map<String, dynamic> json) =
-      _$SpotubeFullArtistObjectImpl.fromJson;
+  factory _SonolythFullArtistObject.fromJson(Map<String, dynamic> json) =
+      _$SonolythFullArtistObjectImpl.fromJson;
 
   @override
   String get id;
@@ -2464,67 +2464,67 @@ abstract class _SpotubeFullArtistObject implements SpotubeFullArtistObject {
   @override
   String get externalUri;
   @override
-  List<SpotubeImageObject> get images;
+  List<SonolythImageObject> get images;
   @override
   List<String>? get genres;
   @override
   int? get followers;
 
-  /// Create a copy of SpotubeFullArtistObject
+  /// Create a copy of SonolythFullArtistObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeFullArtistObjectImplCopyWith<_$SpotubeFullArtistObjectImpl>
+  _$$SonolythFullArtistObjectImplCopyWith<_$SonolythFullArtistObjectImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
-SpotubeSimpleArtistObject _$SpotubeSimpleArtistObjectFromJson(
+SonolythSimpleArtistObject _$SonolythSimpleArtistObjectFromJson(
     Map<String, dynamic> json) {
-  return _SpotubeSimpleArtistObject.fromJson(json);
+  return _SonolythSimpleArtistObject.fromJson(json);
 }
 
 /// @nodoc
-mixin _$SpotubeSimpleArtistObject {
+mixin _$SonolythSimpleArtistObject {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String get externalUri => throw _privateConstructorUsedError;
-  List<SpotubeImageObject>? get images => throw _privateConstructorUsedError;
+  List<SonolythImageObject>? get images => throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubeSimpleArtistObject to a JSON map.
+  /// Serializes this SonolythSimpleArtistObject to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubeSimpleArtistObject
+  /// Create a copy of SonolythSimpleArtistObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubeSimpleArtistObjectCopyWith<SpotubeSimpleArtistObject> get copyWith =>
+  $SonolythSimpleArtistObjectCopyWith<SonolythSimpleArtistObject> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubeSimpleArtistObjectCopyWith<$Res> {
-  factory $SpotubeSimpleArtistObjectCopyWith(SpotubeSimpleArtistObject value,
-          $Res Function(SpotubeSimpleArtistObject) then) =
-      _$SpotubeSimpleArtistObjectCopyWithImpl<$Res, SpotubeSimpleArtistObject>;
+abstract class $SonolythSimpleArtistObjectCopyWith<$Res> {
+  factory $SonolythSimpleArtistObjectCopyWith(SonolythSimpleArtistObject value,
+          $Res Function(SonolythSimpleArtistObject) then) =
+      _$SonolythSimpleArtistObjectCopyWithImpl<$Res, SonolythSimpleArtistObject>;
   @useResult
   $Res call(
       {String id,
       String name,
       String externalUri,
-      List<SpotubeImageObject>? images});
+      List<SonolythImageObject>? images});
 }
 
 /// @nodoc
-class _$SpotubeSimpleArtistObjectCopyWithImpl<$Res,
-        $Val extends SpotubeSimpleArtistObject>
-    implements $SpotubeSimpleArtistObjectCopyWith<$Res> {
-  _$SpotubeSimpleArtistObjectCopyWithImpl(this._value, this._then);
+class _$SonolythSimpleArtistObjectCopyWithImpl<$Res,
+        $Val extends SonolythSimpleArtistObject>
+    implements $SonolythSimpleArtistObjectCopyWith<$Res> {
+  _$SonolythSimpleArtistObjectCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubeSimpleArtistObject
+  /// Create a copy of SonolythSimpleArtistObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -2550,38 +2550,38 @@ class _$SpotubeSimpleArtistObjectCopyWithImpl<$Res,
       images: freezed == images
           ? _value.images
           : images // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeImageObject>?,
+              as List<SonolythImageObject>?,
     ) as $Val);
   }
 }
 
 /// @nodoc
-abstract class _$$SpotubeSimpleArtistObjectImplCopyWith<$Res>
-    implements $SpotubeSimpleArtistObjectCopyWith<$Res> {
-  factory _$$SpotubeSimpleArtistObjectImplCopyWith(
-          _$SpotubeSimpleArtistObjectImpl value,
-          $Res Function(_$SpotubeSimpleArtistObjectImpl) then) =
-      __$$SpotubeSimpleArtistObjectImplCopyWithImpl<$Res>;
+abstract class _$$SonolythSimpleArtistObjectImplCopyWith<$Res>
+    implements $SonolythSimpleArtistObjectCopyWith<$Res> {
+  factory _$$SonolythSimpleArtistObjectImplCopyWith(
+          _$SonolythSimpleArtistObjectImpl value,
+          $Res Function(_$SonolythSimpleArtistObjectImpl) then) =
+      __$$SonolythSimpleArtistObjectImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
       {String id,
       String name,
       String externalUri,
-      List<SpotubeImageObject>? images});
+      List<SonolythImageObject>? images});
 }
 
 /// @nodoc
-class __$$SpotubeSimpleArtistObjectImplCopyWithImpl<$Res>
-    extends _$SpotubeSimpleArtistObjectCopyWithImpl<$Res,
-        _$SpotubeSimpleArtistObjectImpl>
-    implements _$$SpotubeSimpleArtistObjectImplCopyWith<$Res> {
-  __$$SpotubeSimpleArtistObjectImplCopyWithImpl(
-      _$SpotubeSimpleArtistObjectImpl _value,
-      $Res Function(_$SpotubeSimpleArtistObjectImpl) _then)
+class __$$SonolythSimpleArtistObjectImplCopyWithImpl<$Res>
+    extends _$SonolythSimpleArtistObjectCopyWithImpl<$Res,
+        _$SonolythSimpleArtistObjectImpl>
+    implements _$$SonolythSimpleArtistObjectImplCopyWith<$Res> {
+  __$$SonolythSimpleArtistObjectImplCopyWithImpl(
+      _$SonolythSimpleArtistObjectImpl _value,
+      $Res Function(_$SonolythSimpleArtistObjectImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeSimpleArtistObject
+  /// Create a copy of SonolythSimpleArtistObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -2591,7 +2591,7 @@ class __$$SpotubeSimpleArtistObjectImplCopyWithImpl<$Res>
     Object? externalUri = null,
     Object? images = freezed,
   }) {
-    return _then(_$SpotubeSimpleArtistObjectImpl(
+    return _then(_$SonolythSimpleArtistObjectImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -2607,23 +2607,23 @@ class __$$SpotubeSimpleArtistObjectImplCopyWithImpl<$Res>
       images: freezed == images
           ? _value._images
           : images // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeImageObject>?,
+              as List<SonolythImageObject>?,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeSimpleArtistObjectImpl implements _SpotubeSimpleArtistObject {
-  _$SpotubeSimpleArtistObjectImpl(
+class _$SonolythSimpleArtistObjectImpl implements _SonolythSimpleArtistObject {
+  _$SonolythSimpleArtistObjectImpl(
       {required this.id,
       required this.name,
       required this.externalUri,
-      final List<SpotubeImageObject>? images})
+      final List<SonolythImageObject>? images})
       : _images = images;
 
-  factory _$SpotubeSimpleArtistObjectImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SpotubeSimpleArtistObjectImplFromJson(json);
+  factory _$SonolythSimpleArtistObjectImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SonolythSimpleArtistObjectImplFromJson(json);
 
   @override
   final String id;
@@ -2631,9 +2631,9 @@ class _$SpotubeSimpleArtistObjectImpl implements _SpotubeSimpleArtistObject {
   final String name;
   @override
   final String externalUri;
-  final List<SpotubeImageObject>? _images;
+  final List<SonolythImageObject>? _images;
   @override
-  List<SpotubeImageObject>? get images {
+  List<SonolythImageObject>? get images {
     final value = _images;
     if (value == null) return null;
     if (_images is EqualUnmodifiableListView) return _images;
@@ -2643,14 +2643,14 @@ class _$SpotubeSimpleArtistObjectImpl implements _SpotubeSimpleArtistObject {
 
   @override
   String toString() {
-    return 'SpotubeSimpleArtistObject(id: $id, name: $name, externalUri: $externalUri, images: $images)';
+    return 'SonolythSimpleArtistObject(id: $id, name: $name, externalUri: $externalUri, images: $images)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeSimpleArtistObjectImpl &&
+            other is _$SonolythSimpleArtistObjectImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.externalUri, externalUri) ||
@@ -2663,33 +2663,33 @@ class _$SpotubeSimpleArtistObjectImpl implements _SpotubeSimpleArtistObject {
   int get hashCode => Object.hash(runtimeType, id, name, externalUri,
       const DeepCollectionEquality().hash(_images));
 
-  /// Create a copy of SpotubeSimpleArtistObject
+  /// Create a copy of SonolythSimpleArtistObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeSimpleArtistObjectImplCopyWith<_$SpotubeSimpleArtistObjectImpl>
-      get copyWith => __$$SpotubeSimpleArtistObjectImplCopyWithImpl<
-          _$SpotubeSimpleArtistObjectImpl>(this, _$identity);
+  _$$SonolythSimpleArtistObjectImplCopyWith<_$SonolythSimpleArtistObjectImpl>
+      get copyWith => __$$SonolythSimpleArtistObjectImplCopyWithImpl<
+          _$SonolythSimpleArtistObjectImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeSimpleArtistObjectImplToJson(
+    return _$$SonolythSimpleArtistObjectImplToJson(
       this,
     );
   }
 }
 
-abstract class _SpotubeSimpleArtistObject implements SpotubeSimpleArtistObject {
-  factory _SpotubeSimpleArtistObject(
+abstract class _SonolythSimpleArtistObject implements SonolythSimpleArtistObject {
+  factory _SonolythSimpleArtistObject(
           {required final String id,
           required final String name,
           required final String externalUri,
-          final List<SpotubeImageObject>? images}) =
-      _$SpotubeSimpleArtistObjectImpl;
+          final List<SonolythImageObject>? images}) =
+      _$SonolythSimpleArtistObjectImpl;
 
-  factory _SpotubeSimpleArtistObject.fromJson(Map<String, dynamic> json) =
-      _$SpotubeSimpleArtistObjectImpl.fromJson;
+  factory _SonolythSimpleArtistObject.fromJson(Map<String, dynamic> json) =
+      _$SonolythSimpleArtistObjectImpl.fromJson;
 
   @override
   String get id;
@@ -2698,47 +2698,47 @@ abstract class _SpotubeSimpleArtistObject implements SpotubeSimpleArtistObject {
   @override
   String get externalUri;
   @override
-  List<SpotubeImageObject>? get images;
+  List<SonolythImageObject>? get images;
 
-  /// Create a copy of SpotubeSimpleArtistObject
+  /// Create a copy of SonolythSimpleArtistObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeSimpleArtistObjectImplCopyWith<_$SpotubeSimpleArtistObjectImpl>
+  _$$SonolythSimpleArtistObjectImplCopyWith<_$SonolythSimpleArtistObjectImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
-SpotubeBrowseSectionObject<T> _$SpotubeBrowseSectionObjectFromJson<T>(
+SonolythBrowseSectionObject<T> _$SonolythBrowseSectionObjectFromJson<T>(
     Map<String, dynamic> json, T Function(Object?) fromJsonT) {
-  return _SpotubeBrowseSectionObject<T>.fromJson(json, fromJsonT);
+  return _SonolythBrowseSectionObject<T>.fromJson(json, fromJsonT);
 }
 
 /// @nodoc
-mixin _$SpotubeBrowseSectionObject<T> {
+mixin _$SonolythBrowseSectionObject<T> {
   String get id => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
   String get externalUri => throw _privateConstructorUsedError;
   bool get browseMore => throw _privateConstructorUsedError;
   List<T> get items => throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubeBrowseSectionObject to a JSON map.
+  /// Serializes this SonolythBrowseSectionObject to a JSON map.
   Map<String, dynamic> toJson(Object? Function(T) toJsonT) =>
       throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubeBrowseSectionObject
+  /// Create a copy of SonolythBrowseSectionObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubeBrowseSectionObjectCopyWith<T, SpotubeBrowseSectionObject<T>>
+  $SonolythBrowseSectionObjectCopyWith<T, SonolythBrowseSectionObject<T>>
       get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubeBrowseSectionObjectCopyWith<T, $Res> {
-  factory $SpotubeBrowseSectionObjectCopyWith(
-          SpotubeBrowseSectionObject<T> value,
-          $Res Function(SpotubeBrowseSectionObject<T>) then) =
-      _$SpotubeBrowseSectionObjectCopyWithImpl<T, $Res,
-          SpotubeBrowseSectionObject<T>>;
+abstract class $SonolythBrowseSectionObjectCopyWith<T, $Res> {
+  factory $SonolythBrowseSectionObjectCopyWith(
+          SonolythBrowseSectionObject<T> value,
+          $Res Function(SonolythBrowseSectionObject<T>) then) =
+      _$SonolythBrowseSectionObjectCopyWithImpl<T, $Res,
+          SonolythBrowseSectionObject<T>>;
   @useResult
   $Res call(
       {String id,
@@ -2749,17 +2749,17 @@ abstract class $SpotubeBrowseSectionObjectCopyWith<T, $Res> {
 }
 
 /// @nodoc
-class _$SpotubeBrowseSectionObjectCopyWithImpl<T, $Res,
-        $Val extends SpotubeBrowseSectionObject<T>>
-    implements $SpotubeBrowseSectionObjectCopyWith<T, $Res> {
-  _$SpotubeBrowseSectionObjectCopyWithImpl(this._value, this._then);
+class _$SonolythBrowseSectionObjectCopyWithImpl<T, $Res,
+        $Val extends SonolythBrowseSectionObject<T>>
+    implements $SonolythBrowseSectionObjectCopyWith<T, $Res> {
+  _$SonolythBrowseSectionObjectCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubeBrowseSectionObject
+  /// Create a copy of SonolythBrowseSectionObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -2796,12 +2796,12 @@ class _$SpotubeBrowseSectionObjectCopyWithImpl<T, $Res,
 }
 
 /// @nodoc
-abstract class _$$SpotubeBrowseSectionObjectImplCopyWith<T, $Res>
-    implements $SpotubeBrowseSectionObjectCopyWith<T, $Res> {
-  factory _$$SpotubeBrowseSectionObjectImplCopyWith(
-          _$SpotubeBrowseSectionObjectImpl<T> value,
-          $Res Function(_$SpotubeBrowseSectionObjectImpl<T>) then) =
-      __$$SpotubeBrowseSectionObjectImplCopyWithImpl<T, $Res>;
+abstract class _$$SonolythBrowseSectionObjectImplCopyWith<T, $Res>
+    implements $SonolythBrowseSectionObjectCopyWith<T, $Res> {
+  factory _$$SonolythBrowseSectionObjectImplCopyWith(
+          _$SonolythBrowseSectionObjectImpl<T> value,
+          $Res Function(_$SonolythBrowseSectionObjectImpl<T>) then) =
+      __$$SonolythBrowseSectionObjectImplCopyWithImpl<T, $Res>;
   @override
   @useResult
   $Res call(
@@ -2813,16 +2813,16 @@ abstract class _$$SpotubeBrowseSectionObjectImplCopyWith<T, $Res>
 }
 
 /// @nodoc
-class __$$SpotubeBrowseSectionObjectImplCopyWithImpl<T, $Res>
-    extends _$SpotubeBrowseSectionObjectCopyWithImpl<T, $Res,
-        _$SpotubeBrowseSectionObjectImpl<T>>
-    implements _$$SpotubeBrowseSectionObjectImplCopyWith<T, $Res> {
-  __$$SpotubeBrowseSectionObjectImplCopyWithImpl(
-      _$SpotubeBrowseSectionObjectImpl<T> _value,
-      $Res Function(_$SpotubeBrowseSectionObjectImpl<T>) _then)
+class __$$SonolythBrowseSectionObjectImplCopyWithImpl<T, $Res>
+    extends _$SonolythBrowseSectionObjectCopyWithImpl<T, $Res,
+        _$SonolythBrowseSectionObjectImpl<T>>
+    implements _$$SonolythBrowseSectionObjectImplCopyWith<T, $Res> {
+  __$$SonolythBrowseSectionObjectImplCopyWithImpl(
+      _$SonolythBrowseSectionObjectImpl<T> _value,
+      $Res Function(_$SonolythBrowseSectionObjectImpl<T>) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeBrowseSectionObject
+  /// Create a copy of SonolythBrowseSectionObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -2833,7 +2833,7 @@ class __$$SpotubeBrowseSectionObjectImplCopyWithImpl<T, $Res>
     Object? browseMore = null,
     Object? items = null,
   }) {
-    return _then(_$SpotubeBrowseSectionObjectImpl<T>(
+    return _then(_$SonolythBrowseSectionObjectImpl<T>(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -2860,9 +2860,9 @@ class __$$SpotubeBrowseSectionObjectImplCopyWithImpl<T, $Res>
 
 /// @nodoc
 @JsonSerializable(genericArgumentFactories: true)
-class _$SpotubeBrowseSectionObjectImpl<T>
-    implements _SpotubeBrowseSectionObject<T> {
-  _$SpotubeBrowseSectionObjectImpl(
+class _$SonolythBrowseSectionObjectImpl<T>
+    implements _SonolythBrowseSectionObject<T> {
+  _$SonolythBrowseSectionObjectImpl(
       {required this.id,
       required this.title,
       required this.externalUri,
@@ -2870,9 +2870,9 @@ class _$SpotubeBrowseSectionObjectImpl<T>
       required final List<T> items})
       : _items = items;
 
-  factory _$SpotubeBrowseSectionObjectImpl.fromJson(
+  factory _$SonolythBrowseSectionObjectImpl.fromJson(
           Map<String, dynamic> json, T Function(Object?) fromJsonT) =>
-      _$$SpotubeBrowseSectionObjectImplFromJson(json, fromJsonT);
+      _$$SonolythBrowseSectionObjectImplFromJson(json, fromJsonT);
 
   @override
   final String id;
@@ -2892,14 +2892,14 @@ class _$SpotubeBrowseSectionObjectImpl<T>
 
   @override
   String toString() {
-    return 'SpotubeBrowseSectionObject<$T>(id: $id, title: $title, externalUri: $externalUri, browseMore: $browseMore, items: $items)';
+    return 'SonolythBrowseSectionObject<$T>(id: $id, title: $title, externalUri: $externalUri, browseMore: $browseMore, items: $items)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeBrowseSectionObjectImpl<T> &&
+            other is _$SonolythBrowseSectionObjectImpl<T> &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.externalUri, externalUri) ||
@@ -2914,34 +2914,34 @@ class _$SpotubeBrowseSectionObjectImpl<T>
   int get hashCode => Object.hash(runtimeType, id, title, externalUri,
       browseMore, const DeepCollectionEquality().hash(_items));
 
-  /// Create a copy of SpotubeBrowseSectionObject
+  /// Create a copy of SonolythBrowseSectionObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeBrowseSectionObjectImplCopyWith<T,
-          _$SpotubeBrowseSectionObjectImpl<T>>
-      get copyWith => __$$SpotubeBrowseSectionObjectImplCopyWithImpl<T,
-          _$SpotubeBrowseSectionObjectImpl<T>>(this, _$identity);
+  _$$SonolythBrowseSectionObjectImplCopyWith<T,
+          _$SonolythBrowseSectionObjectImpl<T>>
+      get copyWith => __$$SonolythBrowseSectionObjectImplCopyWithImpl<T,
+          _$SonolythBrowseSectionObjectImpl<T>>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson(Object? Function(T) toJsonT) {
-    return _$$SpotubeBrowseSectionObjectImplToJson<T>(this, toJsonT);
+    return _$$SonolythBrowseSectionObjectImplToJson<T>(this, toJsonT);
   }
 }
 
-abstract class _SpotubeBrowseSectionObject<T>
-    implements SpotubeBrowseSectionObject<T> {
-  factory _SpotubeBrowseSectionObject(
+abstract class _SonolythBrowseSectionObject<T>
+    implements SonolythBrowseSectionObject<T> {
+  factory _SonolythBrowseSectionObject(
       {required final String id,
       required final String title,
       required final String externalUri,
       required final bool browseMore,
-      required final List<T> items}) = _$SpotubeBrowseSectionObjectImpl<T>;
+      required final List<T> items}) = _$SonolythBrowseSectionObjectImpl<T>;
 
-  factory _SpotubeBrowseSectionObject.fromJson(
+  factory _SonolythBrowseSectionObject.fromJson(
           Map<String, dynamic> json, T Function(Object?) fromJsonT) =
-      _$SpotubeBrowseSectionObjectImpl<T>.fromJson;
+      _$SonolythBrowseSectionObjectImpl<T>.fromJson;
 
   @override
   String get id;
@@ -2954,12 +2954,12 @@ abstract class _SpotubeBrowseSectionObject<T>
   @override
   List<T> get items;
 
-  /// Create a copy of SpotubeBrowseSectionObject
+  /// Create a copy of SonolythBrowseSectionObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeBrowseSectionObjectImplCopyWith<T,
-          _$SpotubeBrowseSectionObjectImpl<T>>
+  _$$SonolythBrowseSectionObjectImplCopyWith<T,
+          _$SonolythBrowseSectionObjectImpl<T>>
       get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -3566,46 +3566,46 @@ abstract class MetadataFormFieldTextObject implements MetadataFormFieldObject {
       get copyWith => throw _privateConstructorUsedError;
 }
 
-SpotubeImageObject _$SpotubeImageObjectFromJson(Map<String, dynamic> json) {
-  return _SpotubeImageObject.fromJson(json);
+SonolythImageObject _$SonolythImageObjectFromJson(Map<String, dynamic> json) {
+  return _SonolythImageObject.fromJson(json);
 }
 
 /// @nodoc
-mixin _$SpotubeImageObject {
+mixin _$SonolythImageObject {
   String get url => throw _privateConstructorUsedError;
   int? get width => throw _privateConstructorUsedError;
   int? get height => throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubeImageObject to a JSON map.
+  /// Serializes this SonolythImageObject to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubeImageObject
+  /// Create a copy of SonolythImageObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubeImageObjectCopyWith<SpotubeImageObject> get copyWith =>
+  $SonolythImageObjectCopyWith<SonolythImageObject> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubeImageObjectCopyWith<$Res> {
-  factory $SpotubeImageObjectCopyWith(
-          SpotubeImageObject value, $Res Function(SpotubeImageObject) then) =
-      _$SpotubeImageObjectCopyWithImpl<$Res, SpotubeImageObject>;
+abstract class $SonolythImageObjectCopyWith<$Res> {
+  factory $SonolythImageObjectCopyWith(
+          SonolythImageObject value, $Res Function(SonolythImageObject) then) =
+      _$SonolythImageObjectCopyWithImpl<$Res, SonolythImageObject>;
   @useResult
   $Res call({String url, int? width, int? height});
 }
 
 /// @nodoc
-class _$SpotubeImageObjectCopyWithImpl<$Res, $Val extends SpotubeImageObject>
-    implements $SpotubeImageObjectCopyWith<$Res> {
-  _$SpotubeImageObjectCopyWithImpl(this._value, this._then);
+class _$SonolythImageObjectCopyWithImpl<$Res, $Val extends SonolythImageObject>
+    implements $SonolythImageObjectCopyWith<$Res> {
+  _$SonolythImageObjectCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubeImageObject
+  /// Create a copy of SonolythImageObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -3632,25 +3632,25 @@ class _$SpotubeImageObjectCopyWithImpl<$Res, $Val extends SpotubeImageObject>
 }
 
 /// @nodoc
-abstract class _$$SpotubeImageObjectImplCopyWith<$Res>
-    implements $SpotubeImageObjectCopyWith<$Res> {
-  factory _$$SpotubeImageObjectImplCopyWith(_$SpotubeImageObjectImpl value,
-          $Res Function(_$SpotubeImageObjectImpl) then) =
-      __$$SpotubeImageObjectImplCopyWithImpl<$Res>;
+abstract class _$$SonolythImageObjectImplCopyWith<$Res>
+    implements $SonolythImageObjectCopyWith<$Res> {
+  factory _$$SonolythImageObjectImplCopyWith(_$SonolythImageObjectImpl value,
+          $Res Function(_$SonolythImageObjectImpl) then) =
+      __$$SonolythImageObjectImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String url, int? width, int? height});
 }
 
 /// @nodoc
-class __$$SpotubeImageObjectImplCopyWithImpl<$Res>
-    extends _$SpotubeImageObjectCopyWithImpl<$Res, _$SpotubeImageObjectImpl>
-    implements _$$SpotubeImageObjectImplCopyWith<$Res> {
-  __$$SpotubeImageObjectImplCopyWithImpl(_$SpotubeImageObjectImpl _value,
-      $Res Function(_$SpotubeImageObjectImpl) _then)
+class __$$SonolythImageObjectImplCopyWithImpl<$Res>
+    extends _$SonolythImageObjectCopyWithImpl<$Res, _$SonolythImageObjectImpl>
+    implements _$$SonolythImageObjectImplCopyWith<$Res> {
+  __$$SonolythImageObjectImplCopyWithImpl(_$SonolythImageObjectImpl _value,
+      $Res Function(_$SonolythImageObjectImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeImageObject
+  /// Create a copy of SonolythImageObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -3659,7 +3659,7 @@ class __$$SpotubeImageObjectImplCopyWithImpl<$Res>
     Object? width = freezed,
     Object? height = freezed,
   }) {
-    return _then(_$SpotubeImageObjectImpl(
+    return _then(_$SonolythImageObjectImpl(
       url: null == url
           ? _value.url
           : url // ignore: cast_nullable_to_non_nullable
@@ -3678,11 +3678,11 @@ class __$$SpotubeImageObjectImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeImageObjectImpl implements _SpotubeImageObject {
-  _$SpotubeImageObjectImpl({required this.url, this.width, this.height});
+class _$SonolythImageObjectImpl implements _SonolythImageObject {
+  _$SonolythImageObjectImpl({required this.url, this.width, this.height});
 
-  factory _$SpotubeImageObjectImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SpotubeImageObjectImplFromJson(json);
+  factory _$SonolythImageObjectImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SonolythImageObjectImplFromJson(json);
 
   @override
   final String url;
@@ -3693,14 +3693,14 @@ class _$SpotubeImageObjectImpl implements _SpotubeImageObject {
 
   @override
   String toString() {
-    return 'SpotubeImageObject(url: $url, width: $width, height: $height)';
+    return 'SonolythImageObject(url: $url, width: $width, height: $height)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeImageObjectImpl &&
+            other is _$SonolythImageObjectImpl &&
             (identical(other.url, url) || other.url == url) &&
             (identical(other.width, width) || other.width == width) &&
             (identical(other.height, height) || other.height == height));
@@ -3710,31 +3710,31 @@ class _$SpotubeImageObjectImpl implements _SpotubeImageObject {
   @override
   int get hashCode => Object.hash(runtimeType, url, width, height);
 
-  /// Create a copy of SpotubeImageObject
+  /// Create a copy of SonolythImageObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeImageObjectImplCopyWith<_$SpotubeImageObjectImpl> get copyWith =>
-      __$$SpotubeImageObjectImplCopyWithImpl<_$SpotubeImageObjectImpl>(
+  _$$SonolythImageObjectImplCopyWith<_$SonolythImageObjectImpl> get copyWith =>
+      __$$SonolythImageObjectImplCopyWithImpl<_$SonolythImageObjectImpl>(
           this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeImageObjectImplToJson(
+    return _$$SonolythImageObjectImplToJson(
       this,
     );
   }
 }
 
-abstract class _SpotubeImageObject implements SpotubeImageObject {
-  factory _SpotubeImageObject(
+abstract class _SonolythImageObject implements SonolythImageObject {
+  factory _SonolythImageObject(
       {required final String url,
       final int? width,
-      final int? height}) = _$SpotubeImageObjectImpl;
+      final int? height}) = _$SonolythImageObjectImpl;
 
-  factory _SpotubeImageObject.fromJson(Map<String, dynamic> json) =
-      _$SpotubeImageObjectImpl.fromJson;
+  factory _SonolythImageObject.fromJson(Map<String, dynamic> json) =
+      _$SonolythImageObjectImpl.fromJson;
 
   @override
   String get url;
@@ -3743,63 +3743,63 @@ abstract class _SpotubeImageObject implements SpotubeImageObject {
   @override
   int? get height;
 
-  /// Create a copy of SpotubeImageObject
+  /// Create a copy of SonolythImageObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeImageObjectImplCopyWith<_$SpotubeImageObjectImpl> get copyWith =>
+  _$$SonolythImageObjectImplCopyWith<_$SonolythImageObjectImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
-SpotubePaginationResponseObject<T> _$SpotubePaginationResponseObjectFromJson<T>(
+SonolythPaginationResponseObject<T> _$SonolythPaginationResponseObjectFromJson<T>(
     Map<String, dynamic> json, T Function(Object?) fromJsonT) {
-  return _SpotubePaginationResponseObject<T>.fromJson(json, fromJsonT);
+  return _SonolythPaginationResponseObject<T>.fromJson(json, fromJsonT);
 }
 
 /// @nodoc
-mixin _$SpotubePaginationResponseObject<T> {
+mixin _$SonolythPaginationResponseObject<T> {
   int get limit => throw _privateConstructorUsedError;
   int? get nextOffset => throw _privateConstructorUsedError;
   int get total => throw _privateConstructorUsedError;
   bool get hasMore => throw _privateConstructorUsedError;
   List<T> get items => throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubePaginationResponseObject to a JSON map.
+  /// Serializes this SonolythPaginationResponseObject to a JSON map.
   Map<String, dynamic> toJson(Object? Function(T) toJsonT) =>
       throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubePaginationResponseObject
+  /// Create a copy of SonolythPaginationResponseObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubePaginationResponseObjectCopyWith<T,
-          SpotubePaginationResponseObject<T>>
+  $SonolythPaginationResponseObjectCopyWith<T,
+          SonolythPaginationResponseObject<T>>
       get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubePaginationResponseObjectCopyWith<T, $Res> {
-  factory $SpotubePaginationResponseObjectCopyWith(
-          SpotubePaginationResponseObject<T> value,
-          $Res Function(SpotubePaginationResponseObject<T>) then) =
-      _$SpotubePaginationResponseObjectCopyWithImpl<T, $Res,
-          SpotubePaginationResponseObject<T>>;
+abstract class $SonolythPaginationResponseObjectCopyWith<T, $Res> {
+  factory $SonolythPaginationResponseObjectCopyWith(
+          SonolythPaginationResponseObject<T> value,
+          $Res Function(SonolythPaginationResponseObject<T>) then) =
+      _$SonolythPaginationResponseObjectCopyWithImpl<T, $Res,
+          SonolythPaginationResponseObject<T>>;
   @useResult
   $Res call(
       {int limit, int? nextOffset, int total, bool hasMore, List<T> items});
 }
 
 /// @nodoc
-class _$SpotubePaginationResponseObjectCopyWithImpl<T, $Res,
-        $Val extends SpotubePaginationResponseObject<T>>
-    implements $SpotubePaginationResponseObjectCopyWith<T, $Res> {
-  _$SpotubePaginationResponseObjectCopyWithImpl(this._value, this._then);
+class _$SonolythPaginationResponseObjectCopyWithImpl<T, $Res,
+        $Val extends SonolythPaginationResponseObject<T>>
+    implements $SonolythPaginationResponseObjectCopyWith<T, $Res> {
+  _$SonolythPaginationResponseObjectCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubePaginationResponseObject
+  /// Create a copy of SonolythPaginationResponseObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -3836,12 +3836,12 @@ class _$SpotubePaginationResponseObjectCopyWithImpl<T, $Res,
 }
 
 /// @nodoc
-abstract class _$$SpotubePaginationResponseObjectImplCopyWith<T, $Res>
-    implements $SpotubePaginationResponseObjectCopyWith<T, $Res> {
-  factory _$$SpotubePaginationResponseObjectImplCopyWith(
-          _$SpotubePaginationResponseObjectImpl<T> value,
-          $Res Function(_$SpotubePaginationResponseObjectImpl<T>) then) =
-      __$$SpotubePaginationResponseObjectImplCopyWithImpl<T, $Res>;
+abstract class _$$SonolythPaginationResponseObjectImplCopyWith<T, $Res>
+    implements $SonolythPaginationResponseObjectCopyWith<T, $Res> {
+  factory _$$SonolythPaginationResponseObjectImplCopyWith(
+          _$SonolythPaginationResponseObjectImpl<T> value,
+          $Res Function(_$SonolythPaginationResponseObjectImpl<T>) then) =
+      __$$SonolythPaginationResponseObjectImplCopyWithImpl<T, $Res>;
   @override
   @useResult
   $Res call(
@@ -3849,16 +3849,16 @@ abstract class _$$SpotubePaginationResponseObjectImplCopyWith<T, $Res>
 }
 
 /// @nodoc
-class __$$SpotubePaginationResponseObjectImplCopyWithImpl<T, $Res>
-    extends _$SpotubePaginationResponseObjectCopyWithImpl<T, $Res,
-        _$SpotubePaginationResponseObjectImpl<T>>
-    implements _$$SpotubePaginationResponseObjectImplCopyWith<T, $Res> {
-  __$$SpotubePaginationResponseObjectImplCopyWithImpl(
-      _$SpotubePaginationResponseObjectImpl<T> _value,
-      $Res Function(_$SpotubePaginationResponseObjectImpl<T>) _then)
+class __$$SonolythPaginationResponseObjectImplCopyWithImpl<T, $Res>
+    extends _$SonolythPaginationResponseObjectCopyWithImpl<T, $Res,
+        _$SonolythPaginationResponseObjectImpl<T>>
+    implements _$$SonolythPaginationResponseObjectImplCopyWith<T, $Res> {
+  __$$SonolythPaginationResponseObjectImplCopyWithImpl(
+      _$SonolythPaginationResponseObjectImpl<T> _value,
+      $Res Function(_$SonolythPaginationResponseObjectImpl<T>) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubePaginationResponseObject
+  /// Create a copy of SonolythPaginationResponseObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -3869,7 +3869,7 @@ class __$$SpotubePaginationResponseObjectImplCopyWithImpl<T, $Res>
     Object? hasMore = null,
     Object? items = null,
   }) {
-    return _then(_$SpotubePaginationResponseObjectImpl<T>(
+    return _then(_$SonolythPaginationResponseObjectImpl<T>(
       limit: null == limit
           ? _value.limit
           : limit // ignore: cast_nullable_to_non_nullable
@@ -3896,9 +3896,9 @@ class __$$SpotubePaginationResponseObjectImplCopyWithImpl<T, $Res>
 
 /// @nodoc
 @JsonSerializable(genericArgumentFactories: true)
-class _$SpotubePaginationResponseObjectImpl<T>
-    implements _SpotubePaginationResponseObject<T> {
-  _$SpotubePaginationResponseObjectImpl(
+class _$SonolythPaginationResponseObjectImpl<T>
+    implements _SonolythPaginationResponseObject<T> {
+  _$SonolythPaginationResponseObjectImpl(
       {required this.limit,
       required this.nextOffset,
       required this.total,
@@ -3906,9 +3906,9 @@ class _$SpotubePaginationResponseObjectImpl<T>
       required final List<T> items})
       : _items = items;
 
-  factory _$SpotubePaginationResponseObjectImpl.fromJson(
+  factory _$SonolythPaginationResponseObjectImpl.fromJson(
           Map<String, dynamic> json, T Function(Object?) fromJsonT) =>
-      _$$SpotubePaginationResponseObjectImplFromJson(json, fromJsonT);
+      _$$SonolythPaginationResponseObjectImplFromJson(json, fromJsonT);
 
   @override
   final int limit;
@@ -3928,14 +3928,14 @@ class _$SpotubePaginationResponseObjectImpl<T>
 
   @override
   String toString() {
-    return 'SpotubePaginationResponseObject<$T>(limit: $limit, nextOffset: $nextOffset, total: $total, hasMore: $hasMore, items: $items)';
+    return 'SonolythPaginationResponseObject<$T>(limit: $limit, nextOffset: $nextOffset, total: $total, hasMore: $hasMore, items: $items)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubePaginationResponseObjectImpl<T> &&
+            other is _$SonolythPaginationResponseObjectImpl<T> &&
             (identical(other.limit, limit) || other.limit == limit) &&
             (identical(other.nextOffset, nextOffset) ||
                 other.nextOffset == nextOffset) &&
@@ -3949,34 +3949,34 @@ class _$SpotubePaginationResponseObjectImpl<T>
   int get hashCode => Object.hash(runtimeType, limit, nextOffset, total,
       hasMore, const DeepCollectionEquality().hash(_items));
 
-  /// Create a copy of SpotubePaginationResponseObject
+  /// Create a copy of SonolythPaginationResponseObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubePaginationResponseObjectImplCopyWith<T,
-          _$SpotubePaginationResponseObjectImpl<T>>
-      get copyWith => __$$SpotubePaginationResponseObjectImplCopyWithImpl<T,
-          _$SpotubePaginationResponseObjectImpl<T>>(this, _$identity);
+  _$$SonolythPaginationResponseObjectImplCopyWith<T,
+          _$SonolythPaginationResponseObjectImpl<T>>
+      get copyWith => __$$SonolythPaginationResponseObjectImplCopyWithImpl<T,
+          _$SonolythPaginationResponseObjectImpl<T>>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson(Object? Function(T) toJsonT) {
-    return _$$SpotubePaginationResponseObjectImplToJson<T>(this, toJsonT);
+    return _$$SonolythPaginationResponseObjectImplToJson<T>(this, toJsonT);
   }
 }
 
-abstract class _SpotubePaginationResponseObject<T>
-    implements SpotubePaginationResponseObject<T> {
-  factory _SpotubePaginationResponseObject(
+abstract class _SonolythPaginationResponseObject<T>
+    implements SonolythPaginationResponseObject<T> {
+  factory _SonolythPaginationResponseObject(
       {required final int limit,
       required final int? nextOffset,
       required final int total,
       required final bool hasMore,
-      required final List<T> items}) = _$SpotubePaginationResponseObjectImpl<T>;
+      required final List<T> items}) = _$SonolythPaginationResponseObjectImpl<T>;
 
-  factory _SpotubePaginationResponseObject.fromJson(
+  factory _SonolythPaginationResponseObject.fromJson(
           Map<String, dynamic> json, T Function(Object?) fromJsonT) =
-      _$SpotubePaginationResponseObjectImpl<T>.fromJson;
+      _$SonolythPaginationResponseObjectImpl<T>.fromJson;
 
   @override
   int get limit;
@@ -3989,75 +3989,75 @@ abstract class _SpotubePaginationResponseObject<T>
   @override
   List<T> get items;
 
-  /// Create a copy of SpotubePaginationResponseObject
+  /// Create a copy of SonolythPaginationResponseObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubePaginationResponseObjectImplCopyWith<T,
-          _$SpotubePaginationResponseObjectImpl<T>>
+  _$$SonolythPaginationResponseObjectImplCopyWith<T,
+          _$SonolythPaginationResponseObjectImpl<T>>
       get copyWith => throw _privateConstructorUsedError;
 }
 
-SpotubeFullPlaylistObject _$SpotubeFullPlaylistObjectFromJson(
+SonolythFullPlaylistObject _$SonolythFullPlaylistObjectFromJson(
     Map<String, dynamic> json) {
-  return _SpotubeFullPlaylistObject.fromJson(json);
+  return _SonolythFullPlaylistObject.fromJson(json);
 }
 
 /// @nodoc
-mixin _$SpotubeFullPlaylistObject {
+mixin _$SonolythFullPlaylistObject {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String get description => throw _privateConstructorUsedError;
   String get externalUri => throw _privateConstructorUsedError;
-  SpotubeUserObject get owner => throw _privateConstructorUsedError;
-  List<SpotubeImageObject> get images => throw _privateConstructorUsedError;
-  List<SpotubeUserObject> get collaborators =>
+  SonolythUserObject get owner => throw _privateConstructorUsedError;
+  List<SonolythImageObject> get images => throw _privateConstructorUsedError;
+  List<SonolythUserObject> get collaborators =>
       throw _privateConstructorUsedError;
   bool get collaborative => throw _privateConstructorUsedError;
   bool get public => throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubeFullPlaylistObject to a JSON map.
+  /// Serializes this SonolythFullPlaylistObject to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubeFullPlaylistObject
+  /// Create a copy of SonolythFullPlaylistObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubeFullPlaylistObjectCopyWith<SpotubeFullPlaylistObject> get copyWith =>
+  $SonolythFullPlaylistObjectCopyWith<SonolythFullPlaylistObject> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubeFullPlaylistObjectCopyWith<$Res> {
-  factory $SpotubeFullPlaylistObjectCopyWith(SpotubeFullPlaylistObject value,
-          $Res Function(SpotubeFullPlaylistObject) then) =
-      _$SpotubeFullPlaylistObjectCopyWithImpl<$Res, SpotubeFullPlaylistObject>;
+abstract class $SonolythFullPlaylistObjectCopyWith<$Res> {
+  factory $SonolythFullPlaylistObjectCopyWith(SonolythFullPlaylistObject value,
+          $Res Function(SonolythFullPlaylistObject) then) =
+      _$SonolythFullPlaylistObjectCopyWithImpl<$Res, SonolythFullPlaylistObject>;
   @useResult
   $Res call(
       {String id,
       String name,
       String description,
       String externalUri,
-      SpotubeUserObject owner,
-      List<SpotubeImageObject> images,
-      List<SpotubeUserObject> collaborators,
+      SonolythUserObject owner,
+      List<SonolythImageObject> images,
+      List<SonolythUserObject> collaborators,
       bool collaborative,
       bool public});
 
-  $SpotubeUserObjectCopyWith<$Res> get owner;
+  $SonolythUserObjectCopyWith<$Res> get owner;
 }
 
 /// @nodoc
-class _$SpotubeFullPlaylistObjectCopyWithImpl<$Res,
-        $Val extends SpotubeFullPlaylistObject>
-    implements $SpotubeFullPlaylistObjectCopyWith<$Res> {
-  _$SpotubeFullPlaylistObjectCopyWithImpl(this._value, this._then);
+class _$SonolythFullPlaylistObjectCopyWithImpl<$Res,
+        $Val extends SonolythFullPlaylistObject>
+    implements $SonolythFullPlaylistObjectCopyWith<$Res> {
+  _$SonolythFullPlaylistObjectCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubeFullPlaylistObject
+  /// Create a copy of SonolythFullPlaylistObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -4092,15 +4092,15 @@ class _$SpotubeFullPlaylistObjectCopyWithImpl<$Res,
       owner: null == owner
           ? _value.owner
           : owner // ignore: cast_nullable_to_non_nullable
-              as SpotubeUserObject,
+              as SonolythUserObject,
       images: null == images
           ? _value.images
           : images // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeImageObject>,
+              as List<SonolythImageObject>,
       collaborators: null == collaborators
           ? _value.collaborators
           : collaborators // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeUserObject>,
+              as List<SonolythUserObject>,
       collaborative: null == collaborative
           ? _value.collaborative
           : collaborative // ignore: cast_nullable_to_non_nullable
@@ -4112,24 +4112,24 @@ class _$SpotubeFullPlaylistObjectCopyWithImpl<$Res,
     ) as $Val);
   }
 
-  /// Create a copy of SpotubeFullPlaylistObject
+  /// Create a copy of SonolythFullPlaylistObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $SpotubeUserObjectCopyWith<$Res> get owner {
-    return $SpotubeUserObjectCopyWith<$Res>(_value.owner, (value) {
+  $SonolythUserObjectCopyWith<$Res> get owner {
+    return $SonolythUserObjectCopyWith<$Res>(_value.owner, (value) {
       return _then(_value.copyWith(owner: value) as $Val);
     });
   }
 }
 
 /// @nodoc
-abstract class _$$SpotubeFullPlaylistObjectImplCopyWith<$Res>
-    implements $SpotubeFullPlaylistObjectCopyWith<$Res> {
-  factory _$$SpotubeFullPlaylistObjectImplCopyWith(
-          _$SpotubeFullPlaylistObjectImpl value,
-          $Res Function(_$SpotubeFullPlaylistObjectImpl) then) =
-      __$$SpotubeFullPlaylistObjectImplCopyWithImpl<$Res>;
+abstract class _$$SonolythFullPlaylistObjectImplCopyWith<$Res>
+    implements $SonolythFullPlaylistObjectCopyWith<$Res> {
+  factory _$$SonolythFullPlaylistObjectImplCopyWith(
+          _$SonolythFullPlaylistObjectImpl value,
+          $Res Function(_$SonolythFullPlaylistObjectImpl) then) =
+      __$$SonolythFullPlaylistObjectImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -4137,27 +4137,27 @@ abstract class _$$SpotubeFullPlaylistObjectImplCopyWith<$Res>
       String name,
       String description,
       String externalUri,
-      SpotubeUserObject owner,
-      List<SpotubeImageObject> images,
-      List<SpotubeUserObject> collaborators,
+      SonolythUserObject owner,
+      List<SonolythImageObject> images,
+      List<SonolythUserObject> collaborators,
       bool collaborative,
       bool public});
 
   @override
-  $SpotubeUserObjectCopyWith<$Res> get owner;
+  $SonolythUserObjectCopyWith<$Res> get owner;
 }
 
 /// @nodoc
-class __$$SpotubeFullPlaylistObjectImplCopyWithImpl<$Res>
-    extends _$SpotubeFullPlaylistObjectCopyWithImpl<$Res,
-        _$SpotubeFullPlaylistObjectImpl>
-    implements _$$SpotubeFullPlaylistObjectImplCopyWith<$Res> {
-  __$$SpotubeFullPlaylistObjectImplCopyWithImpl(
-      _$SpotubeFullPlaylistObjectImpl _value,
-      $Res Function(_$SpotubeFullPlaylistObjectImpl) _then)
+class __$$SonolythFullPlaylistObjectImplCopyWithImpl<$Res>
+    extends _$SonolythFullPlaylistObjectCopyWithImpl<$Res,
+        _$SonolythFullPlaylistObjectImpl>
+    implements _$$SonolythFullPlaylistObjectImplCopyWith<$Res> {
+  __$$SonolythFullPlaylistObjectImplCopyWithImpl(
+      _$SonolythFullPlaylistObjectImpl _value,
+      $Res Function(_$SonolythFullPlaylistObjectImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeFullPlaylistObject
+  /// Create a copy of SonolythFullPlaylistObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -4172,7 +4172,7 @@ class __$$SpotubeFullPlaylistObjectImplCopyWithImpl<$Res>
     Object? collaborative = null,
     Object? public = null,
   }) {
-    return _then(_$SpotubeFullPlaylistObjectImpl(
+    return _then(_$SonolythFullPlaylistObjectImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -4192,15 +4192,15 @@ class __$$SpotubeFullPlaylistObjectImplCopyWithImpl<$Res>
       owner: null == owner
           ? _value.owner
           : owner // ignore: cast_nullable_to_non_nullable
-              as SpotubeUserObject,
+              as SonolythUserObject,
       images: null == images
           ? _value._images
           : images // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeImageObject>,
+              as List<SonolythImageObject>,
       collaborators: null == collaborators
           ? _value._collaborators
           : collaborators // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeUserObject>,
+              as List<SonolythUserObject>,
       collaborative: null == collaborative
           ? _value.collaborative
           : collaborative // ignore: cast_nullable_to_non_nullable
@@ -4215,22 +4215,22 @@ class __$$SpotubeFullPlaylistObjectImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeFullPlaylistObjectImpl implements _SpotubeFullPlaylistObject {
-  _$SpotubeFullPlaylistObjectImpl(
+class _$SonolythFullPlaylistObjectImpl implements _SonolythFullPlaylistObject {
+  _$SonolythFullPlaylistObjectImpl(
       {required this.id,
       required this.name,
       required this.description,
       required this.externalUri,
       required this.owner,
-      final List<SpotubeImageObject> images = const [],
-      final List<SpotubeUserObject> collaborators = const [],
+      final List<SonolythImageObject> images = const [],
+      final List<SonolythUserObject> collaborators = const [],
       this.collaborative = false,
       this.public = false})
       : _images = images,
         _collaborators = collaborators;
 
-  factory _$SpotubeFullPlaylistObjectImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SpotubeFullPlaylistObjectImplFromJson(json);
+  factory _$SonolythFullPlaylistObjectImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SonolythFullPlaylistObjectImplFromJson(json);
 
   @override
   final String id;
@@ -4241,20 +4241,20 @@ class _$SpotubeFullPlaylistObjectImpl implements _SpotubeFullPlaylistObject {
   @override
   final String externalUri;
   @override
-  final SpotubeUserObject owner;
-  final List<SpotubeImageObject> _images;
+  final SonolythUserObject owner;
+  final List<SonolythImageObject> _images;
   @override
   @JsonKey()
-  List<SpotubeImageObject> get images {
+  List<SonolythImageObject> get images {
     if (_images is EqualUnmodifiableListView) return _images;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_images);
   }
 
-  final List<SpotubeUserObject> _collaborators;
+  final List<SonolythUserObject> _collaborators;
   @override
   @JsonKey()
-  List<SpotubeUserObject> get collaborators {
+  List<SonolythUserObject> get collaborators {
     if (_collaborators is EqualUnmodifiableListView) return _collaborators;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_collaborators);
@@ -4269,14 +4269,14 @@ class _$SpotubeFullPlaylistObjectImpl implements _SpotubeFullPlaylistObject {
 
   @override
   String toString() {
-    return 'SpotubeFullPlaylistObject(id: $id, name: $name, description: $description, externalUri: $externalUri, owner: $owner, images: $images, collaborators: $collaborators, collaborative: $collaborative, public: $public)';
+    return 'SonolythFullPlaylistObject(id: $id, name: $name, description: $description, externalUri: $externalUri, owner: $owner, images: $images, collaborators: $collaborators, collaborative: $collaborative, public: $public)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeFullPlaylistObjectImpl &&
+            other is _$SonolythFullPlaylistObjectImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.description, description) ||
@@ -4306,37 +4306,37 @@ class _$SpotubeFullPlaylistObjectImpl implements _SpotubeFullPlaylistObject {
       collaborative,
       public);
 
-  /// Create a copy of SpotubeFullPlaylistObject
+  /// Create a copy of SonolythFullPlaylistObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeFullPlaylistObjectImplCopyWith<_$SpotubeFullPlaylistObjectImpl>
-      get copyWith => __$$SpotubeFullPlaylistObjectImplCopyWithImpl<
-          _$SpotubeFullPlaylistObjectImpl>(this, _$identity);
+  _$$SonolythFullPlaylistObjectImplCopyWith<_$SonolythFullPlaylistObjectImpl>
+      get copyWith => __$$SonolythFullPlaylistObjectImplCopyWithImpl<
+          _$SonolythFullPlaylistObjectImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeFullPlaylistObjectImplToJson(
+    return _$$SonolythFullPlaylistObjectImplToJson(
       this,
     );
   }
 }
 
-abstract class _SpotubeFullPlaylistObject implements SpotubeFullPlaylistObject {
-  factory _SpotubeFullPlaylistObject(
+abstract class _SonolythFullPlaylistObject implements SonolythFullPlaylistObject {
+  factory _SonolythFullPlaylistObject(
       {required final String id,
       required final String name,
       required final String description,
       required final String externalUri,
-      required final SpotubeUserObject owner,
-      final List<SpotubeImageObject> images,
-      final List<SpotubeUserObject> collaborators,
+      required final SonolythUserObject owner,
+      final List<SonolythImageObject> images,
+      final List<SonolythUserObject> collaborators,
       final bool collaborative,
-      final bool public}) = _$SpotubeFullPlaylistObjectImpl;
+      final bool public}) = _$SonolythFullPlaylistObjectImpl;
 
-  factory _SpotubeFullPlaylistObject.fromJson(Map<String, dynamic> json) =
-      _$SpotubeFullPlaylistObjectImpl.fromJson;
+  factory _SonolythFullPlaylistObject.fromJson(Map<String, dynamic> json) =
+      _$SonolythFullPlaylistObjectImpl.fromJson;
 
   @override
   String get id;
@@ -4347,79 +4347,79 @@ abstract class _SpotubeFullPlaylistObject implements SpotubeFullPlaylistObject {
   @override
   String get externalUri;
   @override
-  SpotubeUserObject get owner;
+  SonolythUserObject get owner;
   @override
-  List<SpotubeImageObject> get images;
+  List<SonolythImageObject> get images;
   @override
-  List<SpotubeUserObject> get collaborators;
+  List<SonolythUserObject> get collaborators;
   @override
   bool get collaborative;
   @override
   bool get public;
 
-  /// Create a copy of SpotubeFullPlaylistObject
+  /// Create a copy of SonolythFullPlaylistObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeFullPlaylistObjectImplCopyWith<_$SpotubeFullPlaylistObjectImpl>
+  _$$SonolythFullPlaylistObjectImplCopyWith<_$SonolythFullPlaylistObjectImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
-SpotubeSimplePlaylistObject _$SpotubeSimplePlaylistObjectFromJson(
+SonolythSimplePlaylistObject _$SonolythSimplePlaylistObjectFromJson(
     Map<String, dynamic> json) {
-  return _SpotubeSimplePlaylistObject.fromJson(json);
+  return _SonolythSimplePlaylistObject.fromJson(json);
 }
 
 /// @nodoc
-mixin _$SpotubeSimplePlaylistObject {
+mixin _$SonolythSimplePlaylistObject {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String get description => throw _privateConstructorUsedError;
   String get externalUri => throw _privateConstructorUsedError;
-  SpotubeUserObject get owner => throw _privateConstructorUsedError;
-  List<SpotubeImageObject> get images => throw _privateConstructorUsedError;
+  SonolythUserObject get owner => throw _privateConstructorUsedError;
+  List<SonolythImageObject> get images => throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubeSimplePlaylistObject to a JSON map.
+  /// Serializes this SonolythSimplePlaylistObject to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubeSimplePlaylistObject
+  /// Create a copy of SonolythSimplePlaylistObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubeSimplePlaylistObjectCopyWith<SpotubeSimplePlaylistObject>
+  $SonolythSimplePlaylistObjectCopyWith<SonolythSimplePlaylistObject>
       get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubeSimplePlaylistObjectCopyWith<$Res> {
-  factory $SpotubeSimplePlaylistObjectCopyWith(
-          SpotubeSimplePlaylistObject value,
-          $Res Function(SpotubeSimplePlaylistObject) then) =
-      _$SpotubeSimplePlaylistObjectCopyWithImpl<$Res,
-          SpotubeSimplePlaylistObject>;
+abstract class $SonolythSimplePlaylistObjectCopyWith<$Res> {
+  factory $SonolythSimplePlaylistObjectCopyWith(
+          SonolythSimplePlaylistObject value,
+          $Res Function(SonolythSimplePlaylistObject) then) =
+      _$SonolythSimplePlaylistObjectCopyWithImpl<$Res,
+          SonolythSimplePlaylistObject>;
   @useResult
   $Res call(
       {String id,
       String name,
       String description,
       String externalUri,
-      SpotubeUserObject owner,
-      List<SpotubeImageObject> images});
+      SonolythUserObject owner,
+      List<SonolythImageObject> images});
 
-  $SpotubeUserObjectCopyWith<$Res> get owner;
+  $SonolythUserObjectCopyWith<$Res> get owner;
 }
 
 /// @nodoc
-class _$SpotubeSimplePlaylistObjectCopyWithImpl<$Res,
-        $Val extends SpotubeSimplePlaylistObject>
-    implements $SpotubeSimplePlaylistObjectCopyWith<$Res> {
-  _$SpotubeSimplePlaylistObjectCopyWithImpl(this._value, this._then);
+class _$SonolythSimplePlaylistObjectCopyWithImpl<$Res,
+        $Val extends SonolythSimplePlaylistObject>
+    implements $SonolythSimplePlaylistObjectCopyWith<$Res> {
+  _$SonolythSimplePlaylistObjectCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubeSimplePlaylistObject
+  /// Create a copy of SonolythSimplePlaylistObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -4451,32 +4451,32 @@ class _$SpotubeSimplePlaylistObjectCopyWithImpl<$Res,
       owner: null == owner
           ? _value.owner
           : owner // ignore: cast_nullable_to_non_nullable
-              as SpotubeUserObject,
+              as SonolythUserObject,
       images: null == images
           ? _value.images
           : images // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeImageObject>,
+              as List<SonolythImageObject>,
     ) as $Val);
   }
 
-  /// Create a copy of SpotubeSimplePlaylistObject
+  /// Create a copy of SonolythSimplePlaylistObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $SpotubeUserObjectCopyWith<$Res> get owner {
-    return $SpotubeUserObjectCopyWith<$Res>(_value.owner, (value) {
+  $SonolythUserObjectCopyWith<$Res> get owner {
+    return $SonolythUserObjectCopyWith<$Res>(_value.owner, (value) {
       return _then(_value.copyWith(owner: value) as $Val);
     });
   }
 }
 
 /// @nodoc
-abstract class _$$SpotubeSimplePlaylistObjectImplCopyWith<$Res>
-    implements $SpotubeSimplePlaylistObjectCopyWith<$Res> {
-  factory _$$SpotubeSimplePlaylistObjectImplCopyWith(
-          _$SpotubeSimplePlaylistObjectImpl value,
-          $Res Function(_$SpotubeSimplePlaylistObjectImpl) then) =
-      __$$SpotubeSimplePlaylistObjectImplCopyWithImpl<$Res>;
+abstract class _$$SonolythSimplePlaylistObjectImplCopyWith<$Res>
+    implements $SonolythSimplePlaylistObjectCopyWith<$Res> {
+  factory _$$SonolythSimplePlaylistObjectImplCopyWith(
+          _$SonolythSimplePlaylistObjectImpl value,
+          $Res Function(_$SonolythSimplePlaylistObjectImpl) then) =
+      __$$SonolythSimplePlaylistObjectImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -4484,24 +4484,24 @@ abstract class _$$SpotubeSimplePlaylistObjectImplCopyWith<$Res>
       String name,
       String description,
       String externalUri,
-      SpotubeUserObject owner,
-      List<SpotubeImageObject> images});
+      SonolythUserObject owner,
+      List<SonolythImageObject> images});
 
   @override
-  $SpotubeUserObjectCopyWith<$Res> get owner;
+  $SonolythUserObjectCopyWith<$Res> get owner;
 }
 
 /// @nodoc
-class __$$SpotubeSimplePlaylistObjectImplCopyWithImpl<$Res>
-    extends _$SpotubeSimplePlaylistObjectCopyWithImpl<$Res,
-        _$SpotubeSimplePlaylistObjectImpl>
-    implements _$$SpotubeSimplePlaylistObjectImplCopyWith<$Res> {
-  __$$SpotubeSimplePlaylistObjectImplCopyWithImpl(
-      _$SpotubeSimplePlaylistObjectImpl _value,
-      $Res Function(_$SpotubeSimplePlaylistObjectImpl) _then)
+class __$$SonolythSimplePlaylistObjectImplCopyWithImpl<$Res>
+    extends _$SonolythSimplePlaylistObjectCopyWithImpl<$Res,
+        _$SonolythSimplePlaylistObjectImpl>
+    implements _$$SonolythSimplePlaylistObjectImplCopyWith<$Res> {
+  __$$SonolythSimplePlaylistObjectImplCopyWithImpl(
+      _$SonolythSimplePlaylistObjectImpl _value,
+      $Res Function(_$SonolythSimplePlaylistObjectImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeSimplePlaylistObject
+  /// Create a copy of SonolythSimplePlaylistObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -4513,7 +4513,7 @@ class __$$SpotubeSimplePlaylistObjectImplCopyWithImpl<$Res>
     Object? owner = null,
     Object? images = null,
   }) {
-    return _then(_$SpotubeSimplePlaylistObjectImpl(
+    return _then(_$SonolythSimplePlaylistObjectImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -4533,31 +4533,31 @@ class __$$SpotubeSimplePlaylistObjectImplCopyWithImpl<$Res>
       owner: null == owner
           ? _value.owner
           : owner // ignore: cast_nullable_to_non_nullable
-              as SpotubeUserObject,
+              as SonolythUserObject,
       images: null == images
           ? _value._images
           : images // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeImageObject>,
+              as List<SonolythImageObject>,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeSimplePlaylistObjectImpl
-    implements _SpotubeSimplePlaylistObject {
-  _$SpotubeSimplePlaylistObjectImpl(
+class _$SonolythSimplePlaylistObjectImpl
+    implements _SonolythSimplePlaylistObject {
+  _$SonolythSimplePlaylistObjectImpl(
       {required this.id,
       required this.name,
       required this.description,
       required this.externalUri,
       required this.owner,
-      final List<SpotubeImageObject> images = const []})
+      final List<SonolythImageObject> images = const []})
       : _images = images;
 
-  factory _$SpotubeSimplePlaylistObjectImpl.fromJson(
+  factory _$SonolythSimplePlaylistObjectImpl.fromJson(
           Map<String, dynamic> json) =>
-      _$$SpotubeSimplePlaylistObjectImplFromJson(json);
+      _$$SonolythSimplePlaylistObjectImplFromJson(json);
 
   @override
   final String id;
@@ -4568,11 +4568,11 @@ class _$SpotubeSimplePlaylistObjectImpl
   @override
   final String externalUri;
   @override
-  final SpotubeUserObject owner;
-  final List<SpotubeImageObject> _images;
+  final SonolythUserObject owner;
+  final List<SonolythImageObject> _images;
   @override
   @JsonKey()
-  List<SpotubeImageObject> get images {
+  List<SonolythImageObject> get images {
     if (_images is EqualUnmodifiableListView) return _images;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_images);
@@ -4580,14 +4580,14 @@ class _$SpotubeSimplePlaylistObjectImpl
 
   @override
   String toString() {
-    return 'SpotubeSimplePlaylistObject(id: $id, name: $name, description: $description, externalUri: $externalUri, owner: $owner, images: $images)';
+    return 'SonolythSimplePlaylistObject(id: $id, name: $name, description: $description, externalUri: $externalUri, owner: $owner, images: $images)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeSimplePlaylistObjectImpl &&
+            other is _$SonolythSimplePlaylistObjectImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.description, description) ||
@@ -4603,36 +4603,36 @@ class _$SpotubeSimplePlaylistObjectImpl
   int get hashCode => Object.hash(runtimeType, id, name, description,
       externalUri, owner, const DeepCollectionEquality().hash(_images));
 
-  /// Create a copy of SpotubeSimplePlaylistObject
+  /// Create a copy of SonolythSimplePlaylistObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeSimplePlaylistObjectImplCopyWith<_$SpotubeSimplePlaylistObjectImpl>
-      get copyWith => __$$SpotubeSimplePlaylistObjectImplCopyWithImpl<
-          _$SpotubeSimplePlaylistObjectImpl>(this, _$identity);
+  _$$SonolythSimplePlaylistObjectImplCopyWith<_$SonolythSimplePlaylistObjectImpl>
+      get copyWith => __$$SonolythSimplePlaylistObjectImplCopyWithImpl<
+          _$SonolythSimplePlaylistObjectImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeSimplePlaylistObjectImplToJson(
+    return _$$SonolythSimplePlaylistObjectImplToJson(
       this,
     );
   }
 }
 
-abstract class _SpotubeSimplePlaylistObject
-    implements SpotubeSimplePlaylistObject {
-  factory _SpotubeSimplePlaylistObject(
+abstract class _SonolythSimplePlaylistObject
+    implements SonolythSimplePlaylistObject {
+  factory _SonolythSimplePlaylistObject(
           {required final String id,
           required final String name,
           required final String description,
           required final String externalUri,
-          required final SpotubeUserObject owner,
-          final List<SpotubeImageObject> images}) =
-      _$SpotubeSimplePlaylistObjectImpl;
+          required final SonolythUserObject owner,
+          final List<SonolythImageObject> images}) =
+      _$SonolythSimplePlaylistObjectImpl;
 
-  factory _SpotubeSimplePlaylistObject.fromJson(Map<String, dynamic> json) =
-      _$SpotubeSimplePlaylistObjectImpl.fromJson;
+  factory _SonolythSimplePlaylistObject.fromJson(Map<String, dynamic> json) =
+      _$SonolythSimplePlaylistObjectImpl.fromJson;
 
   @override
   String get id;
@@ -4643,70 +4643,70 @@ abstract class _SpotubeSimplePlaylistObject
   @override
   String get externalUri;
   @override
-  SpotubeUserObject get owner;
+  SonolythUserObject get owner;
   @override
-  List<SpotubeImageObject> get images;
+  List<SonolythImageObject> get images;
 
-  /// Create a copy of SpotubeSimplePlaylistObject
+  /// Create a copy of SonolythSimplePlaylistObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeSimplePlaylistObjectImplCopyWith<_$SpotubeSimplePlaylistObjectImpl>
+  _$$SonolythSimplePlaylistObjectImplCopyWith<_$SonolythSimplePlaylistObjectImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
-SpotubeSearchResponseObject _$SpotubeSearchResponseObjectFromJson(
+SonolythSearchResponseObject _$SonolythSearchResponseObjectFromJson(
     Map<String, dynamic> json) {
-  return _SpotubeSearchResponseObject.fromJson(json);
+  return _SonolythSearchResponseObject.fromJson(json);
 }
 
 /// @nodoc
-mixin _$SpotubeSearchResponseObject {
-  List<SpotubeSimpleAlbumObject> get albums =>
+mixin _$SonolythSearchResponseObject {
+  List<SonolythSimpleAlbumObject> get albums =>
       throw _privateConstructorUsedError;
-  List<SpotubeFullArtistObject> get artists =>
+  List<SonolythFullArtistObject> get artists =>
       throw _privateConstructorUsedError;
-  List<SpotubeSimplePlaylistObject> get playlists =>
+  List<SonolythSimplePlaylistObject> get playlists =>
       throw _privateConstructorUsedError;
-  List<SpotubeFullTrackObject> get tracks => throw _privateConstructorUsedError;
+  List<SonolythFullTrackObject> get tracks => throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubeSearchResponseObject to a JSON map.
+  /// Serializes this SonolythSearchResponseObject to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubeSearchResponseObject
+  /// Create a copy of SonolythSearchResponseObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubeSearchResponseObjectCopyWith<SpotubeSearchResponseObject>
+  $SonolythSearchResponseObjectCopyWith<SonolythSearchResponseObject>
       get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubeSearchResponseObjectCopyWith<$Res> {
-  factory $SpotubeSearchResponseObjectCopyWith(
-          SpotubeSearchResponseObject value,
-          $Res Function(SpotubeSearchResponseObject) then) =
-      _$SpotubeSearchResponseObjectCopyWithImpl<$Res,
-          SpotubeSearchResponseObject>;
+abstract class $SonolythSearchResponseObjectCopyWith<$Res> {
+  factory $SonolythSearchResponseObjectCopyWith(
+          SonolythSearchResponseObject value,
+          $Res Function(SonolythSearchResponseObject) then) =
+      _$SonolythSearchResponseObjectCopyWithImpl<$Res,
+          SonolythSearchResponseObject>;
   @useResult
   $Res call(
-      {List<SpotubeSimpleAlbumObject> albums,
-      List<SpotubeFullArtistObject> artists,
-      List<SpotubeSimplePlaylistObject> playlists,
-      List<SpotubeFullTrackObject> tracks});
+      {List<SonolythSimpleAlbumObject> albums,
+      List<SonolythFullArtistObject> artists,
+      List<SonolythSimplePlaylistObject> playlists,
+      List<SonolythFullTrackObject> tracks});
 }
 
 /// @nodoc
-class _$SpotubeSearchResponseObjectCopyWithImpl<$Res,
-        $Val extends SpotubeSearchResponseObject>
-    implements $SpotubeSearchResponseObjectCopyWith<$Res> {
-  _$SpotubeSearchResponseObjectCopyWithImpl(this._value, this._then);
+class _$SonolythSearchResponseObjectCopyWithImpl<$Res,
+        $Val extends SonolythSearchResponseObject>
+    implements $SonolythSearchResponseObjectCopyWith<$Res> {
+  _$SonolythSearchResponseObjectCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubeSearchResponseObject
+  /// Create a copy of SonolythSearchResponseObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -4720,50 +4720,50 @@ class _$SpotubeSearchResponseObjectCopyWithImpl<$Res,
       albums: null == albums
           ? _value.albums
           : albums // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeSimpleAlbumObject>,
+              as List<SonolythSimpleAlbumObject>,
       artists: null == artists
           ? _value.artists
           : artists // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeFullArtistObject>,
+              as List<SonolythFullArtistObject>,
       playlists: null == playlists
           ? _value.playlists
           : playlists // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeSimplePlaylistObject>,
+              as List<SonolythSimplePlaylistObject>,
       tracks: null == tracks
           ? _value.tracks
           : tracks // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeFullTrackObject>,
+              as List<SonolythFullTrackObject>,
     ) as $Val);
   }
 }
 
 /// @nodoc
-abstract class _$$SpotubeSearchResponseObjectImplCopyWith<$Res>
-    implements $SpotubeSearchResponseObjectCopyWith<$Res> {
-  factory _$$SpotubeSearchResponseObjectImplCopyWith(
-          _$SpotubeSearchResponseObjectImpl value,
-          $Res Function(_$SpotubeSearchResponseObjectImpl) then) =
-      __$$SpotubeSearchResponseObjectImplCopyWithImpl<$Res>;
+abstract class _$$SonolythSearchResponseObjectImplCopyWith<$Res>
+    implements $SonolythSearchResponseObjectCopyWith<$Res> {
+  factory _$$SonolythSearchResponseObjectImplCopyWith(
+          _$SonolythSearchResponseObjectImpl value,
+          $Res Function(_$SonolythSearchResponseObjectImpl) then) =
+      __$$SonolythSearchResponseObjectImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
-      {List<SpotubeSimpleAlbumObject> albums,
-      List<SpotubeFullArtistObject> artists,
-      List<SpotubeSimplePlaylistObject> playlists,
-      List<SpotubeFullTrackObject> tracks});
+      {List<SonolythSimpleAlbumObject> albums,
+      List<SonolythFullArtistObject> artists,
+      List<SonolythSimplePlaylistObject> playlists,
+      List<SonolythFullTrackObject> tracks});
 }
 
 /// @nodoc
-class __$$SpotubeSearchResponseObjectImplCopyWithImpl<$Res>
-    extends _$SpotubeSearchResponseObjectCopyWithImpl<$Res,
-        _$SpotubeSearchResponseObjectImpl>
-    implements _$$SpotubeSearchResponseObjectImplCopyWith<$Res> {
-  __$$SpotubeSearchResponseObjectImplCopyWithImpl(
-      _$SpotubeSearchResponseObjectImpl _value,
-      $Res Function(_$SpotubeSearchResponseObjectImpl) _then)
+class __$$SonolythSearchResponseObjectImplCopyWithImpl<$Res>
+    extends _$SonolythSearchResponseObjectCopyWithImpl<$Res,
+        _$SonolythSearchResponseObjectImpl>
+    implements _$$SonolythSearchResponseObjectImplCopyWith<$Res> {
+  __$$SonolythSearchResponseObjectImplCopyWithImpl(
+      _$SonolythSearchResponseObjectImpl _value,
+      $Res Function(_$SonolythSearchResponseObjectImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeSearchResponseObject
+  /// Create a copy of SonolythSearchResponseObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -4773,72 +4773,72 @@ class __$$SpotubeSearchResponseObjectImplCopyWithImpl<$Res>
     Object? playlists = null,
     Object? tracks = null,
   }) {
-    return _then(_$SpotubeSearchResponseObjectImpl(
+    return _then(_$SonolythSearchResponseObjectImpl(
       albums: null == albums
           ? _value._albums
           : albums // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeSimpleAlbumObject>,
+              as List<SonolythSimpleAlbumObject>,
       artists: null == artists
           ? _value._artists
           : artists // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeFullArtistObject>,
+              as List<SonolythFullArtistObject>,
       playlists: null == playlists
           ? _value._playlists
           : playlists // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeSimplePlaylistObject>,
+              as List<SonolythSimplePlaylistObject>,
       tracks: null == tracks
           ? _value._tracks
           : tracks // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeFullTrackObject>,
+              as List<SonolythFullTrackObject>,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeSearchResponseObjectImpl
-    implements _SpotubeSearchResponseObject {
-  _$SpotubeSearchResponseObjectImpl(
-      {required final List<SpotubeSimpleAlbumObject> albums,
-      required final List<SpotubeFullArtistObject> artists,
-      required final List<SpotubeSimplePlaylistObject> playlists,
-      required final List<SpotubeFullTrackObject> tracks})
+class _$SonolythSearchResponseObjectImpl
+    implements _SonolythSearchResponseObject {
+  _$SonolythSearchResponseObjectImpl(
+      {required final List<SonolythSimpleAlbumObject> albums,
+      required final List<SonolythFullArtistObject> artists,
+      required final List<SonolythSimplePlaylistObject> playlists,
+      required final List<SonolythFullTrackObject> tracks})
       : _albums = albums,
         _artists = artists,
         _playlists = playlists,
         _tracks = tracks;
 
-  factory _$SpotubeSearchResponseObjectImpl.fromJson(
+  factory _$SonolythSearchResponseObjectImpl.fromJson(
           Map<String, dynamic> json) =>
-      _$$SpotubeSearchResponseObjectImplFromJson(json);
+      _$$SonolythSearchResponseObjectImplFromJson(json);
 
-  final List<SpotubeSimpleAlbumObject> _albums;
+  final List<SonolythSimpleAlbumObject> _albums;
   @override
-  List<SpotubeSimpleAlbumObject> get albums {
+  List<SonolythSimpleAlbumObject> get albums {
     if (_albums is EqualUnmodifiableListView) return _albums;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_albums);
   }
 
-  final List<SpotubeFullArtistObject> _artists;
+  final List<SonolythFullArtistObject> _artists;
   @override
-  List<SpotubeFullArtistObject> get artists {
+  List<SonolythFullArtistObject> get artists {
     if (_artists is EqualUnmodifiableListView) return _artists;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_artists);
   }
 
-  final List<SpotubeSimplePlaylistObject> _playlists;
+  final List<SonolythSimplePlaylistObject> _playlists;
   @override
-  List<SpotubeSimplePlaylistObject> get playlists {
+  List<SonolythSimplePlaylistObject> get playlists {
     if (_playlists is EqualUnmodifiableListView) return _playlists;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_playlists);
   }
 
-  final List<SpotubeFullTrackObject> _tracks;
+  final List<SonolythFullTrackObject> _tracks;
   @override
-  List<SpotubeFullTrackObject> get tracks {
+  List<SonolythFullTrackObject> get tracks {
     if (_tracks is EqualUnmodifiableListView) return _tracks;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_tracks);
@@ -4846,14 +4846,14 @@ class _$SpotubeSearchResponseObjectImpl
 
   @override
   String toString() {
-    return 'SpotubeSearchResponseObject(albums: $albums, artists: $artists, playlists: $playlists, tracks: $tracks)';
+    return 'SonolythSearchResponseObject(albums: $albums, artists: $artists, playlists: $playlists, tracks: $tracks)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeSearchResponseObjectImpl &&
+            other is _$SonolythSearchResponseObjectImpl &&
             const DeepCollectionEquality().equals(other._albums, _albums) &&
             const DeepCollectionEquality().equals(other._artists, _artists) &&
             const DeepCollectionEquality()
@@ -4870,73 +4870,73 @@ class _$SpotubeSearchResponseObjectImpl
       const DeepCollectionEquality().hash(_playlists),
       const DeepCollectionEquality().hash(_tracks));
 
-  /// Create a copy of SpotubeSearchResponseObject
+  /// Create a copy of SonolythSearchResponseObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeSearchResponseObjectImplCopyWith<_$SpotubeSearchResponseObjectImpl>
-      get copyWith => __$$SpotubeSearchResponseObjectImplCopyWithImpl<
-          _$SpotubeSearchResponseObjectImpl>(this, _$identity);
+  _$$SonolythSearchResponseObjectImplCopyWith<_$SonolythSearchResponseObjectImpl>
+      get copyWith => __$$SonolythSearchResponseObjectImplCopyWithImpl<
+          _$SonolythSearchResponseObjectImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeSearchResponseObjectImplToJson(
+    return _$$SonolythSearchResponseObjectImplToJson(
       this,
     );
   }
 }
 
-abstract class _SpotubeSearchResponseObject
-    implements SpotubeSearchResponseObject {
-  factory _SpotubeSearchResponseObject(
-          {required final List<SpotubeSimpleAlbumObject> albums,
-          required final List<SpotubeFullArtistObject> artists,
-          required final List<SpotubeSimplePlaylistObject> playlists,
-          required final List<SpotubeFullTrackObject> tracks}) =
-      _$SpotubeSearchResponseObjectImpl;
+abstract class _SonolythSearchResponseObject
+    implements SonolythSearchResponseObject {
+  factory _SonolythSearchResponseObject(
+          {required final List<SonolythSimpleAlbumObject> albums,
+          required final List<SonolythFullArtistObject> artists,
+          required final List<SonolythSimplePlaylistObject> playlists,
+          required final List<SonolythFullTrackObject> tracks}) =
+      _$SonolythSearchResponseObjectImpl;
 
-  factory _SpotubeSearchResponseObject.fromJson(Map<String, dynamic> json) =
-      _$SpotubeSearchResponseObjectImpl.fromJson;
+  factory _SonolythSearchResponseObject.fromJson(Map<String, dynamic> json) =
+      _$SonolythSearchResponseObjectImpl.fromJson;
 
   @override
-  List<SpotubeSimpleAlbumObject> get albums;
+  List<SonolythSimpleAlbumObject> get albums;
   @override
-  List<SpotubeFullArtistObject> get artists;
+  List<SonolythFullArtistObject> get artists;
   @override
-  List<SpotubeSimplePlaylistObject> get playlists;
+  List<SonolythSimplePlaylistObject> get playlists;
   @override
-  List<SpotubeFullTrackObject> get tracks;
+  List<SonolythFullTrackObject> get tracks;
 
-  /// Create a copy of SpotubeSearchResponseObject
+  /// Create a copy of SonolythSearchResponseObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeSearchResponseObjectImplCopyWith<_$SpotubeSearchResponseObjectImpl>
+  _$$SonolythSearchResponseObjectImplCopyWith<_$SonolythSearchResponseObjectImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
-SpotubeTrackObject _$SpotubeTrackObjectFromJson(Map<String, dynamic> json) {
+SonolythTrackObject _$SonolythTrackObjectFromJson(Map<String, dynamic> json) {
   switch (json['runtimeType']) {
     case 'local':
-      return SpotubeLocalTrackObject.fromJson(json);
+      return SonolythLocalTrackObject.fromJson(json);
     case 'full':
-      return SpotubeFullTrackObject.fromJson(json);
+      return SonolythFullTrackObject.fromJson(json);
 
     default:
-      throw CheckedFromJsonException(json, 'runtimeType', 'SpotubeTrackObject',
+      throw CheckedFromJsonException(json, 'runtimeType', 'SonolythTrackObject',
           'Invalid union type "${json['runtimeType']}"!');
   }
 }
 
 /// @nodoc
-mixin _$SpotubeTrackObject {
+mixin _$SonolythTrackObject {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String get externalUri => throw _privateConstructorUsedError;
-  List<SpotubeSimpleArtistObject> get artists =>
+  List<SonolythSimpleArtistObject> get artists =>
       throw _privateConstructorUsedError;
-  SpotubeSimpleAlbumObject get album => throw _privateConstructorUsedError;
+  SonolythSimpleAlbumObject get album => throw _privateConstructorUsedError;
   int get durationMs => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
@@ -4944,8 +4944,8 @@ mixin _$SpotubeTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String path)
         local,
@@ -4953,8 +4953,8 @@ mixin _$SpotubeTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
             bool explicit)
@@ -4967,8 +4967,8 @@ mixin _$SpotubeTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String path)?
         local,
@@ -4976,8 +4976,8 @@ mixin _$SpotubeTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
             bool explicit)?
@@ -4990,8 +4990,8 @@ mixin _$SpotubeTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String path)?
         local,
@@ -4999,8 +4999,8 @@ mixin _$SpotubeTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
             bool explicit)?
@@ -5010,62 +5010,62 @@ mixin _$SpotubeTrackObject {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(SpotubeLocalTrackObject value) local,
-    required TResult Function(SpotubeFullTrackObject value) full,
+    required TResult Function(SonolythLocalTrackObject value) local,
+    required TResult Function(SonolythFullTrackObject value) full,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(SpotubeLocalTrackObject value)? local,
-    TResult? Function(SpotubeFullTrackObject value)? full,
+    TResult? Function(SonolythLocalTrackObject value)? local,
+    TResult? Function(SonolythFullTrackObject value)? full,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(SpotubeLocalTrackObject value)? local,
-    TResult Function(SpotubeFullTrackObject value)? full,
+    TResult Function(SonolythLocalTrackObject value)? local,
+    TResult Function(SonolythFullTrackObject value)? full,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubeTrackObject to a JSON map.
+  /// Serializes this SonolythTrackObject to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubeTrackObject
+  /// Create a copy of SonolythTrackObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubeTrackObjectCopyWith<SpotubeTrackObject> get copyWith =>
+  $SonolythTrackObjectCopyWith<SonolythTrackObject> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubeTrackObjectCopyWith<$Res> {
-  factory $SpotubeTrackObjectCopyWith(
-          SpotubeTrackObject value, $Res Function(SpotubeTrackObject) then) =
-      _$SpotubeTrackObjectCopyWithImpl<$Res, SpotubeTrackObject>;
+abstract class $SonolythTrackObjectCopyWith<$Res> {
+  factory $SonolythTrackObjectCopyWith(
+          SonolythTrackObject value, $Res Function(SonolythTrackObject) then) =
+      _$SonolythTrackObjectCopyWithImpl<$Res, SonolythTrackObject>;
   @useResult
   $Res call(
       {String id,
       String name,
       String externalUri,
-      List<SpotubeSimpleArtistObject> artists,
-      SpotubeSimpleAlbumObject album,
+      List<SonolythSimpleArtistObject> artists,
+      SonolythSimpleAlbumObject album,
       int durationMs});
 
-  $SpotubeSimpleAlbumObjectCopyWith<$Res> get album;
+  $SonolythSimpleAlbumObjectCopyWith<$Res> get album;
 }
 
 /// @nodoc
-class _$SpotubeTrackObjectCopyWithImpl<$Res, $Val extends SpotubeTrackObject>
-    implements $SpotubeTrackObjectCopyWith<$Res> {
-  _$SpotubeTrackObjectCopyWithImpl(this._value, this._then);
+class _$SonolythTrackObjectCopyWithImpl<$Res, $Val extends SonolythTrackObject>
+    implements $SonolythTrackObjectCopyWith<$Res> {
+  _$SonolythTrackObjectCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubeTrackObject
+  /// Create a copy of SonolythTrackObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -5093,11 +5093,11 @@ class _$SpotubeTrackObjectCopyWithImpl<$Res, $Val extends SpotubeTrackObject>
       artists: null == artists
           ? _value.artists
           : artists // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeSimpleArtistObject>,
+              as List<SonolythSimpleArtistObject>,
       album: null == album
           ? _value.album
           : album // ignore: cast_nullable_to_non_nullable
-              as SpotubeSimpleAlbumObject,
+              as SonolythSimpleAlbumObject,
       durationMs: null == durationMs
           ? _value.durationMs
           : durationMs // ignore: cast_nullable_to_non_nullable
@@ -5105,50 +5105,50 @@ class _$SpotubeTrackObjectCopyWithImpl<$Res, $Val extends SpotubeTrackObject>
     ) as $Val);
   }
 
-  /// Create a copy of SpotubeTrackObject
+  /// Create a copy of SonolythTrackObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $SpotubeSimpleAlbumObjectCopyWith<$Res> get album {
-    return $SpotubeSimpleAlbumObjectCopyWith<$Res>(_value.album, (value) {
+  $SonolythSimpleAlbumObjectCopyWith<$Res> get album {
+    return $SonolythSimpleAlbumObjectCopyWith<$Res>(_value.album, (value) {
       return _then(_value.copyWith(album: value) as $Val);
     });
   }
 }
 
 /// @nodoc
-abstract class _$$SpotubeLocalTrackObjectImplCopyWith<$Res>
-    implements $SpotubeTrackObjectCopyWith<$Res> {
-  factory _$$SpotubeLocalTrackObjectImplCopyWith(
-          _$SpotubeLocalTrackObjectImpl value,
-          $Res Function(_$SpotubeLocalTrackObjectImpl) then) =
-      __$$SpotubeLocalTrackObjectImplCopyWithImpl<$Res>;
+abstract class _$$SonolythLocalTrackObjectImplCopyWith<$Res>
+    implements $SonolythTrackObjectCopyWith<$Res> {
+  factory _$$SonolythLocalTrackObjectImplCopyWith(
+          _$SonolythLocalTrackObjectImpl value,
+          $Res Function(_$SonolythLocalTrackObjectImpl) then) =
+      __$$SonolythLocalTrackObjectImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
       {String id,
       String name,
       String externalUri,
-      List<SpotubeSimpleArtistObject> artists,
-      SpotubeSimpleAlbumObject album,
+      List<SonolythSimpleArtistObject> artists,
+      SonolythSimpleAlbumObject album,
       int durationMs,
       String path});
 
   @override
-  $SpotubeSimpleAlbumObjectCopyWith<$Res> get album;
+  $SonolythSimpleAlbumObjectCopyWith<$Res> get album;
 }
 
 /// @nodoc
-class __$$SpotubeLocalTrackObjectImplCopyWithImpl<$Res>
-    extends _$SpotubeTrackObjectCopyWithImpl<$Res,
-        _$SpotubeLocalTrackObjectImpl>
-    implements _$$SpotubeLocalTrackObjectImplCopyWith<$Res> {
-  __$$SpotubeLocalTrackObjectImplCopyWithImpl(
-      _$SpotubeLocalTrackObjectImpl _value,
-      $Res Function(_$SpotubeLocalTrackObjectImpl) _then)
+class __$$SonolythLocalTrackObjectImplCopyWithImpl<$Res>
+    extends _$SonolythTrackObjectCopyWithImpl<$Res,
+        _$SonolythLocalTrackObjectImpl>
+    implements _$$SonolythLocalTrackObjectImplCopyWith<$Res> {
+  __$$SonolythLocalTrackObjectImplCopyWithImpl(
+      _$SonolythLocalTrackObjectImpl _value,
+      $Res Function(_$SonolythLocalTrackObjectImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeTrackObject
+  /// Create a copy of SonolythTrackObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -5161,7 +5161,7 @@ class __$$SpotubeLocalTrackObjectImplCopyWithImpl<$Res>
     Object? durationMs = null,
     Object? path = null,
   }) {
-    return _then(_$SpotubeLocalTrackObjectImpl(
+    return _then(_$SonolythLocalTrackObjectImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -5177,11 +5177,11 @@ class __$$SpotubeLocalTrackObjectImplCopyWithImpl<$Res>
       artists: null == artists
           ? _value._artists
           : artists // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeSimpleArtistObject>,
+              as List<SonolythSimpleArtistObject>,
       album: null == album
           ? _value.album
           : album // ignore: cast_nullable_to_non_nullable
-              as SpotubeSimpleAlbumObject,
+              as SonolythSimpleAlbumObject,
       durationMs: null == durationMs
           ? _value.durationMs
           : durationMs // ignore: cast_nullable_to_non_nullable
@@ -5196,12 +5196,12 @@ class __$$SpotubeLocalTrackObjectImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeLocalTrackObjectImpl implements SpotubeLocalTrackObject {
-  _$SpotubeLocalTrackObjectImpl(
+class _$SonolythLocalTrackObjectImpl implements SonolythLocalTrackObject {
+  _$SonolythLocalTrackObjectImpl(
       {required this.id,
       required this.name,
       required this.externalUri,
-      final List<SpotubeSimpleArtistObject> artists = const [],
+      final List<SonolythSimpleArtistObject> artists = const [],
       required this.album,
       required this.durationMs,
       required this.path,
@@ -5209,8 +5209,8 @@ class _$SpotubeLocalTrackObjectImpl implements SpotubeLocalTrackObject {
       : _artists = artists,
         $type = $type ?? 'local';
 
-  factory _$SpotubeLocalTrackObjectImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SpotubeLocalTrackObjectImplFromJson(json);
+  factory _$SonolythLocalTrackObjectImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SonolythLocalTrackObjectImplFromJson(json);
 
   @override
   final String id;
@@ -5218,17 +5218,17 @@ class _$SpotubeLocalTrackObjectImpl implements SpotubeLocalTrackObject {
   final String name;
   @override
   final String externalUri;
-  final List<SpotubeSimpleArtistObject> _artists;
+  final List<SonolythSimpleArtistObject> _artists;
   @override
   @JsonKey()
-  List<SpotubeSimpleArtistObject> get artists {
+  List<SonolythSimpleArtistObject> get artists {
     if (_artists is EqualUnmodifiableListView) return _artists;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_artists);
   }
 
   @override
-  final SpotubeSimpleAlbumObject album;
+  final SonolythSimpleAlbumObject album;
   @override
   final int durationMs;
   @override
@@ -5239,14 +5239,14 @@ class _$SpotubeLocalTrackObjectImpl implements SpotubeLocalTrackObject {
 
   @override
   String toString() {
-    return 'SpotubeTrackObject.local(id: $id, name: $name, externalUri: $externalUri, artists: $artists, album: $album, durationMs: $durationMs, path: $path)';
+    return 'SonolythTrackObject.local(id: $id, name: $name, externalUri: $externalUri, artists: $artists, album: $album, durationMs: $durationMs, path: $path)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeLocalTrackObjectImpl &&
+            other is _$SonolythLocalTrackObjectImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.externalUri, externalUri) ||
@@ -5263,14 +5263,14 @@ class _$SpotubeLocalTrackObjectImpl implements SpotubeLocalTrackObject {
   int get hashCode => Object.hash(runtimeType, id, name, externalUri,
       const DeepCollectionEquality().hash(_artists), album, durationMs, path);
 
-  /// Create a copy of SpotubeTrackObject
+  /// Create a copy of SonolythTrackObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeLocalTrackObjectImplCopyWith<_$SpotubeLocalTrackObjectImpl>
-      get copyWith => __$$SpotubeLocalTrackObjectImplCopyWithImpl<
-          _$SpotubeLocalTrackObjectImpl>(this, _$identity);
+  _$$SonolythLocalTrackObjectImplCopyWith<_$SonolythLocalTrackObjectImpl>
+      get copyWith => __$$SonolythLocalTrackObjectImplCopyWithImpl<
+          _$SonolythLocalTrackObjectImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -5279,8 +5279,8 @@ class _$SpotubeLocalTrackObjectImpl implements SpotubeLocalTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String path)
         local,
@@ -5288,8 +5288,8 @@ class _$SpotubeLocalTrackObjectImpl implements SpotubeLocalTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
             bool explicit)
@@ -5305,8 +5305,8 @@ class _$SpotubeLocalTrackObjectImpl implements SpotubeLocalTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String path)?
         local,
@@ -5314,8 +5314,8 @@ class _$SpotubeLocalTrackObjectImpl implements SpotubeLocalTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
             bool explicit)?
@@ -5331,8 +5331,8 @@ class _$SpotubeLocalTrackObjectImpl implements SpotubeLocalTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String path)?
         local,
@@ -5340,8 +5340,8 @@ class _$SpotubeLocalTrackObjectImpl implements SpotubeLocalTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
             bool explicit)?
@@ -5357,8 +5357,8 @@ class _$SpotubeLocalTrackObjectImpl implements SpotubeLocalTrackObject {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(SpotubeLocalTrackObject value) local,
-    required TResult Function(SpotubeFullTrackObject value) full,
+    required TResult Function(SonolythLocalTrackObject value) local,
+    required TResult Function(SonolythFullTrackObject value) full,
   }) {
     return local(this);
   }
@@ -5366,8 +5366,8 @@ class _$SpotubeLocalTrackObjectImpl implements SpotubeLocalTrackObject {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(SpotubeLocalTrackObject value)? local,
-    TResult? Function(SpotubeFullTrackObject value)? full,
+    TResult? Function(SonolythLocalTrackObject value)? local,
+    TResult? Function(SonolythFullTrackObject value)? full,
   }) {
     return local?.call(this);
   }
@@ -5375,8 +5375,8 @@ class _$SpotubeLocalTrackObjectImpl implements SpotubeLocalTrackObject {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(SpotubeLocalTrackObject value)? local,
-    TResult Function(SpotubeFullTrackObject value)? full,
+    TResult Function(SonolythLocalTrackObject value)? local,
+    TResult Function(SonolythFullTrackObject value)? full,
     required TResult orElse(),
   }) {
     if (local != null) {
@@ -5387,24 +5387,24 @@ class _$SpotubeLocalTrackObjectImpl implements SpotubeLocalTrackObject {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeLocalTrackObjectImplToJson(
+    return _$$SonolythLocalTrackObjectImplToJson(
       this,
     );
   }
 }
 
-abstract class SpotubeLocalTrackObject implements SpotubeTrackObject {
-  factory SpotubeLocalTrackObject(
+abstract class SonolythLocalTrackObject implements SonolythTrackObject {
+  factory SonolythLocalTrackObject(
       {required final String id,
       required final String name,
       required final String externalUri,
-      final List<SpotubeSimpleArtistObject> artists,
-      required final SpotubeSimpleAlbumObject album,
+      final List<SonolythSimpleArtistObject> artists,
+      required final SonolythSimpleAlbumObject album,
       required final int durationMs,
-      required final String path}) = _$SpotubeLocalTrackObjectImpl;
+      required final String path}) = _$SonolythLocalTrackObjectImpl;
 
-  factory SpotubeLocalTrackObject.fromJson(Map<String, dynamic> json) =
-      _$SpotubeLocalTrackObjectImpl.fromJson;
+  factory SonolythLocalTrackObject.fromJson(Map<String, dynamic> json) =
+      _$SonolythLocalTrackObjectImpl.fromJson;
 
   @override
   String get id;
@@ -5413,54 +5413,54 @@ abstract class SpotubeLocalTrackObject implements SpotubeTrackObject {
   @override
   String get externalUri;
   @override
-  List<SpotubeSimpleArtistObject> get artists;
+  List<SonolythSimpleArtistObject> get artists;
   @override
-  SpotubeSimpleAlbumObject get album;
+  SonolythSimpleAlbumObject get album;
   @override
   int get durationMs;
   String get path;
 
-  /// Create a copy of SpotubeTrackObject
+  /// Create a copy of SonolythTrackObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeLocalTrackObjectImplCopyWith<_$SpotubeLocalTrackObjectImpl>
+  _$$SonolythLocalTrackObjectImplCopyWith<_$SonolythLocalTrackObjectImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$SpotubeFullTrackObjectImplCopyWith<$Res>
-    implements $SpotubeTrackObjectCopyWith<$Res> {
-  factory _$$SpotubeFullTrackObjectImplCopyWith(
-          _$SpotubeFullTrackObjectImpl value,
-          $Res Function(_$SpotubeFullTrackObjectImpl) then) =
-      __$$SpotubeFullTrackObjectImplCopyWithImpl<$Res>;
+abstract class _$$SonolythFullTrackObjectImplCopyWith<$Res>
+    implements $SonolythTrackObjectCopyWith<$Res> {
+  factory _$$SonolythFullTrackObjectImplCopyWith(
+          _$SonolythFullTrackObjectImpl value,
+          $Res Function(_$SonolythFullTrackObjectImpl) then) =
+      __$$SonolythFullTrackObjectImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
       {String id,
       String name,
       String externalUri,
-      List<SpotubeSimpleArtistObject> artists,
-      SpotubeSimpleAlbumObject album,
+      List<SonolythSimpleArtistObject> artists,
+      SonolythSimpleAlbumObject album,
       int durationMs,
       String isrc,
       bool explicit});
 
   @override
-  $SpotubeSimpleAlbumObjectCopyWith<$Res> get album;
+  $SonolythSimpleAlbumObjectCopyWith<$Res> get album;
 }
 
 /// @nodoc
-class __$$SpotubeFullTrackObjectImplCopyWithImpl<$Res>
-    extends _$SpotubeTrackObjectCopyWithImpl<$Res, _$SpotubeFullTrackObjectImpl>
-    implements _$$SpotubeFullTrackObjectImplCopyWith<$Res> {
-  __$$SpotubeFullTrackObjectImplCopyWithImpl(
-      _$SpotubeFullTrackObjectImpl _value,
-      $Res Function(_$SpotubeFullTrackObjectImpl) _then)
+class __$$SonolythFullTrackObjectImplCopyWithImpl<$Res>
+    extends _$SonolythTrackObjectCopyWithImpl<$Res, _$SonolythFullTrackObjectImpl>
+    implements _$$SonolythFullTrackObjectImplCopyWith<$Res> {
+  __$$SonolythFullTrackObjectImplCopyWithImpl(
+      _$SonolythFullTrackObjectImpl _value,
+      $Res Function(_$SonolythFullTrackObjectImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeTrackObject
+  /// Create a copy of SonolythTrackObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -5474,7 +5474,7 @@ class __$$SpotubeFullTrackObjectImplCopyWithImpl<$Res>
     Object? isrc = null,
     Object? explicit = null,
   }) {
-    return _then(_$SpotubeFullTrackObjectImpl(
+    return _then(_$SonolythFullTrackObjectImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -5490,11 +5490,11 @@ class __$$SpotubeFullTrackObjectImplCopyWithImpl<$Res>
       artists: null == artists
           ? _value._artists
           : artists // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeSimpleArtistObject>,
+              as List<SonolythSimpleArtistObject>,
       album: null == album
           ? _value.album
           : album // ignore: cast_nullable_to_non_nullable
-              as SpotubeSimpleAlbumObject,
+              as SonolythSimpleAlbumObject,
       durationMs: null == durationMs
           ? _value.durationMs
           : durationMs // ignore: cast_nullable_to_non_nullable
@@ -5513,12 +5513,12 @@ class __$$SpotubeFullTrackObjectImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeFullTrackObjectImpl implements SpotubeFullTrackObject {
-  _$SpotubeFullTrackObjectImpl(
+class _$SonolythFullTrackObjectImpl implements SonolythFullTrackObject {
+  _$SonolythFullTrackObjectImpl(
       {required this.id,
       required this.name,
       required this.externalUri,
-      final List<SpotubeSimpleArtistObject> artists = const [],
+      final List<SonolythSimpleArtistObject> artists = const [],
       required this.album,
       required this.durationMs,
       required this.isrc,
@@ -5527,8 +5527,8 @@ class _$SpotubeFullTrackObjectImpl implements SpotubeFullTrackObject {
       : _artists = artists,
         $type = $type ?? 'full';
 
-  factory _$SpotubeFullTrackObjectImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SpotubeFullTrackObjectImplFromJson(json);
+  factory _$SonolythFullTrackObjectImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SonolythFullTrackObjectImplFromJson(json);
 
   @override
   final String id;
@@ -5536,17 +5536,17 @@ class _$SpotubeFullTrackObjectImpl implements SpotubeFullTrackObject {
   final String name;
   @override
   final String externalUri;
-  final List<SpotubeSimpleArtistObject> _artists;
+  final List<SonolythSimpleArtistObject> _artists;
   @override
   @JsonKey()
-  List<SpotubeSimpleArtistObject> get artists {
+  List<SonolythSimpleArtistObject> get artists {
     if (_artists is EqualUnmodifiableListView) return _artists;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_artists);
   }
 
   @override
-  final SpotubeSimpleAlbumObject album;
+  final SonolythSimpleAlbumObject album;
   @override
   final int durationMs;
   @override
@@ -5559,14 +5559,14 @@ class _$SpotubeFullTrackObjectImpl implements SpotubeFullTrackObject {
 
   @override
   String toString() {
-    return 'SpotubeTrackObject.full(id: $id, name: $name, externalUri: $externalUri, artists: $artists, album: $album, durationMs: $durationMs, isrc: $isrc, explicit: $explicit)';
+    return 'SonolythTrackObject.full(id: $id, name: $name, externalUri: $externalUri, artists: $artists, album: $album, durationMs: $durationMs, isrc: $isrc, explicit: $explicit)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeFullTrackObjectImpl &&
+            other is _$SonolythFullTrackObjectImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.externalUri, externalUri) ||
@@ -5593,14 +5593,14 @@ class _$SpotubeFullTrackObjectImpl implements SpotubeFullTrackObject {
       isrc,
       explicit);
 
-  /// Create a copy of SpotubeTrackObject
+  /// Create a copy of SonolythTrackObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeFullTrackObjectImplCopyWith<_$SpotubeFullTrackObjectImpl>
-      get copyWith => __$$SpotubeFullTrackObjectImplCopyWithImpl<
-          _$SpotubeFullTrackObjectImpl>(this, _$identity);
+  _$$SonolythFullTrackObjectImplCopyWith<_$SonolythFullTrackObjectImpl>
+      get copyWith => __$$SonolythFullTrackObjectImplCopyWithImpl<
+          _$SonolythFullTrackObjectImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -5609,8 +5609,8 @@ class _$SpotubeFullTrackObjectImpl implements SpotubeFullTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String path)
         local,
@@ -5618,8 +5618,8 @@ class _$SpotubeFullTrackObjectImpl implements SpotubeFullTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
             bool explicit)
@@ -5636,8 +5636,8 @@ class _$SpotubeFullTrackObjectImpl implements SpotubeFullTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String path)?
         local,
@@ -5645,8 +5645,8 @@ class _$SpotubeFullTrackObjectImpl implements SpotubeFullTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
             bool explicit)?
@@ -5663,8 +5663,8 @@ class _$SpotubeFullTrackObjectImpl implements SpotubeFullTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String path)?
         local,
@@ -5672,8 +5672,8 @@ class _$SpotubeFullTrackObjectImpl implements SpotubeFullTrackObject {
             String id,
             String name,
             String externalUri,
-            List<SpotubeSimpleArtistObject> artists,
-            SpotubeSimpleAlbumObject album,
+            List<SonolythSimpleArtistObject> artists,
+            SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
             bool explicit)?
@@ -5690,8 +5690,8 @@ class _$SpotubeFullTrackObjectImpl implements SpotubeFullTrackObject {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(SpotubeLocalTrackObject value) local,
-    required TResult Function(SpotubeFullTrackObject value) full,
+    required TResult Function(SonolythLocalTrackObject value) local,
+    required TResult Function(SonolythFullTrackObject value) full,
   }) {
     return full(this);
   }
@@ -5699,8 +5699,8 @@ class _$SpotubeFullTrackObjectImpl implements SpotubeFullTrackObject {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(SpotubeLocalTrackObject value)? local,
-    TResult? Function(SpotubeFullTrackObject value)? full,
+    TResult? Function(SonolythLocalTrackObject value)? local,
+    TResult? Function(SonolythFullTrackObject value)? full,
   }) {
     return full?.call(this);
   }
@@ -5708,8 +5708,8 @@ class _$SpotubeFullTrackObjectImpl implements SpotubeFullTrackObject {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(SpotubeLocalTrackObject value)? local,
-    TResult Function(SpotubeFullTrackObject value)? full,
+    TResult Function(SonolythLocalTrackObject value)? local,
+    TResult Function(SonolythFullTrackObject value)? full,
     required TResult orElse(),
   }) {
     if (full != null) {
@@ -5720,25 +5720,25 @@ class _$SpotubeFullTrackObjectImpl implements SpotubeFullTrackObject {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeFullTrackObjectImplToJson(
+    return _$$SonolythFullTrackObjectImplToJson(
       this,
     );
   }
 }
 
-abstract class SpotubeFullTrackObject implements SpotubeTrackObject {
-  factory SpotubeFullTrackObject(
+abstract class SonolythFullTrackObject implements SonolythTrackObject {
+  factory SonolythFullTrackObject(
       {required final String id,
       required final String name,
       required final String externalUri,
-      final List<SpotubeSimpleArtistObject> artists,
-      required final SpotubeSimpleAlbumObject album,
+      final List<SonolythSimpleArtistObject> artists,
+      required final SonolythSimpleAlbumObject album,
       required final int durationMs,
       required final String isrc,
-      required final bool explicit}) = _$SpotubeFullTrackObjectImpl;
+      required final bool explicit}) = _$SonolythFullTrackObjectImpl;
 
-  factory SpotubeFullTrackObject.fromJson(Map<String, dynamic> json) =
-      _$SpotubeFullTrackObjectImpl.fromJson;
+  factory SonolythFullTrackObject.fromJson(Map<String, dynamic> json) =
+      _$SonolythFullTrackObjectImpl.fromJson;
 
   @override
   String get id;
@@ -5747,67 +5747,67 @@ abstract class SpotubeFullTrackObject implements SpotubeTrackObject {
   @override
   String get externalUri;
   @override
-  List<SpotubeSimpleArtistObject> get artists;
+  List<SonolythSimpleArtistObject> get artists;
   @override
-  SpotubeSimpleAlbumObject get album;
+  SonolythSimpleAlbumObject get album;
   @override
   int get durationMs;
   String get isrc;
   bool get explicit;
 
-  /// Create a copy of SpotubeTrackObject
+  /// Create a copy of SonolythTrackObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeFullTrackObjectImplCopyWith<_$SpotubeFullTrackObjectImpl>
+  _$$SonolythFullTrackObjectImplCopyWith<_$SonolythFullTrackObjectImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
-SpotubeUserObject _$SpotubeUserObjectFromJson(Map<String, dynamic> json) {
-  return _SpotubeUserObject.fromJson(json);
+SonolythUserObject _$SonolythUserObjectFromJson(Map<String, dynamic> json) {
+  return _SonolythUserObject.fromJson(json);
 }
 
 /// @nodoc
-mixin _$SpotubeUserObject {
+mixin _$SonolythUserObject {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
-  List<SpotubeImageObject> get images => throw _privateConstructorUsedError;
+  List<SonolythImageObject> get images => throw _privateConstructorUsedError;
   String get externalUri => throw _privateConstructorUsedError;
 
-  /// Serializes this SpotubeUserObject to a JSON map.
+  /// Serializes this SonolythUserObject to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of SpotubeUserObject
+  /// Create a copy of SonolythUserObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SpotubeUserObjectCopyWith<SpotubeUserObject> get copyWith =>
+  $SonolythUserObjectCopyWith<SonolythUserObject> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $SpotubeUserObjectCopyWith<$Res> {
-  factory $SpotubeUserObjectCopyWith(
-          SpotubeUserObject value, $Res Function(SpotubeUserObject) then) =
-      _$SpotubeUserObjectCopyWithImpl<$Res, SpotubeUserObject>;
+abstract class $SonolythUserObjectCopyWith<$Res> {
+  factory $SonolythUserObjectCopyWith(
+          SonolythUserObject value, $Res Function(SonolythUserObject) then) =
+      _$SonolythUserObjectCopyWithImpl<$Res, SonolythUserObject>;
   @useResult
   $Res call(
       {String id,
       String name,
-      List<SpotubeImageObject> images,
+      List<SonolythImageObject> images,
       String externalUri});
 }
 
 /// @nodoc
-class _$SpotubeUserObjectCopyWithImpl<$Res, $Val extends SpotubeUserObject>
-    implements $SpotubeUserObjectCopyWith<$Res> {
-  _$SpotubeUserObjectCopyWithImpl(this._value, this._then);
+class _$SonolythUserObjectCopyWithImpl<$Res, $Val extends SonolythUserObject>
+    implements $SonolythUserObjectCopyWith<$Res> {
+  _$SonolythUserObjectCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of SpotubeUserObject
+  /// Create a copy of SonolythUserObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -5829,7 +5829,7 @@ class _$SpotubeUserObjectCopyWithImpl<$Res, $Val extends SpotubeUserObject>
       images: null == images
           ? _value.images
           : images // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeImageObject>,
+              as List<SonolythImageObject>,
       externalUri: null == externalUri
           ? _value.externalUri
           : externalUri // ignore: cast_nullable_to_non_nullable
@@ -5839,29 +5839,29 @@ class _$SpotubeUserObjectCopyWithImpl<$Res, $Val extends SpotubeUserObject>
 }
 
 /// @nodoc
-abstract class _$$SpotubeUserObjectImplCopyWith<$Res>
-    implements $SpotubeUserObjectCopyWith<$Res> {
-  factory _$$SpotubeUserObjectImplCopyWith(_$SpotubeUserObjectImpl value,
-          $Res Function(_$SpotubeUserObjectImpl) then) =
-      __$$SpotubeUserObjectImplCopyWithImpl<$Res>;
+abstract class _$$SonolythUserObjectImplCopyWith<$Res>
+    implements $SonolythUserObjectCopyWith<$Res> {
+  factory _$$SonolythUserObjectImplCopyWith(_$SonolythUserObjectImpl value,
+          $Res Function(_$SonolythUserObjectImpl) then) =
+      __$$SonolythUserObjectImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
       {String id,
       String name,
-      List<SpotubeImageObject> images,
+      List<SonolythImageObject> images,
       String externalUri});
 }
 
 /// @nodoc
-class __$$SpotubeUserObjectImplCopyWithImpl<$Res>
-    extends _$SpotubeUserObjectCopyWithImpl<$Res, _$SpotubeUserObjectImpl>
-    implements _$$SpotubeUserObjectImplCopyWith<$Res> {
-  __$$SpotubeUserObjectImplCopyWithImpl(_$SpotubeUserObjectImpl _value,
-      $Res Function(_$SpotubeUserObjectImpl) _then)
+class __$$SonolythUserObjectImplCopyWithImpl<$Res>
+    extends _$SonolythUserObjectCopyWithImpl<$Res, _$SonolythUserObjectImpl>
+    implements _$$SonolythUserObjectImplCopyWith<$Res> {
+  __$$SonolythUserObjectImplCopyWithImpl(_$SonolythUserObjectImpl _value,
+      $Res Function(_$SonolythUserObjectImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of SpotubeUserObject
+  /// Create a copy of SonolythUserObject
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -5871,7 +5871,7 @@ class __$$SpotubeUserObjectImplCopyWithImpl<$Res>
     Object? images = null,
     Object? externalUri = null,
   }) {
-    return _then(_$SpotubeUserObjectImpl(
+    return _then(_$SonolythUserObjectImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -5883,7 +5883,7 @@ class __$$SpotubeUserObjectImplCopyWithImpl<$Res>
       images: null == images
           ? _value._images
           : images // ignore: cast_nullable_to_non_nullable
-              as List<SpotubeImageObject>,
+              as List<SonolythImageObject>,
       externalUri: null == externalUri
           ? _value.externalUri
           : externalUri // ignore: cast_nullable_to_non_nullable
@@ -5894,25 +5894,25 @@ class __$$SpotubeUserObjectImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SpotubeUserObjectImpl implements _SpotubeUserObject {
-  _$SpotubeUserObjectImpl(
+class _$SonolythUserObjectImpl implements _SonolythUserObject {
+  _$SonolythUserObjectImpl(
       {required this.id,
       required this.name,
-      final List<SpotubeImageObject> images = const [],
+      final List<SonolythImageObject> images = const [],
       required this.externalUri})
       : _images = images;
 
-  factory _$SpotubeUserObjectImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SpotubeUserObjectImplFromJson(json);
+  factory _$SonolythUserObjectImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SonolythUserObjectImplFromJson(json);
 
   @override
   final String id;
   @override
   final String name;
-  final List<SpotubeImageObject> _images;
+  final List<SonolythImageObject> _images;
   @override
   @JsonKey()
-  List<SpotubeImageObject> get images {
+  List<SonolythImageObject> get images {
     if (_images is EqualUnmodifiableListView) return _images;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_images);
@@ -5923,14 +5923,14 @@ class _$SpotubeUserObjectImpl implements _SpotubeUserObject {
 
   @override
   String toString() {
-    return 'SpotubeUserObject(id: $id, name: $name, images: $images, externalUri: $externalUri)';
+    return 'SonolythUserObject(id: $id, name: $name, images: $images, externalUri: $externalUri)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SpotubeUserObjectImpl &&
+            other is _$SonolythUserObjectImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             const DeepCollectionEquality().equals(other._images, _images) &&
@@ -5943,47 +5943,47 @@ class _$SpotubeUserObjectImpl implements _SpotubeUserObject {
   int get hashCode => Object.hash(runtimeType, id, name,
       const DeepCollectionEquality().hash(_images), externalUri);
 
-  /// Create a copy of SpotubeUserObject
+  /// Create a copy of SonolythUserObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SpotubeUserObjectImplCopyWith<_$SpotubeUserObjectImpl> get copyWith =>
-      __$$SpotubeUserObjectImplCopyWithImpl<_$SpotubeUserObjectImpl>(
+  _$$SonolythUserObjectImplCopyWith<_$SonolythUserObjectImpl> get copyWith =>
+      __$$SonolythUserObjectImplCopyWithImpl<_$SonolythUserObjectImpl>(
           this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SpotubeUserObjectImplToJson(
+    return _$$SonolythUserObjectImplToJson(
       this,
     );
   }
 }
 
-abstract class _SpotubeUserObject implements SpotubeUserObject {
-  factory _SpotubeUserObject(
+abstract class _SonolythUserObject implements SonolythUserObject {
+  factory _SonolythUserObject(
       {required final String id,
       required final String name,
-      final List<SpotubeImageObject> images,
-      required final String externalUri}) = _$SpotubeUserObjectImpl;
+      final List<SonolythImageObject> images,
+      required final String externalUri}) = _$SonolythUserObjectImpl;
 
-  factory _SpotubeUserObject.fromJson(Map<String, dynamic> json) =
-      _$SpotubeUserObjectImpl.fromJson;
+  factory _SonolythUserObject.fromJson(Map<String, dynamic> json) =
+      _$SonolythUserObjectImpl.fromJson;
 
   @override
   String get id;
   @override
   String get name;
   @override
-  List<SpotubeImageObject> get images;
+  List<SonolythImageObject> get images;
   @override
   String get externalUri;
 
-  /// Create a copy of SpotubeUserObject
+  /// Create a copy of SonolythUserObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SpotubeUserObjectImplCopyWith<_$SpotubeUserObjectImpl> get copyWith =>
+  _$$SonolythUserObjectImplCopyWith<_$SonolythUserObjectImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 

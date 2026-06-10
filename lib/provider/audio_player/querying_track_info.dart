@@ -1,7 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/audio_player/audio_player.dart';
-import 'package:spotube/provider/server/sourced_track_provider.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/server/sourced_track_provider.dart';
 
 final queryingTrackInfoProvider = Provider<bool>((ref) {
   final audioPlayer = ref.watch(audioPlayerProvider);
@@ -10,14 +10,14 @@ final queryingTrackInfoProvider = Provider<bool>((ref) {
     return false;
   }
 
-  if (audioPlayer.activeTrack is! SpotubeFullTrackObject) {
+  if (audioPlayer.activeTrack is! SonolythFullTrackObject) {
     return false;
   }
 
   return ref
       .watch(
         sourcedTrackProvider(
-            audioPlayer.activeTrack! as SpotubeFullTrackObject),
+            audioPlayer.activeTrack! as SonolythFullTrackObject),
       )
       .isLoading;
 });

@@ -12,62 +12,62 @@
 import 'package:auto_route/auto_route.dart' as _i41;
 import 'package:flutter/material.dart' as _i42;
 import 'package:shadcn_flutter/shadcn_flutter.dart' as _i44;
-import 'package:spotube/models/metadata/metadata.dart' as _i43;
-import 'package:spotube/pages/album/album.dart' as _i2;
-import 'package:spotube/pages/artist/artist.dart' as _i3;
-import 'package:spotube/pages/connect/connect.dart' as _i6;
-import 'package:spotube/pages/connect/control/control.dart' as _i5;
-import 'package:spotube/pages/getting_started/getting_started.dart' as _i7;
-import 'package:spotube/pages/home/home.dart' as _i9;
-import 'package:spotube/pages/home/sections/section_items.dart' as _i8;
-import 'package:spotube/pages/lastfm_login/lastfm_login.dart' as _i10;
-import 'package:spotube/pages/library/library.dart' as _i11;
-import 'package:spotube/pages/library/user_albums.dart' as _i36;
-import 'package:spotube/pages/library/user_artists.dart' as _i37;
-import 'package:spotube/pages/library/user_downloads.dart' as _i38;
-import 'package:spotube/pages/library/user_local_tracks/local_folder.dart'
+import 'package:sonolyth/models/metadata/metadata.dart' as _i43;
+import 'package:sonolyth/pages/album/album.dart' as _i2;
+import 'package:sonolyth/pages/artist/artist.dart' as _i3;
+import 'package:sonolyth/pages/connect/connect.dart' as _i6;
+import 'package:sonolyth/pages/connect/control/control.dart' as _i5;
+import 'package:sonolyth/pages/getting_started/getting_started.dart' as _i7;
+import 'package:sonolyth/pages/home/home.dart' as _i9;
+import 'package:sonolyth/pages/home/sections/section_items.dart' as _i8;
+import 'package:sonolyth/pages/lastfm_login/lastfm_login.dart' as _i10;
+import 'package:sonolyth/pages/library/library.dart' as _i11;
+import 'package:sonolyth/pages/library/user_albums.dart' as _i36;
+import 'package:sonolyth/pages/library/user_artists.dart' as _i37;
+import 'package:sonolyth/pages/library/user_downloads.dart' as _i38;
+import 'package:sonolyth/pages/library/user_local_tracks/local_folder.dart'
     as _i13;
-import 'package:spotube/pages/library/user_local_tracks/user_local_tracks.dart'
+import 'package:sonolyth/pages/library/user_local_tracks/user_local_tracks.dart'
     as _i39;
-import 'package:spotube/pages/library/user_playlists.dart' as _i40;
-import 'package:spotube/pages/lyrics/lyrics.dart' as _i15;
-import 'package:spotube/pages/lyrics/mini_lyrics.dart' as _i16;
-import 'package:spotube/pages/player/lyrics.dart' as _i17;
-import 'package:spotube/pages/player/queue.dart' as _i18;
-import 'package:spotube/pages/player/sources.dart' as _i19;
-import 'package:spotube/pages/playlist/liked_playlist.dart' as _i12;
-import 'package:spotube/pages/playlist/playlist.dart' as _i20;
-import 'package:spotube/pages/profile/profile.dart' as _i21;
-import 'package:spotube/pages/root/root_app.dart' as _i22;
-import 'package:spotube/pages/search/search.dart' as _i23;
-import 'package:spotube/pages/settings/about.dart' as _i1;
-import 'package:spotube/pages/settings/blacklist.dart' as _i4;
-import 'package:spotube/pages/settings/logs.dart' as _i14;
-import 'package:spotube/pages/settings/metadata/metadata_form.dart' as _i24;
-import 'package:spotube/pages/settings/metadata_plugins.dart' as _i25;
-import 'package:spotube/pages/settings/scrobbling/scrobbling.dart' as _i27;
-import 'package:spotube/pages/settings/settings.dart' as _i26;
-import 'package:spotube/pages/stats/albums/albums.dart' as _i28;
-import 'package:spotube/pages/stats/artists/artists.dart' as _i29;
-import 'package:spotube/pages/stats/fees/fees.dart' as _i33;
-import 'package:spotube/pages/stats/minutes/minutes.dart' as _i30;
-import 'package:spotube/pages/stats/playlists/playlists.dart' as _i32;
-import 'package:spotube/pages/stats/stats.dart' as _i31;
-import 'package:spotube/pages/stats/streams/streams.dart' as _i34;
-import 'package:spotube/pages/track/track.dart' as _i35;
+import 'package:sonolyth/pages/library/user_playlists.dart' as _i40;
+import 'package:sonolyth/pages/lyrics/lyrics.dart' as _i15;
+import 'package:sonolyth/pages/lyrics/mini_lyrics.dart' as _i16;
+import 'package:sonolyth/pages/player/lyrics.dart' as _i17;
+import 'package:sonolyth/pages/player/queue.dart' as _i18;
+import 'package:sonolyth/pages/player/sources.dart' as _i19;
+import 'package:sonolyth/pages/playlist/liked_playlist.dart' as _i12;
+import 'package:sonolyth/pages/playlist/playlist.dart' as _i20;
+import 'package:sonolyth/pages/profile/profile.dart' as _i21;
+import 'package:sonolyth/pages/root/root_app.dart' as _i22;
+import 'package:sonolyth/pages/search/search.dart' as _i23;
+import 'package:sonolyth/pages/settings/about.dart' as _i1;
+import 'package:sonolyth/pages/settings/blacklist.dart' as _i4;
+import 'package:sonolyth/pages/settings/logs.dart' as _i14;
+import 'package:sonolyth/pages/settings/metadata/metadata_form.dart' as _i24;
+import 'package:sonolyth/pages/settings/metadata_plugins.dart' as _i25;
+import 'package:sonolyth/pages/settings/scrobbling/scrobbling.dart' as _i27;
+import 'package:sonolyth/pages/settings/settings.dart' as _i26;
+import 'package:sonolyth/pages/stats/albums/albums.dart' as _i28;
+import 'package:sonolyth/pages/stats/artists/artists.dart' as _i29;
+import 'package:sonolyth/pages/stats/fees/fees.dart' as _i33;
+import 'package:sonolyth/pages/stats/minutes/minutes.dart' as _i30;
+import 'package:sonolyth/pages/stats/playlists/playlists.dart' as _i32;
+import 'package:sonolyth/pages/stats/stats.dart' as _i31;
+import 'package:sonolyth/pages/stats/streams/streams.dart' as _i34;
+import 'package:sonolyth/pages/track/track.dart' as _i35;
 
 /// generated route for
-/// [_i1.AboutSpotubePage]
-class AboutSpotubeRoute extends _i41.PageRouteInfo<void> {
-  const AboutSpotubeRoute({List<_i41.PageRouteInfo>? children})
-    : super(AboutSpotubeRoute.name, initialChildren: children);
+/// [_i1.AboutSonolythPage]
+class AboutSonolythRoute extends _i41.PageRouteInfo<void> {
+  const AboutSonolythRoute({List<_i41.PageRouteInfo>? children})
+    : super(AboutSonolythRoute.name, initialChildren: children);
 
-  static const String name = 'AboutSpotubeRoute';
+  static const String name = 'AboutSonolythRoute';
 
   static _i41.PageInfo page = _i41.PageInfo(
     name,
     builder: (data) {
-      return const _i1.AboutSpotubePage();
+      return const _i1.AboutSonolythPage();
     },
   );
 }
@@ -78,7 +78,7 @@ class AlbumRoute extends _i41.PageRouteInfo<AlbumRouteArgs> {
   AlbumRoute({
     _i42.Key? key,
     required String id,
-    required _i43.SpotubeSimpleAlbumObject album,
+    required _i43.SonolythSimpleAlbumObject album,
     List<_i41.PageRouteInfo>? children,
   }) : super(
          AlbumRoute.name,
@@ -105,7 +105,7 @@ class AlbumRouteArgs {
 
   final String id;
 
-  final _i43.SpotubeSimpleAlbumObject album;
+  final _i43.SonolythSimpleAlbumObject album;
 
   @override
   String toString() {
@@ -225,7 +225,7 @@ class HomeBrowseSectionItemsRoute
   HomeBrowseSectionItemsRoute({
     _i44.Key? key,
     required String sectionId,
-    required _i43.SpotubeBrowseSectionObject<Object> section,
+    required _i43.SonolythBrowseSectionObject<Object> section,
     List<_i41.PageRouteInfo>? children,
   }) : super(
          HomeBrowseSectionItemsRoute.name,
@@ -264,7 +264,7 @@ class HomeBrowseSectionItemsRouteArgs {
 
   final String sectionId;
 
-  final _i43.SpotubeBrowseSectionObject<Object> section;
+  final _i43.SonolythBrowseSectionObject<Object> section;
 
   @override
   String toString() {
@@ -325,7 +325,7 @@ class LibraryRoute extends _i41.PageRouteInfo<void> {
 class LikedPlaylistRoute extends _i41.PageRouteInfo<LikedPlaylistRouteArgs> {
   LikedPlaylistRoute({
     _i42.Key? key,
-    required _i43.SpotubeSimplePlaylistObject playlist,
+    required _i43.SonolythSimplePlaylistObject playlist,
     List<_i41.PageRouteInfo>? children,
   }) : super(
          LikedPlaylistRoute.name,
@@ -349,7 +349,7 @@ class LikedPlaylistRouteArgs {
 
   final _i42.Key? key;
 
-  final _i43.SpotubeSimplePlaylistObject playlist;
+  final _i43.SonolythSimplePlaylistObject playlist;
 
   @override
   String toString() {
@@ -538,7 +538,7 @@ class PlaylistRoute extends _i41.PageRouteInfo<PlaylistRouteArgs> {
   PlaylistRoute({
     _i42.Key? key,
     required String id,
-    required _i43.SpotubeSimplePlaylistObject playlist,
+    required _i43.SonolythSimplePlaylistObject playlist,
     List<_i41.PageRouteInfo>? children,
   }) : super(
          PlaylistRoute.name,
@@ -569,7 +569,7 @@ class PlaylistRouteArgs {
 
   final String id;
 
-  final _i43.SpotubeSimplePlaylistObject playlist;
+  final _i43.SonolythSimplePlaylistObject playlist;
 
   @override
   String toString() {

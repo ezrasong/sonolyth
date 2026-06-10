@@ -2,20 +2,20 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/audio_player/audio_player.dart';
-import 'package:spotube/provider/audio_player/state.dart';
-import 'package:spotube/provider/discord_provider.dart';
-import 'package:spotube/provider/history/history.dart';
-import 'package:spotube/provider/metadata_plugin/core/scrobble.dart';
-import 'package:spotube/provider/metadata_plugin/metadata_plugin_provider.dart';
-import 'package:spotube/provider/server/sourced_track_provider.dart';
-import 'package:spotube/provider/skip_segments/skip_segments.dart';
-import 'package:spotube/provider/scrobbler/scrobbler.dart';
-import 'package:spotube/provider/user_preferences/user_preferences_provider.dart';
-import 'package:spotube/services/audio_player/audio_player.dart';
-import 'package:spotube/services/audio_services/audio_services.dart';
-import 'package:spotube/services/logger/logger.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/audio_player/state.dart';
+import 'package:sonolyth/provider/discord_provider.dart';
+import 'package:sonolyth/provider/history/history.dart';
+import 'package:sonolyth/provider/metadata_plugin/core/scrobble.dart';
+import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
+import 'package:sonolyth/provider/server/sourced_track_provider.dart';
+import 'package:sonolyth/provider/skip_segments/skip_segments.dart';
+import 'package:sonolyth/provider/scrobbler/scrobbler.dart';
+import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
+import 'package:sonolyth/services/audio_player/audio_player.dart';
+import 'package:sonolyth/services/audio_services/audio_services.dart';
+import 'package:sonolyth/services/logger/logger.dart';
 
 class AudioPlayerStreamListeners {
   final Ref ref;
@@ -87,8 +87,8 @@ class AudioPlayerStreamListeners {
     String? lastScrobbled;
     return audioPlayer.positionStream.listen((position) async {
       try {
-        final uid = audioPlayerState.activeTrack is SpotubeLocalTrackObject
-            ? (audioPlayerState.activeTrack as SpotubeLocalTrackObject).path
+        final uid = audioPlayerState.activeTrack is SonolythLocalTrackObject
+            ? (audioPlayerState.activeTrack as SonolythLocalTrackObject).path
             : audioPlayerState.activeTrack?.id;
 
         /// According to Listenbrainz and Last.fm, a scrobble should be sent
@@ -121,7 +121,7 @@ class AudioPlayerStreamListeners {
           );
           activeTrack = activeTrack.copyWith(
             artists: artists
-                .map((e) => SpotubeSimpleArtistObject.fromJson(e.toJson()))
+                .map((e) => SonolythSimpleArtistObject.fromJson(e.toJson()))
                 .toList(),
           );
         }
@@ -150,13 +150,13 @@ class AudioPlayerStreamListeners {
 
         if (nextTrack == null ||
             lastTrack == nextTrack.id ||
-            nextTrack is SpotubeLocalTrackObject) {
+            nextTrack is SonolythLocalTrackObject) {
           return;
         }
 
         try {
           await ref.read(
-            sourcedTrackProvider(nextTrack as SpotubeFullTrackObject).future,
+            sourcedTrackProvider(nextTrack as SonolythFullTrackObject).future,
           );
         } finally {
           lastTrack = nextTrack.id;
@@ -185,7 +185,7 @@ class AudioPlayerStreamListeners {
         // Re-read the state — the user may have skipped again meanwhile.
         final upcoming = audioPlayerState.tracks
             .skip(audioPlayerState.currentIndex + 1)
-            .whereType<SpotubeFullTrackObject>()
+            .whereType<SonolythFullTrackObject>()
             .take(2);
 
         for (final track in upcoming) {

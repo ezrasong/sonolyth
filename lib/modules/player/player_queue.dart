@@ -7,26 +7,26 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/components/button/back_button.dart';
-import 'package:spotube/components/dialogs/playlist_add_track_dialog.dart';
-import 'package:spotube/components/fallbacks/not_found.dart';
-import 'package:spotube/components/inter_scrollbar/inter_scrollbar.dart';
-import 'package:spotube/components/track_tile/track_tile.dart';
-import 'package:spotube/components/ui/button_tile.dart';
-import 'package:spotube/extensions/constrains.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/hooks/controllers/use_auto_scroll_controller.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/modules/player/player_queue_actions.dart';
-import 'package:spotube/provider/audio_player/audio_player.dart';
-import 'package:spotube/provider/audio_player/state.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/button/back_button.dart';
+import 'package:sonolyth/components/dialogs/playlist_add_track_dialog.dart';
+import 'package:sonolyth/components/fallbacks/not_found.dart';
+import 'package:sonolyth/components/inter_scrollbar/inter_scrollbar.dart';
+import 'package:sonolyth/components/track_tile/track_tile.dart';
+import 'package:sonolyth/components/ui/button_tile.dart';
+import 'package:sonolyth/extensions/constrains.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/hooks/controllers/use_auto_scroll_controller.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/modules/player/player_queue_actions.dart';
+import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/audio_player/state.dart';
 
 class PlayerQueue extends HookConsumerWidget {
   final bool floating;
   final AudioPlayerState playlist;
 
-  final Future<void> Function(SpotubeTrackObject track) onJump;
+  final Future<void> Function(SonolythTrackObject track) onJump;
   final Future<void> Function(String trackId) onRemove;
   final Future<void> Function(int oldIndex, int newIndex) onReorder;
   final Future<void> Function() onStop;
@@ -144,7 +144,7 @@ class PlayerQueue extends HookConsumerWidget {
                       surfaceOpacity: 0,
                       leading: [
                         IconButton.ghost(
-                          icon: const Icon(SpotubeIcons.close),
+                          icon: const Icon(SonolythIcons.close),
                           onPressed: () {
                             selectedTrackIds.value = {};
                             selectionMode.value = false;
@@ -167,7 +167,7 @@ class PlayerQueue extends HookConsumerWidget {
                               ButtonTile(
                                 style: const ButtonStyle.ghost(),
                                 leading:
-                                    const Icon(SpotubeIcons.selectionCheck),
+                                    const Icon(SonolythIcons.selectionCheck),
                                 title: Text(context.l10n.select_all),
                                 onPressed: () {
                                   selectedTrackIds.value =
@@ -177,7 +177,7 @@ class PlayerQueue extends HookConsumerWidget {
                               ),
                               ButtonTile(
                                 style: const ButtonStyle.ghost(),
-                                leading: const Icon(SpotubeIcons.playlistAdd),
+                                leading: const Icon(SonolythIcons.playlistAdd),
                                 title: Text(context.l10n.add_to_playlist),
                                 onPressed: () async {
                                   final selected = filteredTracks
@@ -202,7 +202,7 @@ class PlayerQueue extends HookConsumerWidget {
                               ),
                               ButtonTile(
                                 style: const ButtonStyle.ghost(),
-                                leading: const Icon(SpotubeIcons.trash),
+                                leading: const Icon(SonolythIcons.trash),
                                 title: Text(context.l10n.remove_from_queue),
                                 onPressed: () async {
                                   final ids = selectedTrackIds.value.toList();
@@ -242,7 +242,7 @@ class PlayerQueue extends HookConsumerWidget {
                           searchBar
                         else
                           IconButton.ghost(
-                            icon: const Icon(SpotubeIcons.filter),
+                            icon: const Icon(SonolythIcons.filter),
                             onPressed: () {
                               isSearching.value = !isSearching.value;
                             },
@@ -254,7 +254,7 @@ class PlayerQueue extends HookConsumerWidget {
                                     child: Text(context.l10n.clear_all))
                                 .call,
                             child: IconButton.outline(
-                              icon: const Icon(SpotubeIcons.playlistRemove),
+                              icon: const Icon(SonolythIcons.playlistRemove),
                               onPressed: () {
                                 onStop();
                                 closeDrawer(context);
@@ -263,7 +263,7 @@ class PlayerQueue extends HookConsumerWidget {
                           ),
                           const Gap(5),
                           if (mediaQuery.smAndDown)
-                            const BackButton(icon: SpotubeIcons.angleDown),
+                            const BackButton(icon: SonolythIcons.angleDown),
                         ],
                       ],
                     ),
@@ -342,7 +342,7 @@ class PlayerQueue extends HookConsumerWidget {
                                         child: ReorderableDragStartListener(
                                           index: i,
                                           child: const Icon(
-                                            SpotubeIcons.dragHandle,
+                                            SonolythIcons.dragHandle,
                                           ),
                                         ),
                                       ),
@@ -365,7 +365,7 @@ class PlayerQueue extends HookConsumerWidget {
           right: 20,
           bottom: 20,
           child: IconButton.secondary(
-            icon: const Icon(SpotubeIcons.angleDown),
+            icon: const Icon(SonolythIcons.angleDown),
             onPressed: () {
               controller.scrollToIndex(
                 playlist.currentIndex,

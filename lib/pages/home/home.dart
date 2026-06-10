@@ -3,17 +3,17 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/collections/routes.gr.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/models/database/database.dart';
-import 'package:spotube/modules/home/sections/featured.dart';
-import 'package:spotube/modules/home/sections/sections.dart';
-import 'package:spotube/modules/home/sections/new_releases.dart';
-import 'package:spotube/modules/home/sections/recent.dart';
-import 'package:spotube/components/titlebar/titlebar.dart';
-import 'package:spotube/extensions/constrains.dart';
-import 'package:spotube/provider/user_preferences/user_preferences_provider.dart';
-import 'package:spotube/utils/platform.dart';
+import 'package:sonolyth/collections/routes.gr.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/models/database/database.dart';
+import 'package:sonolyth/modules/home/sections/featured.dart';
+import 'package:sonolyth/modules/home/sections/sections.dart';
+import 'package:sonolyth/modules/home/sections/new_releases.dart';
+import 'package:sonolyth/modules/home/sections/recent.dart';
+import 'package:sonolyth/components/titlebar/titlebar.dart';
+import 'package:sonolyth/extensions/constrains.dart';
+import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
+import 'package:sonolyth/utils/platform.dart';
 
 @RoutePage()
 class HomePage extends HookConsumerWidget {
@@ -60,13 +60,13 @@ class HomePage extends HookConsumerWidget {
                   foregroundColor: theme.colorScheme.foreground,
                   actions: [
                     IconButton.ghost(
-                      icon: const Icon(SpotubeIcons.speaker),
+                      icon: const Icon(SonolythIcons.speaker),
                       onPressed: () {
                         context.navigateTo(const ConnectRoute());
                       },
                     ),
                     IconButton.ghost(
-                      icon: const Icon(SpotubeIcons.settings),
+                      icon: const Icon(SonolythIcons.settings),
                       onPressed: () {
                         context.navigateTo(const SettingsRoute());
                       },

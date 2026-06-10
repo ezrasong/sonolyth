@@ -1,12 +1,12 @@
 import 'package:flutter/services.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/collections/assets.gen.dart';
-import 'package:spotube/collections/env.dart';
-import 'package:spotube/components/button/back_button.dart';
-import 'package:spotube/components/links/hyper_link.dart';
-import 'package:spotube/components/titlebar/titlebar.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/hooks/controllers/use_package_info.dart';
+import 'package:sonolyth/collections/assets.gen.dart';
+import 'package:sonolyth/collections/env.dart';
+import 'package:sonolyth/components/button/back_button.dart';
+import 'package:sonolyth/components/links/hyper_link.dart';
+import 'package:sonolyth/components/titlebar/titlebar.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/hooks/controllers/use_package_info.dart';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:auto_route/auto_route.dart';
@@ -16,10 +16,10 @@ final _licenseProvider = FutureProvider<String>((ref) async {
 });
 
 @RoutePage()
-class AboutSpotubePage extends HookConsumerWidget {
+class AboutSonolythPage extends HookConsumerWidget {
   static const name = "about";
 
-  const AboutSpotubePage({super.key});
+  const AboutSonolythPage({super.key});
 
   @override
   Widget build(BuildContext context, ref) {

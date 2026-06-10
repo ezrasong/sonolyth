@@ -11,26 +11,26 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:spotube/collections/fake.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/components/button/back_button.dart';
-import 'package:spotube/components/track_presentation/presentation_actions.dart';
-import 'package:spotube/extensions/constrains.dart';
-import 'package:spotube/extensions/string.dart';
-import 'package:spotube/hooks/controllers/use_shadcn_text_editing_controller.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/modules/library/local_folder/cache_export_dialog.dart';
-import 'package:spotube/pages/library/user_local_tracks/user_local_tracks.dart';
-import 'package:spotube/components/expandable_search/expandable_search.dart';
-import 'package:spotube/components/inter_scrollbar/inter_scrollbar.dart';
-import 'package:spotube/components/titlebar/titlebar.dart';
-import 'package:spotube/components/track_presentation/sort_tracks_dropdown.dart';
-import 'package:spotube/components/track_tile/track_tile.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/provider/local_tracks/local_tracks_provider.dart';
-import 'package:spotube/provider/audio_player/audio_player.dart';
-import 'package:spotube/provider/user_preferences/user_preferences_provider.dart';
-import 'package:spotube/utils/service_utils.dart';
+import 'package:sonolyth/collections/fake.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/button/back_button.dart';
+import 'package:sonolyth/components/track_presentation/presentation_actions.dart';
+import 'package:sonolyth/extensions/constrains.dart';
+import 'package:sonolyth/extensions/string.dart';
+import 'package:sonolyth/hooks/controllers/use_shadcn_text_editing_controller.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/modules/library/local_folder/cache_export_dialog.dart';
+import 'package:sonolyth/pages/library/user_local_tracks/user_local_tracks.dart';
+import 'package:sonolyth/components/expandable_search/expandable_search.dart';
+import 'package:sonolyth/components/inter_scrollbar/inter_scrollbar.dart';
+import 'package:sonolyth/components/titlebar/titlebar.dart';
+import 'package:sonolyth/components/track_presentation/sort_tracks_dropdown.dart';
+import 'package:sonolyth/components/track_tile/track_tile.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/provider/local_tracks/local_tracks_provider.dart';
+import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
+import 'package:sonolyth/utils/service_utils.dart';
 import 'package:auto_route/auto_route.dart';
 
 @RoutePage()
@@ -49,8 +49,8 @@ class LocalLibraryPage extends HookConsumerWidget {
 
   Future<void> playLocalTracks(
     WidgetRef ref,
-    List<SpotubeLocalTrackObject> tracks, {
-    SpotubeLocalTrackObject? currentTrack,
+    List<SonolythLocalTrackObject> tracks, {
+    SonolythLocalTrackObject? currentTrack,
   }) async {
     final playlist = ref.read(audioPlayerProvider);
     final playback = ref.read(audioPlayerProvider.notifier);
@@ -71,7 +71,7 @@ class LocalLibraryPage extends HookConsumerWidget {
 
   Future<void> shufflePlayLocalTracks(
     WidgetRef ref,
-    List<SpotubeLocalTrackObject> tracks,
+    List<SonolythLocalTrackObject> tracks,
   ) async {
     final playlist = ref.read(audioPlayerProvider);
     final playback = ref.read(audioPlayerProvider.notifier);
@@ -89,7 +89,7 @@ class LocalLibraryPage extends HookConsumerWidget {
   Future<void> addToQueueLocalTracks(
     BuildContext context,
     WidgetRef ref,
-    List<SpotubeLocalTrackObject> tracks,
+    List<SonolythLocalTrackObject> tracks,
   ) async {
     final playlist = ref.read(audioPlayerProvider);
     final playback = ref.read(audioPlayerProvider.notifier);
@@ -172,7 +172,7 @@ class LocalLibraryPage extends HookConsumerWidget {
                   icon: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(SpotubeIcons.delete),
+                      const Icon(SonolythIcons.delete),
                       Text(context.l10n.clear_cache)
                     ],
                   ).xSmall().iconSmall(),
@@ -216,7 +216,7 @@ class LocalLibraryPage extends HookConsumerWidget {
                   icon: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(SpotubeIcons.export),
+                      const Icon(SonolythIcons.export),
                       Text(
                         context.l10n.export,
                       )
@@ -280,8 +280,8 @@ class LocalLibraryPage extends HookConsumerWidget {
                             : null,
                         icon: Icon(
                           isPlaylistPlaying
-                              ? SpotubeIcons.stop
-                              : SpotubeIcons.play,
+                              ? SonolythIcons.stop
+                              : SonolythIcons.play,
                         ),
                       ),
                     ),
@@ -306,7 +306,7 @@ class LocalLibraryPage extends HookConsumerWidget {
                               }
                             : null,
                         enabled: !isPlaylistPlaying,
-                        icon: const Icon(SpotubeIcons.shuffle),
+                        icon: const Icon(SonolythIcons.shuffle),
                       ),
                     ),
                     const Gap(5),
@@ -331,7 +331,7 @@ class LocalLibraryPage extends HookConsumerWidget {
                               }
                             : null,
                         enabled: !isPlaylistPlaying,
-                        icon: const Icon(SpotubeIcons.queueAdd),
+                        icon: const Icon(SonolythIcons.queueAdd),
                       ),
                     ),
                     const Spacer(),
@@ -363,7 +363,7 @@ class LocalLibraryPage extends HookConsumerWidget {
                     ),
                     const Gap(5),
                     IconButton.outline(
-                      icon: const Icon(SpotubeIcons.refresh),
+                      icon: const Icon(SonolythIcons.refresh),
                       onPressed: () {
                         ref.invalidate(localTracksProvider);
                       },
@@ -382,7 +382,7 @@ class LocalLibraryPage extends HookConsumerWidget {
                   data: (tracks) {
                     final sortedTracks = useMemoized(() {
                       return ServiceUtils.sortTracks(
-                          tracks[location] ?? <SpotubeLocalTrackObject>[],
+                          tracks[location] ?? <SonolythLocalTrackObject>[],
                           sortBy.value);
                     }, [sortBy.value, tracks]);
 

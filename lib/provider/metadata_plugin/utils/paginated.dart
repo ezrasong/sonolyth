@@ -3,16 +3,16 @@ import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:spotube/models/metadata/metadata.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
 // ignore: implementation_imports
 import 'package:riverpod/src/async_notifier.dart';
-import 'package:spotube/provider/metadata_plugin/utils/common.dart';
-import 'package:spotube/services/logger/logger.dart';
+import 'package:sonolyth/provider/metadata_plugin/utils/common.dart';
+import 'package:sonolyth/services/logger/logger.dart';
 
 mixin PaginatedAsyncNotifierMixin<K>
     // ignore: invalid_use_of_internal_member
-    on AsyncNotifierBase<SpotubePaginationResponseObject<K>> {
-  Future<SpotubePaginationResponseObject<K>> fetch(int offset, int limit);
+    on AsyncNotifierBase<SonolythPaginationResponseObject<K>> {
+  Future<SonolythPaginationResponseObject<K>> fetch(int offset, int limit);
 
   /// Wraps [fetch] with retry + backoff for HTTP 429 (rate limit) responses.
   /// The metadata provider (e.g. Spotify) returns 429 when the app issues a
@@ -20,7 +20,7 @@ mixin PaginatedAsyncNotifierMixin<K>
   /// tab or silently halts pagination. Honors a `Retry-After` header when
   /// present, else exponential backoff (1s, 2s, 4s). Non-429 errors rethrow
   /// immediately so genuine failures aren't masked.
-  Future<SpotubePaginationResponseObject<K>> fetchWithRetry(
+  Future<SonolythPaginationResponseObject<K>> fetchWithRetry(
     int offset,
     int limit, {
     int maxAttempts = 4,
@@ -112,9 +112,9 @@ mixin PaginatedAsyncNotifierMixin<K>
 }
 
 abstract class PaginatedAsyncNotifier<K>
-    extends AsyncNotifier<SpotubePaginationResponseObject<K>>
+    extends AsyncNotifier<SonolythPaginationResponseObject<K>>
     with PaginatedAsyncNotifierMixin<K>, MetadataPluginMixin<K> {}
 
 abstract class AutoDisposePaginatedAsyncNotifier<K>
-    extends AutoDisposeAsyncNotifier<SpotubePaginationResponseObject<K>>
+    extends AutoDisposeAsyncNotifier<SonolythPaginationResponseObject<K>>
     with PaginatedAsyncNotifierMixin<K>, MetadataPluginMixin<K> {}

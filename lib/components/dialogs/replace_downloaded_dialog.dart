@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/models/metadata/metadata.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
 
 final replaceDownloadedFileState = StateProvider<bool?>((ref) => null);
 
 class ReplaceDownloadedDialog extends ConsumerWidget {
-  final SpotubeTrackObject track;
+  final SonolythTrackObject track;
   const ReplaceDownloadedDialog({required this.track, super.key});
 
   @override

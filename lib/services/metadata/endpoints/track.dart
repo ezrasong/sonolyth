@@ -1,6 +1,6 @@
 import 'package:hetu_script/hetu_script.dart';
 import 'package:hetu_script/values.dart';
-import 'package:spotube/models/metadata/metadata.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
 
 class MetadataPluginTrackEndpoint {
   final Hetu hetu;
@@ -10,11 +10,11 @@ class MetadataPluginTrackEndpoint {
       (hetu.fetch("metadataPlugin") as HTInstance).memberGet("track")
           as HTInstance;
 
-  Future<SpotubeFullTrackObject> getTrack(String id) async {
+  Future<SonolythFullTrackObject> getTrack(String id) async {
     final raw =
         await hetuMetadataTrack.invoke("getTrack", positionalArgs: [id]) as Map;
 
-    return SpotubeFullTrackObject.fromJson(
+    return SonolythFullTrackObject.fromJson(
       raw.cast<String, dynamic>(),
     );
   }
@@ -27,7 +27,7 @@ class MetadataPluginTrackEndpoint {
     await hetuMetadataTrack.invoke("unsave", positionalArgs: [ids]);
   }
 
-  Future<List<SpotubeFullTrackObject>> radio(String id) async {
+  Future<List<SonolythFullTrackObject>> radio(String id) async {
     final result = await hetuMetadataTrack.invoke(
       "radio",
       positionalArgs: [id],
@@ -35,7 +35,7 @@ class MetadataPluginTrackEndpoint {
 
     return (result as List)
         .map(
-          (e) => SpotubeFullTrackObject.fromJson(
+          (e) => SonolythFullTrackObject.fromJson(
             (e as Map).cast<String, dynamic>(),
           ),
         )

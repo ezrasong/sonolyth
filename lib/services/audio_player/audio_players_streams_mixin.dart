@@ -1,6 +1,6 @@
 part of 'audio_player.dart';
 
-mixin SpotubeAudioPlayersStreams on AudioPlayerInterface {
+mixin SonolythAudioPlayersStreams on AudioPlayerInterface {
   // stream getters
   Stream<Duration> get durationStream {
     // if (mkSupportedPlatform) {

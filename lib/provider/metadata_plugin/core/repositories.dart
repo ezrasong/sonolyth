@@ -1,7 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/metadata_plugin/utils/paginated.dart';
-import 'package:spotube/services/dio/dio.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/metadata_plugin/utils/paginated.dart';
+import 'package:sonolyth/services/dio/dio.dart';
 
 class MetadataPluginRepositoriesNotifier
     extends PaginatedAsyncNotifier<MetadataPluginRepository> {
@@ -62,7 +62,7 @@ class MetadataPluginRepositoriesNotifier
       return _hasMore[response.requestOptions.uri.host] ?? false;
     });
 
-    return SpotubePaginationResponseObject(
+    return SonolythPaginationResponseObject(
       items: repos,
       total: responses.fold<int>(
         0,
@@ -85,6 +85,6 @@ class MetadataPluginRepositoriesNotifier
 
 final metadataPluginRepositoriesProvider = AsyncNotifierProvider<
     MetadataPluginRepositoriesNotifier,
-    SpotubePaginationResponseObject<MetadataPluginRepository>>(
+    SonolythPaginationResponseObject<MetadataPluginRepository>>(
   () => MetadataPluginRepositoriesNotifier(),
 );

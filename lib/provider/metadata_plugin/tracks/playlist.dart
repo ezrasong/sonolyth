@@ -1,14 +1,14 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/metadata_plugin/metadata_plugin_provider.dart';
-import 'package:spotube/provider/metadata_plugin/utils/family_paginated.dart';
-import 'package:spotube/provider/metadata_plugin/utils/common.dart';
-import 'package:spotube/services/cache/playlist_tracks_cache.dart';
-import 'package:spotube/services/logger/logger.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
+import 'package:sonolyth/provider/metadata_plugin/utils/family_paginated.dart';
+import 'package:sonolyth/provider/metadata_plugin/utils/common.dart';
+import 'package:sonolyth/services/cache/playlist_tracks_cache.dart';
+import 'package:sonolyth/services/logger/logger.dart';
 
 class MetadataPluginPlaylistTracksNotifier
-    extends AutoDisposeFamilyPaginatedAsyncNotifier<SpotubeFullTrackObject,
+    extends AutoDisposeFamilyPaginatedAsyncNotifier<SonolythFullTrackObject,
         String> {
   MetadataPluginPlaylistTracksNotifier() : super();
 
@@ -29,10 +29,10 @@ class MetadataPluginPlaylistTracksNotifier
 
   /// In-flight full load, shared between the background loader, the play
   /// button's fetchAll and scroll pagination so pages never double-fetch.
-  Future<List<SpotubeFullTrackObject>>? _fetchAllFuture;
+  Future<List<SonolythFullTrackObject>>? _fetchAllFuture;
 
   @override
-  Future<List<SpotubeFullTrackObject>> fetchAll() {
+  Future<List<SonolythFullTrackObject>> fetchAll() {
     return _fetchAllFuture ??=
         super.fetchAll().whenComplete(() => _fetchAllFuture = null);
   }
@@ -97,6 +97,6 @@ class MetadataPluginPlaylistTracksNotifier
 
 final metadataPluginPlaylistTracksProvider =
     AutoDisposeAsyncNotifierProviderFamily<MetadataPluginPlaylistTracksNotifier,
-        SpotubePaginationResponseObject<SpotubeFullTrackObject>, String>(
+        SonolythPaginationResponseObject<SonolythFullTrackObject>, String>(
   () => MetadataPluginPlaylistTracksNotifier(),
 );

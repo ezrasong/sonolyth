@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:spotube/services/logger/logger.dart';
-import 'package:spotube/utils/platform.dart';
+import 'package:sonolyth/services/logger/logger.dart';
+import 'package:sonolyth/utils/platform.dart';
 
 /// Migrates sandbox files on macOS to non-sandbox directories
 Future<void> migrateMacOsFromSandboxToNoSandbox() async {

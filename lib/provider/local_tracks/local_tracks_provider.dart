@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/services/logger/logger.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/services/logger/logger.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:metadata_god/metadata_god.dart';
@@ -10,10 +10,10 @@ import 'package:mime/mime.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'package:spotube/provider/user_preferences/user_preferences_provider.dart';
+import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_rust_bridge/flutter_rust_bridge.dart' show FrbException;
-import 'package:spotube/utils/service_utils.dart';
+import 'package:sonolyth/utils/service_utils.dart';
 
 const supportedAudioTypes = [
   "audio/webm",
@@ -42,10 +42,10 @@ typedef MetadataFile = ({
 });
 
 final localTracksProvider =
-    FutureProvider<Map<String, List<SpotubeLocalTrackObject>>>((ref) async {
+    FutureProvider<Map<String, List<SonolythLocalTrackObject>>>((ref) async {
   try {
     if (kIsWeb) return {};
-    final Map<String, List<SpotubeLocalTrackObject>> libraryToTracks = {};
+    final Map<String, List<SonolythLocalTrackObject>> libraryToTracks = {};
 
     final downloadLocation = ref.watch(
       userPreferencesProvider.select((s) => s.downloadLocation),
@@ -130,11 +130,11 @@ final localTracksProvider =
 
       final tracksFromMetadata = filesWithMetadata
           .map(
-            (fileWithMetadata) => SpotubeTrackObject.localTrackFromFile(
+            (fileWithMetadata) => SonolythTrackObject.localTrackFromFile(
               fileWithMetadata.file,
               metadata: fileWithMetadata.metadata,
               art: fileWithMetadata.art,
-            ) as SpotubeLocalTrackObject,
+            ) as SonolythLocalTrackObject,
           )
           .toList();
 

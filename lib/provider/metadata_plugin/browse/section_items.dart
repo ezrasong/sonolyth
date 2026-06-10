@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/metadata_plugin/core/auth.dart';
-import 'package:spotube/provider/metadata_plugin/utils/family_paginated.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/metadata_plugin/core/auth.dart';
+import 'package:sonolyth/provider/metadata_plugin/utils/family_paginated.dart';
 
 class MetadataPluginBrowseSectionItemsNotifier
     extends FamilyPaginatedAsyncNotifier<Object, String> {
   @override
-  Future<SpotubePaginationResponseObject<Object>> fetch(
+  Future<SonolythPaginationResponseObject<Object>> fetch(
     int offset,
     int limit,
   ) async {
@@ -26,7 +26,7 @@ class MetadataPluginBrowseSectionItemsNotifier
 
 final metadataPluginBrowseSectionItemsProvider = AsyncNotifierProviderFamily<
     MetadataPluginBrowseSectionItemsNotifier,
-    SpotubePaginationResponseObject<Object>,
+    SonolythPaginationResponseObject<Object>,
     String>(
   () => MetadataPluginBrowseSectionItemsNotifier(),
 );

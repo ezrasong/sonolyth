@@ -2,33 +2,33 @@ part of 'metadata.dart';
 
 final oneOptionalDecimalFormatter = NumberFormat('0.#', 'en_US');
 
-enum SpotubeMediaCompressionType {
+enum SonolythMediaCompressionType {
   lossy,
   lossless,
 }
 
 @Freezed(unionKey: 'type')
-class SpotubeAudioSourceContainerPreset
-    with _$SpotubeAudioSourceContainerPreset {
-  const SpotubeAudioSourceContainerPreset._();
+class SonolythAudioSourceContainerPreset
+    with _$SonolythAudioSourceContainerPreset {
+  const SonolythAudioSourceContainerPreset._();
 
   @FreezedUnionValue("lossy")
-  factory SpotubeAudioSourceContainerPreset.lossy({
-    required SpotubeMediaCompressionType type,
+  factory SonolythAudioSourceContainerPreset.lossy({
+    required SonolythMediaCompressionType type,
     required String name,
-    required List<SpotubeAudioLossyContainerQuality> qualities,
-  }) = SpotubeAudioSourceContainerPresetLossy;
+    required List<SonolythAudioLossyContainerQuality> qualities,
+  }) = SonolythAudioSourceContainerPresetLossy;
 
   @FreezedUnionValue("lossless")
-  factory SpotubeAudioSourceContainerPreset.lossless({
-    required SpotubeMediaCompressionType type,
+  factory SonolythAudioSourceContainerPreset.lossless({
+    required SonolythMediaCompressionType type,
     required String name,
-    required List<SpotubeAudioLosslessContainerQuality> qualities,
-  }) = SpotubeAudioSourceContainerPresetLossless;
+    required List<SonolythAudioLosslessContainerQuality> qualities,
+  }) = SonolythAudioSourceContainerPresetLossless;
 
-  factory SpotubeAudioSourceContainerPreset.fromJson(
+  factory SonolythAudioSourceContainerPreset.fromJson(
           Map<String, dynamic> json) =>
-      _$SpotubeAudioSourceContainerPresetFromJson(json);
+      _$SonolythAudioSourceContainerPresetFromJson(json);
 
   String getFileExtension() {
     return switch (name) {
@@ -40,17 +40,17 @@ class SpotubeAudioSourceContainerPreset
 }
 
 @freezed
-class SpotubeAudioLossyContainerQuality
-    with _$SpotubeAudioLossyContainerQuality {
-  const SpotubeAudioLossyContainerQuality._();
+class SonolythAudioLossyContainerQuality
+    with _$SonolythAudioLossyContainerQuality {
+  const SonolythAudioLossyContainerQuality._();
 
-  factory SpotubeAudioLossyContainerQuality({
+  factory SonolythAudioLossyContainerQuality({
     required int bitrate, // bits per second
-  }) = _SpotubeAudioLossyContainerQuality;
+  }) = _SonolythAudioLossyContainerQuality;
 
-  factory SpotubeAudioLossyContainerQuality.fromJson(
+  factory SonolythAudioLossyContainerQuality.fromJson(
           Map<String, dynamic> json) =>
-      _$SpotubeAudioLossyContainerQualityFromJson(json);
+      _$SonolythAudioLossyContainerQualityFromJson(json);
 
   @override
   toString() {
@@ -59,18 +59,18 @@ class SpotubeAudioLossyContainerQuality
 }
 
 @freezed
-class SpotubeAudioLosslessContainerQuality
-    with _$SpotubeAudioLosslessContainerQuality {
-  const SpotubeAudioLosslessContainerQuality._();
+class SonolythAudioLosslessContainerQuality
+    with _$SonolythAudioLosslessContainerQuality {
+  const SonolythAudioLosslessContainerQuality._();
 
-  factory SpotubeAudioLosslessContainerQuality({
+  factory SonolythAudioLosslessContainerQuality({
     required int bitDepth, // bit
     required int sampleRate, // hz
-  }) = _SpotubeAudioLosslessContainerQuality;
+  }) = _SonolythAudioLosslessContainerQuality;
 
-  factory SpotubeAudioLosslessContainerQuality.fromJson(
+  factory SonolythAudioLosslessContainerQuality.fromJson(
           Map<String, dynamic> json) =>
-      _$SpotubeAudioLosslessContainerQualityFromJson(json);
+      _$SonolythAudioLosslessContainerQualityFromJson(json);
 
   @override
   toString() {
@@ -79,32 +79,32 @@ class SpotubeAudioLosslessContainerQuality
 }
 
 @freezed
-class SpotubeAudioSourceMatchObject with _$SpotubeAudioSourceMatchObject {
-  factory SpotubeAudioSourceMatchObject({
+class SonolythAudioSourceMatchObject with _$SonolythAudioSourceMatchObject {
+  factory SonolythAudioSourceMatchObject({
     required String id,
     required String title,
     required List<String> artists,
     required Duration duration,
     String? thumbnail,
     required String externalUri,
-  }) = _SpotubeAudioSourceMatchObject;
+  }) = _SonolythAudioSourceMatchObject;
 
-  factory SpotubeAudioSourceMatchObject.fromJson(Map<String, dynamic> json) =>
-      _$SpotubeAudioSourceMatchObjectFromJson(json);
+  factory SonolythAudioSourceMatchObject.fromJson(Map<String, dynamic> json) =>
+      _$SonolythAudioSourceMatchObjectFromJson(json);
 }
 
 @freezed
-class SpotubeAudioSourceStreamObject with _$SpotubeAudioSourceStreamObject {
-  factory SpotubeAudioSourceStreamObject({
+class SonolythAudioSourceStreamObject with _$SonolythAudioSourceStreamObject {
+  factory SonolythAudioSourceStreamObject({
     required String url,
     required String container,
-    required SpotubeMediaCompressionType type,
+    required SonolythMediaCompressionType type,
     String? codec,
     double? bitrate,
     int? bitDepth,
     double? sampleRate,
-  }) = _SpotubeAudioSourceStreamObject;
+  }) = _SonolythAudioSourceStreamObject;
 
-  factory SpotubeAudioSourceStreamObject.fromJson(Map<String, dynamic> json) =>
-      _$SpotubeAudioSourceStreamObjectFromJson(json);
+  factory SonolythAudioSourceStreamObject.fromJson(Map<String, dynamic> json) =>
+      _$SonolythAudioSourceStreamObjectFromJson(json);
 }

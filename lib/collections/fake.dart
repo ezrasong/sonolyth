@@ -1,22 +1,22 @@
-import 'package:spotube/models/database/database.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/history/summary.dart';
+import 'package:sonolyth/models/database/database.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/history/summary.dart';
 
 abstract class FakeData {
-  static final SpotubeImageObject image = SpotubeImageObject(
+  static final SonolythImageObject image = SonolythImageObject(
     height: 100,
     width: 100,
     url: "https://dummyimage.com/100x100/cfcfcf/cfcfcf.jpg",
   );
 
-  static final SpotubeFullArtistObject artist = SpotubeFullArtistObject(
+  static final SonolythFullArtistObject artist = SonolythFullArtistObject(
     id: "1",
     name: "What an artist",
     externalUri: "https://example.com",
     followers: 10000,
     genres: ["genre"],
     images: [
-      SpotubeImageObject(
+      SonolythImageObject(
         height: 100,
         width: 100,
         url: "https://dummyimage.com/100x100/cfcfcf/cfcfcf.jpg",
@@ -24,36 +24,36 @@ abstract class FakeData {
     ],
   );
 
-  static final SpotubeFullAlbumObject album = SpotubeFullAlbumObject(
+  static final SonolythFullAlbumObject album = SonolythFullAlbumObject(
     id: "1",
     name: "A good album",
     externalUri: "https://example.com",
     artists: [artistSimple],
     releaseDate: "2021-01-01",
-    albumType: SpotubeAlbumType.album,
+    albumType: SonolythAlbumType.album,
     images: [image],
     totalTracks: 10,
     genres: ["genre"],
     recordLabel: "Record Label",
   );
 
-  static final SpotubeSimpleArtistObject artistSimple =
-      SpotubeSimpleArtistObject(
+  static final SonolythSimpleArtistObject artistSimple =
+      SonolythSimpleArtistObject(
     id: "1",
     name: "What an artist",
     externalUri: "https://example.com",
     images: null,
   );
 
-  static final SpotubeSimpleAlbumObject albumSimple = SpotubeSimpleAlbumObject(
-    albumType: SpotubeAlbumType.album,
+  static final SonolythSimpleAlbumObject albumSimple = SonolythSimpleAlbumObject(
+    albumType: SonolythAlbumType.album,
     artists: [],
     externalUri: "https://example.com",
     id: "1",
     name: "A good album",
     releaseDate: "2021-01-01",
     images: [
-      SpotubeImageObject(
+      SonolythImageObject(
         height: 1,
         width: 1,
         url: "https://dummyimage.com/100x100/cfcfcf/cfcfcf.jpg",
@@ -61,7 +61,7 @@ abstract class FakeData {
     ],
   );
 
-  static final SpotubeFullTrackObject track = SpotubeTrackObject.full(
+  static final SonolythFullTrackObject track = SonolythTrackObject.full(
     id: "1",
     name: "A good track",
     externalUri: "https://example.com",
@@ -69,16 +69,16 @@ abstract class FakeData {
     durationMs: 3 * 60 * 1000, // 3 minutes
     isrc: "USUM72112345",
     explicit: false,
-  ) as SpotubeFullTrackObject;
+  ) as SonolythFullTrackObject;
 
-  static final SpotubeUserObject user = SpotubeUserObject(
+  static final SonolythUserObject user = SonolythUserObject(
     id: "1",
     name: "User Name",
     externalUri: "https://example.com",
     images: [image],
   );
 
-  static final SpotubeFullPlaylistObject playlist = SpotubeFullPlaylistObject(
+  static final SonolythFullPlaylistObject playlist = SonolythFullPlaylistObject(
       id: "1",
       name: "A good playlist",
       description: "A very good playlist description",
@@ -89,8 +89,8 @@ abstract class FakeData {
       images: [image],
       collaborators: [user]);
 
-  static final SpotubeSimplePlaylistObject playlistSimple =
-      SpotubeSimplePlaylistObject(
+  static final SonolythSimplePlaylistObject playlistSimple =
+      SonolythSimplePlaylistObject(
     id: "1",
     name: "A good playlist",
     description: "A very good playlist description",
@@ -99,8 +99,8 @@ abstract class FakeData {
     images: [image],
   );
 
-  static final SpotubeBrowseSectionObject browseSection =
-      SpotubeBrowseSectionObject(
+  static final SonolythBrowseSectionObject browseSection =
+      SonolythBrowseSectionObject(
           id: "section-id",
           title: "Browse Section",
           browseMore: true,

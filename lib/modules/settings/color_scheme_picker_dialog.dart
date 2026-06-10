@@ -3,20 +3,20 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
-import 'package:spotube/extensions/context.dart';
+import 'package:sonolyth/extensions/context.dart';
 
-import 'package:spotube/provider/user_preferences/user_preferences_provider.dart';
+import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 
-class SpotubeColor extends Color {
+class SonolythColor extends Color {
   final String name;
 
-  const SpotubeColor(super.color, {required this.name});
+  const SonolythColor(super.color, {required this.name});
 
-  const SpotubeColor.from(super.value, {required this.name});
+  const SonolythColor.from(super.value, {required this.name});
 
-  factory SpotubeColor.fromString(String string) {
+  factory SonolythColor.fromString(String string) {
     final slices = string.split(":");
-    return SpotubeColor(int.parse(slices.last), name: slices.first);
+    return SonolythColor(int.parse(slices.last), name: slices.first);
   }
 
   @override
@@ -25,21 +25,21 @@ class SpotubeColor extends Color {
   }
 }
 
-final Set<SpotubeColor> colorsMap = {
-  const SpotubeColor(0xff6750a4, name: "android"),
-  const SpotubeColor(0xff1db954, name: "spotify"),
-  SpotubeColor(Colors.slate.value, name: "slate"),
-  SpotubeColor(Colors.gray.value, name: "gray"),
-  SpotubeColor(Colors.zinc.value, name: "zinc"),
-  SpotubeColor(Colors.neutral.value, name: "neutral"),
-  SpotubeColor(Colors.stone.value, name: "stone"),
-  SpotubeColor(Colors.red.value, name: "red"),
-  SpotubeColor(Colors.orange.value, name: "orange"),
-  SpotubeColor(Colors.yellow.value, name: "yellow"),
-  SpotubeColor(Colors.green.value, name: "green"),
-  SpotubeColor(Colors.blue.value, name: "blue"),
-  SpotubeColor(Colors.violet.value, name: "violet"),
-  SpotubeColor(Colors.rose.value, name: "rose"),
+final Set<SonolythColor> colorsMap = {
+  const SonolythColor(0xff6750a4, name: "android"),
+  const SonolythColor(0xff1db954, name: "spotify"),
+  SonolythColor(Colors.slate.value, name: "slate"),
+  SonolythColor(Colors.gray.value, name: "gray"),
+  SonolythColor(Colors.zinc.value, name: "zinc"),
+  SonolythColor(Colors.neutral.value, name: "neutral"),
+  SonolythColor(Colors.stone.value, name: "stone"),
+  SonolythColor(Colors.red.value, name: "red"),
+  SonolythColor(Colors.orange.value, name: "orange"),
+  SonolythColor(Colors.yellow.value, name: "yellow"),
+  SonolythColor(Colors.green.value, name: "green"),
+  SonolythColor(Colors.blue.value, name: "blue"),
+  SonolythColor(Colors.violet.value, name: "violet"),
+  SonolythColor(Colors.rose.value, name: "rose"),
 };
 
 final colorSchemeMap = {

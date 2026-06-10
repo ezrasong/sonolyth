@@ -1,42 +1,42 @@
 part of 'metadata.dart';
 
-enum SpotubeAlbumType {
+enum SonolythAlbumType {
   album,
   single,
   compilation,
 }
 
 @freezed
-class SpotubeFullAlbumObject with _$SpotubeFullAlbumObject {
-  factory SpotubeFullAlbumObject({
+class SonolythFullAlbumObject with _$SonolythFullAlbumObject {
+  factory SonolythFullAlbumObject({
     required String id,
     required String name,
-    required List<SpotubeSimpleArtistObject> artists,
-    @Default([]) List<SpotubeImageObject> images,
+    required List<SonolythSimpleArtistObject> artists,
+    @Default([]) List<SonolythImageObject> images,
     required String releaseDate,
     required String externalUri,
     required int totalTracks,
-    required SpotubeAlbumType albumType,
+    required SonolythAlbumType albumType,
     String? recordLabel,
     List<String>? genres,
-  }) = _SpotubeFullAlbumObject;
+  }) = _SonolythFullAlbumObject;
 
-  factory SpotubeFullAlbumObject.fromJson(Map<String, dynamic> json) =>
-      _$SpotubeFullAlbumObjectFromJson(json);
+  factory SonolythFullAlbumObject.fromJson(Map<String, dynamic> json) =>
+      _$SonolythFullAlbumObjectFromJson(json);
 }
 
 @freezed
-class SpotubeSimpleAlbumObject with _$SpotubeSimpleAlbumObject {
-  factory SpotubeSimpleAlbumObject({
+class SonolythSimpleAlbumObject with _$SonolythSimpleAlbumObject {
+  factory SonolythSimpleAlbumObject({
     required String id,
     required String name,
     required String externalUri,
-    required List<SpotubeSimpleArtistObject> artists,
-    @Default([]) List<SpotubeImageObject> images,
-    required SpotubeAlbumType albumType,
+    required List<SonolythSimpleArtistObject> artists,
+    @Default([]) List<SonolythImageObject> images,
+    required SonolythAlbumType albumType,
     String? releaseDate,
-  }) = _SpotubeSimpleAlbumObject;
+  }) = _SonolythSimpleAlbumObject;
 
-  factory SpotubeSimpleAlbumObject.fromJson(Map<String, dynamic> json) =>
-      _$SpotubeSimpleAlbumObjectFromJson(json);
+  factory SonolythSimpleAlbumObject.fromJson(Map<String, dynamic> json) =>
+      _$SonolythSimpleAlbumObjectFromJson(json);
 }

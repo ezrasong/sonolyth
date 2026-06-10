@@ -4,13 +4,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:spotube/collections/intents.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/modules/player/player_track_details.dart';
-import 'package:spotube/modules/root/spotube_navigation_bar.dart';
-import 'package:spotube/provider/audio_player/audio_player.dart';
-import 'package:spotube/provider/audio_player/querying_track_info.dart';
-import 'package:spotube/services/audio_player/audio_player.dart';
+import 'package:sonolyth/collections/intents.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/modules/player/player_track_details.dart';
+import 'package:sonolyth/modules/root/sonolyth_navigation_bar.dart';
+import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/audio_player/querying_track_info.dart';
+import 'package:sonolyth/services/audio_player/audio_player.dart';
 
 class PlayerOverlayCollapsedSection extends HookConsumerWidget {
   final PanelController panelController;
@@ -76,7 +76,7 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
                               children: [
                                 IconButton.ghost(
                                   icon: Icon(
-                                    SpotubeIcons.skipBack,
+                                    SonolythIcons.skipBack,
                                     color: context.theme.colorScheme.foreground,
                                   ),
                                   onPressed: isFetchingActiveTrack
@@ -95,8 +95,8 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
                                             )
                                           : Icon(
                                               playing
-                                                  ? SpotubeIcons.pause
-                                                  : SpotubeIcons.play,
+                                                  ? SonolythIcons.pause
+                                                  : SonolythIcons.play,
                                               color: context
                                                   .theme.colorScheme.foreground,
                                             ),
@@ -110,7 +110,7 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
                                 ),
                                 IconButton.ghost(
                                   icon: Icon(
-                                    SpotubeIcons.skipForward,
+                                    SonolythIcons.skipForward,
                                     color: context.theme.colorScheme.foreground,
                                   ),
                                   onPressed: isFetchingActiveTrack

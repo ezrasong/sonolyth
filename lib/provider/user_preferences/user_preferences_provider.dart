@@ -4,13 +4,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart' as paths;
 import 'package:shadcn_flutter/shadcn_flutter.dart' hide join;
-import 'package:spotube/models/database/database.dart';
-import 'package:spotube/models/metadata/market.dart';
-import 'package:spotube/modules/settings/color_scheme_picker_dialog.dart';
-import 'package:spotube/provider/database/database.dart';
-import 'package:spotube/services/audio_player/audio_player.dart';
-import 'package:spotube/services/logger/logger.dart';
-import 'package:spotube/utils/platform.dart';
+import 'package:sonolyth/models/database/database.dart';
+import 'package:sonolyth/models/metadata/market.dart';
+import 'package:sonolyth/modules/settings/color_scheme_picker_dialog.dart';
+import 'package:sonolyth/provider/database/database.dart';
+import 'package:sonolyth/services/audio_player/audio_player.dart';
+import 'package:sonolyth/services/logger/logger.dart';
+import 'package:sonolyth/utils/platform.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:open_file/open_file.dart';
 
@@ -140,7 +140,7 @@ class UserPreferencesNotifier extends Notifier<PreferencesTableData> {
     return setData(PreferencesTableCompanion(market: Value(country)));
   }
 
-  Future<void> setAccentColorScheme(SpotubeColor color) {
+  Future<void> setAccentColorScheme(SonolythColor color) {
     return setData(PreferencesTableCompanion(accentColorScheme: Value(color)));
   }
 

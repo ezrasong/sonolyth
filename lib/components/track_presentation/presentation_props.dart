@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/models/metadata/metadata.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
 
 class PaginationProps {
   final bool hasNextPage;
   final bool isLoading;
   final VoidCallback onFetchMore;
   final Future<void> Function() onRefresh;
-  final Future<List<SpotubeFullTrackObject>> Function() onFetchAll;
+  final Future<List<SonolythFullTrackObject>> Function() onFetchAll;
 
   const PaginationProps({
     required this.hasNextPage,
@@ -46,7 +46,7 @@ class TrackPresentationOptions {
   final String? ownerImage;
   final String image;
   final String routePath;
-  final List<SpotubeFullTrackObject> tracks;
+  final List<SonolythFullTrackObject> tracks;
   final PaginationProps pagination;
   final bool isLiked;
   final String? shareUrl;
@@ -69,12 +69,12 @@ class TrackPresentationOptions {
     this.isLiked = false,
     this.onHeart,
     this.error,
-  }) : assert(collection is SpotubeSimpleAlbumObject ||
-            collection is SpotubeSimplePlaylistObject);
+  }) : assert(collection is SonolythSimpleAlbumObject ||
+            collection is SonolythSimplePlaylistObject);
 
-  String get collectionId => collection is SpotubeSimpleAlbumObject
-      ? (collection as SpotubeSimpleAlbumObject).id
-      : (collection as SpotubeSimplePlaylistObject).id;
+  String get collectionId => collection is SonolythSimpleAlbumObject
+      ? (collection as SonolythSimpleAlbumObject).id
+      : (collection as SonolythSimplePlaylistObject).id;
 
   static TrackPresentationOptions of(BuildContext context) {
     return Data.of<TrackPresentationOptions>(context);

@@ -2,13 +2,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/collections/routes.gr.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/components/image/universal_image.dart';
-import 'package:spotube/components/links/artist_link.dart';
-import 'package:spotube/components/ui/button_tile.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/download_manager_provider.dart';
+import 'package:sonolyth/collections/routes.gr.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/image/universal_image.dart';
+import 'package:sonolyth/components/links/artist_link.dart';
+import 'package:sonolyth/components/ui/button_tile.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/download_manager_provider.dart';
 
 class DownloadItem extends HookConsumerWidget {
   final DownloadTask task;
@@ -62,7 +62,7 @@ class DownloadItem extends HookConsumerWidget {
                       const SizedBox(width: 10),
                       const SizedBox(width: 10),
                       IconButton.ghost(
-                          icon: const Icon(SpotubeIcons.close),
+                          icon: const Icon(SonolythIcons.close),
                           onPressed: () {
                             downloadManager.cancel(task.track);
                           }),
@@ -75,12 +75,12 @@ class DownloadItem extends HookConsumerWidget {
             child: Row(
               children: [
                 Icon(
-                  SpotubeIcons.error,
+                  SonolythIcons.error,
                   color: Colors.red[400],
                 ),
                 const SizedBox(width: 10),
                 IconButton.ghost(
-                  icon: const Icon(SpotubeIcons.refresh),
+                  icon: const Icon(SonolythIcons.refresh),
                   onPressed: () {
                     downloadManager.retry(task.track);
                   },
@@ -89,9 +89,9 @@ class DownloadItem extends HookConsumerWidget {
             ),
           ),
         DownloadStatus.completed =>
-          Icon(SpotubeIcons.done, color: Colors.green[400]),
+          Icon(SonolythIcons.done, color: Colors.green[400]),
         DownloadStatus.queued => IconButton.ghost(
-            icon: const Icon(SpotubeIcons.close),
+            icon: const Icon(SonolythIcons.close),
             onPressed: () {
               downloadManager.cancel(task.track);
             }),

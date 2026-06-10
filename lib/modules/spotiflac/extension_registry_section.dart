@@ -2,8 +2,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/provider/spotiflac/extension_registry.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/provider/spotiflac/extension_registry.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class SpotiFlacExtensionRegistrySection extends HookConsumerWidget {
@@ -39,7 +39,7 @@ class SpotiFlacExtensionRegistrySection extends HookConsumerWidget {
                 child: const Text("Add registry"),
               ).call,
               child: IconButton.primary(
-                icon: const Icon(SpotubeIcons.add),
+                icon: const Icon(SonolythIcons.add),
                 onPressed: addRepository,
               ),
             ),
@@ -48,7 +48,7 @@ class SpotiFlacExtensionRegistrySection extends HookConsumerWidget {
                 child: const Text("Refresh registries"),
               ).call,
               child: IconButton.secondary(
-                icon: const Icon(SpotubeIcons.refresh),
+                icon: const Icon(SonolythIcons.refresh),
                 onPressed: registryNotifier.refresh,
               ),
             ),
@@ -64,7 +64,7 @@ class SpotiFlacExtensionRegistrySection extends HookConsumerWidget {
           ),
           error: (error, stackTrace) => Card(
             child: Basic(
-              leading: const Icon(SpotubeIcons.error, color: Colors.red),
+              leading: const Icon(SonolythIcons.error, color: Colors.red),
               title: const Text("Could not load SpotiFLAC registries"),
               subtitle: Text(error.toString()),
             ),
@@ -98,7 +98,7 @@ class SpotiFlacExtensionRegistrySection extends HookConsumerWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(SpotubeIcons.extensions, size: 14),
+                            const Icon(SonolythIcons.extensions, size: 14),
                             const Gap(6),
                             Text(Uri.parse(registry).host).xSmall,
                             if (registry !=
@@ -106,7 +106,7 @@ class SpotiFlacExtensionRegistrySection extends HookConsumerWidget {
                               const Gap(4),
                               IconButton.ghost(
                                 size: ButtonSize.small,
-                                icon: const Icon(SpotubeIcons.close),
+                                icon: const Icon(SonolythIcons.close),
                                 onPressed: () {
                                   registryNotifier.removeRegistry(registry);
                                 },
@@ -121,7 +121,7 @@ class SpotiFlacExtensionRegistrySection extends HookConsumerWidget {
                 if (extensions.isEmpty)
                   Card(
                     child: Basic(
-                      leading: const Icon(SpotubeIcons.extensions),
+                      leading: const Icon(SonolythIcons.extensions),
                       title: const Text("No SpotiFLAC extensions found"),
                       subtitle: const Text(
                         "Add another registry URL or refresh the default registry.",
@@ -140,13 +140,13 @@ class SpotiFlacExtensionRegistrySection extends HookConsumerWidget {
                             Basic(
                               leading: Icon(
                                 extension.isDownloadProvider
-                                    ? SpotubeIcons.download
-                                    : SpotubeIcons.extensions,
+                                    ? SonolythIcons.download
+                                    : SonolythIcons.extensions,
                               ),
                               title: Text(extension.name),
                               subtitle: Text(extension.description),
                               trailing: Button.primary(
-                                leading: const Icon(SpotubeIcons.download),
+                                leading: const Icon(SonolythIcons.download),
                                 onPressed: () {
                                   launchUrlString(
                                     extension.downloadUrl,

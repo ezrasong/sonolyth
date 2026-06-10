@@ -1,16 +1,16 @@
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/components/fallbacks/not_found.dart';
-import 'package:spotube/components/image/universal_image.dart';
-import 'package:spotube/components/inter_scrollbar/inter_scrollbar.dart';
-import 'package:spotube/components/ui/button_tile.dart';
-import 'package:spotube/extensions/constrains.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/extensions/duration.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/audio_player/audio_player.dart';
-import 'package:spotube/provider/server/sourced_track_provider.dart';
+import 'package:sonolyth/components/fallbacks/not_found.dart';
+import 'package:sonolyth/components/image/universal_image.dart';
+import 'package:sonolyth/components/inter_scrollbar/inter_scrollbar.dart';
+import 'package:sonolyth/components/ui/button_tile.dart';
+import 'package:sonolyth/extensions/constrains.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/extensions/duration.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/server/sourced_track_provider.dart';
 
 class SiblingTracksSheet extends HookConsumerWidget {
   final bool floating;
@@ -26,7 +26,7 @@ class SiblingTracksSheet extends HookConsumerWidget {
     final activeTrack =
         ref.watch(audioPlayerProvider.select((e) => e.activeTrack));
 
-    if (activeTrack == null || activeTrack is! SpotubeFullTrackObject) {
+    if (activeTrack == null || activeTrack is! SonolythFullTrackObject) {
       return const SafeArea(child: NotFound());
     }
 
@@ -35,14 +35,14 @@ class SiblingTracksSheet extends HookConsumerWidget {
       final sourcedTrackNotifier =
           ref.watch(sourcedTrackProvider(activeTrack).notifier);
 
-      final siblings = useMemoized<List<SpotubeAudioSourceMatchObject>>(
+      final siblings = useMemoized<List<SonolythAudioSourceMatchObject>>(
         () => !sourcedTrack.isLoading
-            ? <SpotubeAudioSourceMatchObject>[
+            ? <SonolythAudioSourceMatchObject>[
                 if (sourcedTrack.asData?.value != null)
                   sourcedTrack.asData!.value.info,
                 ...?sourcedTrack.asData?.value.siblings,
               ]
-            : <SpotubeAudioSourceMatchObject>[],
+            : <SonolythAudioSourceMatchObject>[],
         [sourcedTrack],
       );
 

@@ -1,13 +1,13 @@
-import 'package:spotube/models/database/database.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/database/database.dart';
-import 'package:spotube/services/logger/logger.dart';
+import 'package:sonolyth/models/database/database.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/database/database.dart';
+import 'package:sonolyth/services/logger/logger.dart';
 import 'package:dio/dio.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:spotube/provider/server/active_track_sources.dart';
-import 'package:spotube/provider/user_preferences/user_preferences_provider.dart';
+import 'package:sonolyth/provider/server/active_track_sources.dart';
+import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 
-import 'package:spotube/services/dio/dio.dart';
+import 'package:sonolyth/services/dio/dio.dart';
 
 class SourcedSegments {
   final String source;
@@ -85,7 +85,7 @@ final segmentProvider = FutureProvider<SourcedSegments?>(
     final snapshot = await ref.watch(activeTrackSourcesProvider.future);
     if (snapshot == null) return null;
     final (:track, :source, :notifier) = snapshot;
-    if (track is SpotubeLocalTrackObject) return null;
+    if (track is SonolythLocalTrackObject) return null;
     if (!source!.source.toLowerCase().contains("youtube")) return null;
 
     final skipNonMusic =

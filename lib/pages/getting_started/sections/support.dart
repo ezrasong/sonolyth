@@ -2,11 +2,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/collections/routes.gr.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/modules/getting_started/blur_card.dart';
-import 'package:spotube/extensions/context.dart';
-import 'package:spotube/services/kv_store/kv_store.dart';
+import 'package:sonolyth/collections/routes.gr.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/modules/getting_started/blur_card.dart';
+import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/services/kv_store/kv_store.dart';
 
 class GettingStartedScreenSupportSection extends HookConsumerWidget {
   const GettingStartedScreenSupportSection({super.key});
@@ -25,7 +25,7 @@ class GettingStartedScreenSupportSection extends HookConsumerWidget {
                 Row(
                   children: [
                     Icon(
-                      SpotubeIcons.extensions,
+                      SonolythIcons.extensions,
                       color: material.Theme.of(context).colorScheme.primary,
                     ),
                     const SizedBox(width: 8),
@@ -50,7 +50,7 @@ class GettingStartedScreenSupportSection extends HookConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Button.primary(
-                  leading: const Icon(SpotubeIcons.extensions),
+                  leading: const Icon(SonolythIcons.extensions),
                   onPressed: () async {
                     await KVStoreService.setDoneGettingStarted(true);
                     if (context.mounted) {

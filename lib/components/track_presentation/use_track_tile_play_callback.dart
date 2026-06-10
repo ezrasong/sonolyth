@@ -1,18 +1,18 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:spotube/components/dialogs/select_device_dialog.dart';
-import 'package:spotube/components/track_presentation/presentation_props.dart';
-import 'package:spotube/components/track_presentation/presentation_state.dart';
-import 'package:spotube/extensions/list.dart';
+import 'package:sonolyth/components/dialogs/select_device_dialog.dart';
+import 'package:sonolyth/components/track_presentation/presentation_props.dart';
+import 'package:sonolyth/components/track_presentation/presentation_state.dart';
+import 'package:sonolyth/extensions/list.dart';
 
-import 'package:spotube/models/connect/connect.dart';
-import 'package:spotube/models/metadata/metadata.dart';
-import 'package:spotube/provider/audio_player/audio_player.dart';
-import 'package:spotube/provider/connect/connect.dart';
-import 'package:spotube/provider/history/history.dart';
+import 'package:sonolyth/models/connect/connect.dart';
+import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/connect/connect.dart';
+import 'package:sonolyth/provider/history/history.dart';
 
-Future<void> Function(SpotubeTrackObject track, int index)
+Future<void> Function(SonolythTrackObject track, int index)
     useTrackTilePlayCallback(
   WidgetRef ref,
 ) {
@@ -28,7 +28,7 @@ Future<void> Function(SpotubeTrackObject track, int index)
   );
 
   final onTapTrackTile =
-      useCallback((SpotubeTrackObject track, int index) async {
+      useCallback((SonolythTrackObject track, int index) async {
     final state = ref.read(presentationStateProvider(options.collection));
     final notifier =
         ref.read(presentationStateProvider(options.collection).notifier);
@@ -54,15 +54,15 @@ Future<void> Function(SpotubeTrackObject track, int index)
       } else {
         final tracks = await options.pagination.onFetchAll();
         await remotePlayback.load(
-          options.collection is SpotubeSimpleAlbumObject
+          options.collection is SonolythSimpleAlbumObject
               ? WebSocketLoadEventData.album(
                   tracks: tracks,
-                  collection: options.collection as SpotubeSimpleAlbumObject,
+                  collection: options.collection as SonolythSimpleAlbumObject,
                   initialIndex: index,
                 )
               : WebSocketLoadEventData.playlist(
                   tracks: tracks,
-                  collection: options.collection as SpotubeSimplePlaylistObject,
+                  collection: options.collection as SonolythSimplePlaylistObject,
                   initialIndex: index,
                 ),
         );
@@ -78,12 +78,12 @@ Future<void> Function(SpotubeTrackObject track, int index)
           autoPlay: true,
         );
         playlistNotifier.addCollection(options.collectionId);
-        if (options.collection is SpotubeSimpleAlbumObject) {
+        if (options.collection is SonolythSimpleAlbumObject) {
           historyNotifier
-              .addAlbums([options.collection as SpotubeSimpleAlbumObject]);
+              .addAlbums([options.collection as SonolythSimpleAlbumObject]);
         } else {
           historyNotifier.addPlaylists(
-              [options.collection as SpotubeSimplePlaylistObject]);
+              [options.collection as SonolythSimplePlaylistObject]);
         }
       }
     }

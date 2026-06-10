@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:spotube/utils/platform.dart';
+import 'package:sonolyth/utils/platform.dart';
 
 class AndroidSystemAccent {
   static const _channel = MethodChannel('com.ezrasong.sonolyth/system_accent');
