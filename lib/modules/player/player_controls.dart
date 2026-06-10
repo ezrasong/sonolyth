@@ -12,6 +12,7 @@ import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/extensions/duration.dart';
 import 'package:sonolyth/modules/player/use_progress.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/audio_player/smart_shuffle.dart';
 import 'package:sonolyth/provider/audio_player/querying_track_info.dart';
 import 'package:sonolyth/services/audio_player/audio_player.dart';
 import 'package:sonolyth/utils/platform.dart';
@@ -82,9 +83,14 @@ class PlayerControls extends HookConsumerWidget {
                     final progress = useState<num>(
                       useMemoized(() => progressStatic, []),
                     );
+                    final isDragging = useState(false);
 
                     useEffect(() {
-                      progress.value = progressStatic;
+                      // Don't snap the thumb back to the playback position
+                      // mid-drag — that made dragging to seek impossible.
+                      if (!isDragging.value) {
+                        progress.value = progressStatic;
+                      }
                       return null;
                     }, [progressStatic]);
 
@@ -103,9 +109,11 @@ class PlayerControls extends HookConsumerWidget {
                               onChanged: isFetchingActiveTrack
                                   ? null
                                   : (v) {
+                                      isDragging.value = true;
                                       progress.value = v.value;
                                     },
                               onChangeEnd: (value) async {
+                                isDragging.value = false;
                                 await audioPlayer.seek(
                                   Duration(
                                     seconds: (value.value * duration.inSeconds)
@@ -144,33 +152,47 @@ class PlayerControls extends HookConsumerWidget {
                   Consumer(builder: (context, ref, _) {
                     final shuffled = ref
                         .watch(audioPlayerProvider.select((s) => s.shuffled));
+                    final smartShuffle = ref.watch(smartShuffleProvider);
                     return Tooltip(
                       tooltip: TooltipContainer(
                         child: Text(
-                          shuffled
-                              ? context.l10n.unshuffle_playlist
-                              : context.l10n.shuffle_playlist,
+                          smartShuffle
+                              ? "Smart shuffle"
+                              : shuffled
+                                  ? context.l10n.unshuffle_playlist
+                                  : context.l10n.shuffle_playlist,
                         ),
                       ).call,
                       child: IconButton(
                         size: buttonSize,
-                        icon: Icon(
-                          SonolythIcons.shuffle,
-                          color: shuffled ? theme.colorScheme.primary : null,
-                          size: 22,
+                        icon: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Icon(
+                              SonolythIcons.shuffle,
+                              color: shuffled || smartShuffle
+                                  ? theme.colorScheme.primary
+                                  : null,
+                              size: 22,
+                            ),
+                            if (smartShuffle)
+                              Positioned(
+                                right: -6,
+                                top: -6,
+                                child: Icon(
+                                  SonolythIcons.lightning,
+                                  size: 12,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ),
+                          ],
                         ),
-                        variance: shuffled
+                        variance: shuffled || smartShuffle
                             ? ButtonVariance.secondary
                             : ButtonVariance.ghost,
                         onPressed: isFetchingActiveTrack
                             ? null
-                            : () {
-                                if (shuffled) {
-                                  audioPlayer.setShuffle(false);
-                                } else {
-                                  audioPlayer.setShuffle(true);
-                                }
-                              },
+                            : () => cycleShuffleMode(ref),
                       ),
                     );
                   }),

@@ -22,6 +22,9 @@ class CustomPlayer extends Player {
   CustomPlayer({super.configuration})
       : _playerStateStream = StreamController.broadcast() {
     nativePlayer.setProperty("network-timeout", "120");
+    // Open + buffer the next playlist entry while the current one plays so
+    // track changes start instantly instead of waiting on the stream setup.
+    nativePlayer.setProperty("prefetch-playlist", "yes");
 
     _subscriptions = [
       stream.buffering.listen((event) {

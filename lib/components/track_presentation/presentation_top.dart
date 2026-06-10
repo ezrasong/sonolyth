@@ -134,7 +134,6 @@ class TrackPresentationTopSection extends HookConsumerWidget {
                 : Text(context.l10n.play),
           ).call,
           child: IconButton.primary(
-            size: ButtonSize.large,
             shape: ButtonShape.circle,
             icon: switch ((isActive, isLoading)) {
               (true, false) => Icon(
