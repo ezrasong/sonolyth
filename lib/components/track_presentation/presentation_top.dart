@@ -1,5 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
@@ -15,6 +16,7 @@ import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/modules/playlist/playlist_create_dialog.dart';
 import 'package:sonolyth/provider/download_manager_provider.dart';
+import 'package:sonolyth/services/audio_player/audio_player.dart';
 
 class TrackPresentationTopSection extends HookConsumerWidget {
   const TrackPresentationTopSection({super.key});
@@ -40,6 +42,8 @@ class TrackPresentationTopSection extends HookConsumerWidget {
 
     final (:isLoading, :isActive, :onPlay, :onShuffle, :onAddToQueue) =
         useActionCallbacks(ref);
+    final playing =
+        useStream(audioPlayer.playingStream).data ?? audioPlayer.isPlaying;
     ref.watch(downloadManagerProvider);
     final downloader = ref.read(downloadManagerProvider.notifier);
 
@@ -125,21 +129,29 @@ class TrackPresentationTopSection extends HookConsumerWidget {
           ),
         Tooltip(
           tooltip: TooltipContainer(
-            child:
-                isActive ? Text(context.l10n.pause) : Text(context.l10n.play),
+            child: isActive && playing
+                ? Text(context.l10n.pause)
+                : Text(context.l10n.play),
           ).call,
           child: IconButton.primary(
             size: ButtonSize.large,
             shape: ButtonShape.circle,
             icon: switch ((isActive, isLoading)) {
-              (true, false) => const Icon(SonolythIcons.pause),
+              (true, false) => Icon(
+                  playing ? SonolythIcons.pause : SonolythIcons.play,
+                ),
               (false, true) => const Center(
                   child: CircularProgressIndicator(onSurface: true, size: 18),
                 ),
               _ => const Icon(SonolythIcons.play),
             },
-            onPressed: onPlay,
-            enabled: !isLoading && !isActive,
+            // When this collection is already playing, the button toggles
+            // pause/resume instead of being disabled.
+            onPressed: isActive
+                ? () =>
+                    playing ? audioPlayer.pause() : audioPlayer.resume()
+                : onPlay,
+            enabled: !isLoading,
           ),
         ),
       ],
@@ -294,7 +306,12 @@ class TrackPresentationTopSection extends HookConsumerWidget {
                                 ),
                               const Gap(8),
                               Flex(
-                                crossAxisAlignment: CrossAxisAlignment.center,
+                                // Vertical (phone) layout must stay
+                                // left-aligned with the title above it;
+                                // centering only makes sense horizontally.
+                                crossAxisAlignment: mediaQuery.smAndUp
+                                    ? CrossAxisAlignment.center
+                                    : CrossAxisAlignment.start,
                                 direction: mediaQuery.smAndUp
                                     ? Axis.horizontal
                                     : Axis.vertical,

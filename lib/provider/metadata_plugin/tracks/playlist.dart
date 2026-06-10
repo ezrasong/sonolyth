@@ -73,10 +73,10 @@ class MetadataPluginPlaylistTracksNotifier
           final unchanged = !cached.hasMore &&
               fresh.total == cached.total &&
               const ListEquality().equals(
-                fresh.items.map((e) => e.id).toList(),
+                fresh.items.map((e) => "${e.id}:${e.durationMs}").toList(),
                 cached.items
                     .take(fresh.items.length)
-                    .map((e) => e.id)
+                    .map((e) => "${e.id}:${e.durationMs}")
                     .toList(),
               );
           if (unchanged) return;
