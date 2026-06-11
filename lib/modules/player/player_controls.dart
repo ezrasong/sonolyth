@@ -157,7 +157,7 @@ class PlayerControls extends HookConsumerWidget {
                       tooltip: TooltipContainer(
                         child: Text(
                           smartShuffle
-                              ? "Smart shuffle"
+                              ? context.l10n.smart_shuffle
                               : shuffled
                                   ? context.l10n.unshuffle_playlist
                                   : context.l10n.shuffle_playlist,

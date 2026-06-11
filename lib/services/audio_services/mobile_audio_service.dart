@@ -8,6 +8,7 @@ import 'package:sonolyth/provider/audio_player/state.dart';
 import 'package:sonolyth/services/audio_player/audio_player.dart';
 import 'package:media_kit/media_kit.dart' hide Track;
 import 'package:sonolyth/services/audio_player/playback_state.dart';
+import 'package:sonolyth/services/kv_store/kv_store.dart';
 import 'package:sonolyth/services/logger/logger.dart';
 import 'package:sonolyth/utils/platform.dart';
 
@@ -29,7 +30,7 @@ class MobileAudioService extends BaseAudioHandler {
         if (event.begin) {
           switch (event.type) {
             case AudioInterruptionType.duck:
-              await audioPlayer.setVolume(0.5);
+              await audioPlayer.setVolume(audioPlayer.volume / 2);
               break;
             case AudioInterruptionType.pause:
             case AudioInterruptionType.unknown:
@@ -42,7 +43,8 @@ class MobileAudioService extends BaseAudioHandler {
         } else {
           switch (event.type) {
             case AudioInterruptionType.duck:
-              await audioPlayer.setVolume(1.0);
+              // Restore the user's saved volume rather than forcing 100%.
+              await audioPlayer.setVolume(KVStoreService.volume);
               break;
             case AudioInterruptionType.pause when wasPausedByBeginEvent:
             case AudioInterruptionType.unknown when wasPausedByBeginEvent:

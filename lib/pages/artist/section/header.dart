@@ -191,21 +191,21 @@ class ArtistPageHeader extends HookConsumerWidget {
                               minFontSize: 14,
                             ),
                           ),
-                          const Gap(5),
-                          Flexible(
-                            child: AutoSizeText(
-                              context.l10n.followers(
-                                artist.followers == null
-                                    ? double.infinity
-                                    : PrimitiveUtils.toReadableNumber(
-                                        artist.followers!.toDouble(),
-                                      ),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              minFontSize: 12,
-                            ).muted(),
-                          ),
+                          if (artist.followers != null) ...[
+                            const Gap(5),
+                            Flexible(
+                              child: AutoSizeText(
+                                context.l10n.followers(
+                                  PrimitiveUtils.toReadableNumber(
+                                    artist.followers!.toDouble(),
+                                  ),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 12,
+                              ).muted(),
+                            ),
+                          ],
                           if (constrains.mdAndUp) ...[
                             const Gap(20),
                             actions,

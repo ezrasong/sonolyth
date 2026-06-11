@@ -60,7 +60,7 @@ class LocalFolderItem extends HookConsumerWidget {
         : isCacheFolder
             ? context.l10n.cache_folder.capitalize()
             : basename(folder);
-    final description = "${tracks.length} ${context.l10n.tracks}";
+    final description = context.l10n.count_tracks(tracks.length);
 
     final onTap = useCallback(() {
       context.navigateTo(

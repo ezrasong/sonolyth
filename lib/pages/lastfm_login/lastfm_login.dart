@@ -62,7 +62,8 @@ class LastFMLoginPage extends HookConsumerWidget {
                       if (context.mounted) {
                         showPromptDialog(
                           context: context,
-                          title: context.l10n.error("Authentication failed"),
+                          title: context.l10n
+                              .error(context.l10n.authentication_failed),
                           message: e.toString(),
                           cancelText: null,
                         );
@@ -96,8 +97,8 @@ class LastFMLoginPage extends HookConsumerWidget {
                             FormField(
                               label: Text(context.l10n.username),
                               key: usernameKey,
-                              validator: const NotEmptyValidator(
-                                message: "Username is required",
+                              validator: NotEmptyValidator(
+                                message: context.l10n.username_is_required,
                               ),
                               child: TextField(
                                 autofillHints: const [
@@ -109,8 +110,8 @@ class LastFMLoginPage extends HookConsumerWidget {
                             ),
                             FormField(
                               key: passwordKey,
-                              validator: const NotEmptyValidator(
-                                message: "Password is required",
+                              validator: NotEmptyValidator(
+                                message: context.l10n.password_is_required,
                               ),
                               label: Text(context.l10n.password),
                               child: TextField(

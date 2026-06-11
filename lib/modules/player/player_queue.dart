@@ -154,7 +154,9 @@ class PlayerQueue extends HookConsumerWidget {
                       title: SizedBox(
                         height: 30,
                         child: AutoSizeText(
-                          '${selectedTrackIds.value.length} selected',
+                          context.l10n.selected_count_tracks(
+                            selectedTrackIds.value.length,
+                          ),
                           maxLines: 1,
                         ),
                       ),

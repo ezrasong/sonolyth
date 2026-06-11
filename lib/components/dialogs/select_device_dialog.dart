@@ -12,7 +12,24 @@ class SelectDeviceDialog extends HookConsumerWidget {
     final isRemoteService = useState(false);
 
     final connectClients = ref.watch(connectClientsProvider);
-    final remoteService = connectClients.asData!.value.resolvedService!;
+    final remoteService = connectClients.asData?.value.resolvedService;
+
+    // The provider can refresh while the dialog is open; if the remote
+    // service disappears, fall back to local playback and close.
+    useEffect(() {
+      if (remoteService == null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (context.mounted) {
+            Navigator.of(context).pop(false);
+          }
+        });
+      }
+      return null;
+    }, [remoteService]);
+
+    if (remoteService == null) {
+      return const SizedBox.shrink();
+    }
 
     return AlertDialog(
       title: Text(context.l10n.choose_the_device),

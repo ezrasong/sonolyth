@@ -129,13 +129,7 @@ class SearchPage extends HookConsumerWidget {
                                       .toList();
 
                               return AutoComplete(
-                                suggestions: suggestions.length <= 2
-                                    ? [
-                                        ...suggestions,
-                                        "Twenty One Pilots",
-                                        "Linkin Park",
-                                      ]
-                                    : suggestions,
+                                suggestions: suggestions,
                                 completer: (suggestion) => suggestion,
                                 mode: AutoCompleteMode.replaceAll,
                                 child: TextField(
@@ -176,40 +170,44 @@ class SearchPage extends HookConsumerWidget {
                     ),
                   ],
                 ),
-                Row(
-                  spacing: 8,
-                  children: [
-                    const Gap(12),
-                    if (searchChipSnapshot.asData?.value != null)
-                      for (final chip in searchChipSnapshot.asData!.value)
-                        Chip(
-                          style: selectedChip.value == chip
-                              ? ButtonVariance.primary.copyWith(
-                                  decoration: (context, states, value) {
-                                    return ButtonVariance.primary
-                                        .decoration(context, states)
-                                        .copyWithIfBoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(100),
-                                        );
-                                  },
-                                )
-                              : ButtonVariance.secondary.copyWith(
-                                  decoration: (context, states, value) {
-                                    return ButtonVariance.secondary
-                                        .decoration(context, states)
-                                        .copyWithIfBoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(100),
-                                        );
-                                  },
-                                ),
-                          child: Text(chip.capitalize()),
-                          onPressed: () {
-                            selectedChip.value = chip;
-                          },
-                        ),
-                  ],
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    spacing: 8,
+                    children: [
+                      const Gap(12),
+                      if (searchChipSnapshot.asData?.value != null)
+                        for (final chip in searchChipSnapshot.asData!.value)
+                          Chip(
+                            style: selectedChip.value == chip
+                                ? ButtonVariance.primary.copyWith(
+                                    decoration: (context, states, value) {
+                                      return ButtonVariance.primary
+                                          .decoration(context, states)
+                                          .copyWithIfBoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(100),
+                                          );
+                                    },
+                                  )
+                                : ButtonVariance.secondary.copyWith(
+                                    decoration: (context, states, value) {
+                                      return ButtonVariance.secondary
+                                          .decoration(context, states)
+                                          .copyWithIfBoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(100),
+                                          );
+                                    },
+                                  ),
+                            child: Text(chip.capitalize()),
+                            onPressed: () {
+                              selectedChip.value = chip;
+                            },
+                          ),
+                      const Gap(12),
+                    ],
+                  ),
                 ),
                 Expanded(
                   child: AnimatedSwitcher(

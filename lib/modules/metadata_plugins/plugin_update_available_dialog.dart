@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/markdown/markdown.dart';
+import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
 
@@ -44,13 +45,16 @@ class MetadataPluginUpdateAvailableDialog extends HookConsumerWidget {
     );
 
     return AlertDialog(
-      title: const Text('Plugin update available'),
+      title: Text(context.l10n.plugin_update_available),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 8,
         children: [
-          Text('${plugin.name} (${update.version}) available.'),
+          Text(
+            context.l10n
+                .plugin_name_version_available(plugin.name, update.version),
+          ),
           if (update.changelog != null && update.changelog!.isNotEmpty)
             AppMarkdown(
               data: '### Changelog: \n\n${update.changelog}',
@@ -62,7 +66,7 @@ class MetadataPluginUpdateAvailableDialog extends HookConsumerWidget {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: const Text('Dismiss'),
+          child: Text(context.l10n.dismiss),
         ),
         PrimaryButton(
           enabled: !isUpdating.value,
@@ -85,7 +89,7 @@ class MetadataPluginUpdateAvailableDialog extends HookConsumerWidget {
               }
             }
           },
-          child: const Text('Update'),
+          child: Text(context.l10n.update),
         ),
       ],
     );

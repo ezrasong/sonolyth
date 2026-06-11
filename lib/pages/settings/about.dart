@@ -64,10 +64,22 @@ class AboutSonolythPage extends HookConsumerWidget {
                             cells: [
                               TableCell(child: Text(context.l10n.founder)),
                               colon,
+                              const TableCell(
+                                child: Hyperlink(
+                                  "Ezra Song",
+                                  "https://github.com/ezrasong",
+                                ),
+                              )
+                            ],
+                          ),
+                          TableRow(
+                            cells: [
+                              TableCell(child: Text(context.l10n.author)),
+                              colon,
                               TableCell(
                                 child: Hyperlink(
                                   context.l10n.kingkor_roy_tirtho,
-                                  "https://github.com/ezrasong",
+                                  "https://github.com/KRTirtho",
                                 ),
                               )
                             ],

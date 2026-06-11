@@ -24,6 +24,9 @@ class AlbumPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
+    // Plugin albums can come back with an empty artist list.
+    final artistName =
+        album.artists.isEmpty ? null : album.artists.first.name;
     final tracks = ref.watch(metadataPluginAlbumTracksProvider(album.id));
     final tracksNotifier =
         ref.watch(metadataPluginAlbumTracksProvider(album.id).notifier);
@@ -45,8 +48,10 @@ class AlbumPage extends HookConsumerWidget {
             placeholder: ImagePlaceholder.albumArt,
           ),
           title: album.name,
-          description:
-              "${context.l10n.released} • ${album.releaseDate} • ${album.artists.first.name}",
+          description: [
+            "${context.l10n.released} • ${album.releaseDate}",
+            if (artistName != null) artistName,
+          ].join(" • "),
           tracks: tracks.asData?.value.items ?? [],
           error: tracks.error,
           pagination: PaginationProps(
@@ -65,7 +70,7 @@ class AlbumPage extends HookConsumerWidget {
           routePath: "/album/${album.id}",
           shareUrl: album.externalUri,
           isLiked: isSavedAlbum.asData?.value ?? false,
-          owner: album.artists.first.name,
+          owner: artistName,
           onHeart: isSavedAlbum.asData?.value == null
               ? null
               : () async {

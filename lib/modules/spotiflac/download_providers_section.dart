@@ -3,9 +3,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/adaptive/adaptive_select_tile.dart';
+import 'package:sonolyth/components/fallbacks/error_box.dart';
+import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/spotiflac/download_settings.dart';
 import 'package:sonolyth/services/spotiflac/providers/qobuz_provider.dart';
 import 'package:sonolyth/services/spotiflac/providers/spotiflac_provider.dart';
+import 'package:sonolyth/services/spotiflac/providers/youtube_provider.dart';
 
 /// Settings for the native lossless download providers. Downloads run entirely
 /// in-app through the zarz gateway (no external SpotiFLAC app), so this manages
@@ -30,11 +33,10 @@ class SpotiFlacDownloadProvidersSection extends ConsumerWidget {
           child: CircularProgressIndicator(),
         ),
       ),
-      error: (error, _) => Card(
-        child: Basic(
-          leading: const Icon(SonolythIcons.error, color: Colors.red),
-          title: const Text("Couldn't load download providers"),
-          subtitle: Text(error.toString()),
+      error: (error, _) => Center(
+        child: ErrorBox(
+          error: error,
+          onRetry: () => ref.invalidate(spotiFlacDownloadSettingsProvider),
         ),
       ),
       data: (settings) {
@@ -49,14 +51,11 @@ class SpotiFlacDownloadProvidersSection extends ConsumerWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Card(
+            Card(
               child: Basic(
-                leading: Icon(SonolythIcons.download),
-                title: Text("Lossless downloads"),
-                subtitle: Text(
-                  "Tracks download directly in-app as FLAC. Providers are "
-                  "tried top-to-bottom until one has the track.",
-                ),
+                leading: const Icon(SonolythIcons.download),
+                title: Text(context.l10n.lossless_downloads),
+                subtitle: Text(context.l10n.lossless_downloads_description),
               ),
             ),
             const Gap(12),
@@ -68,11 +67,31 @@ class SpotiFlacDownloadProvidersSection extends ConsumerWidget {
                   index: index,
                   total: ordered.length,
                   enabled: !settings.disabled.contains(ordered[index].id),
+                  lossy: ordered[index] is YouTubeProvider,
                   quality: settings.qualityByProvider[ordered[index].id] ??
                       ordered[index].defaultQuality,
                   qualityLabel: _qualityLabel,
-                  onToggle: (value) =>
-                      notifier.setEnabled(ordered[index].id, value),
+                  onToggle: (value) {
+                    // Never allow every provider to be switched off — downloads
+                    // would silently have nothing to resolve against.
+                    if (!value && settings.enabledProviders.length <= 1) {
+                      showToast(
+                        context: context,
+                        location: ToastLocation.topRight,
+                        builder: (context, overlay) => SurfaceCard(
+                          child: Basic(
+                            leading: const Icon(
+                              SonolythIcons.warning,
+                              color: Colors.yellow,
+                            ),
+                            title: Text(context.l10n.keep_one_download_provider),
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+                    notifier.setEnabled(ordered[index].id, value);
+                  },
                   onQuality: (value) =>
                       notifier.setQuality(ordered[index].id, value),
                   onMoveUp: index == 0
@@ -95,6 +114,10 @@ class _ProviderCard extends StatelessWidget {
   final int index;
   final int total;
   final bool enabled;
+
+  /// True for providers that can't deliver lossless audio (the YouTube
+  /// fallback) so the row can carry a "Lossy" hint.
+  final bool lossy;
   final String quality;
   final String Function(SpotiFlacProvider, String) qualityLabel;
   final ValueChanged<bool> onToggle;
@@ -107,6 +130,7 @@ class _ProviderCard extends StatelessWidget {
     required this.index,
     required this.total,
     required this.enabled,
+    required this.lossy,
     required this.quality,
     required this.qualityLabel,
     required this.onToggle,
@@ -148,11 +172,22 @@ class _ProviderCard extends StatelessWidget {
                     Row(
                       children: [
                         Text("${index + 1}. ").muted(),
-                        Text(provider.displayName).semiBold(),
+                        Flexible(
+                          child: Text(
+                            provider.displayName,
+                            overflow: TextOverflow.ellipsis,
+                          ).semiBold(),
+                        ),
+                        if (lossy) ...[
+                          const Gap(8),
+                          SecondaryBadge(child: Text(context.l10n.lossy)),
+                        ],
                       ],
                     ),
                     Text(
-                      enabled ? "Priority ${index + 1}" : "Disabled",
+                      enabled
+                          ? context.l10n.priority_count(index + 1)
+                          : context.l10n.disabled,
                     ).xSmall().muted(),
                   ],
                 ),
@@ -163,7 +198,7 @@ class _ProviderCard extends StatelessWidget {
           if (provider.qualities.length > 1)
             AdaptiveSelectTile<String>(
               controlAffinity: ListTileControlAffinity.trailing,
-              title: const Text("Quality"),
+              title: Text(context.l10n.quality),
               value: quality,
               onChanged: (value) {
                 if (value != null) onQuality(value);

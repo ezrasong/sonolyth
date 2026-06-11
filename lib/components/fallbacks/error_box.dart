@@ -24,8 +24,8 @@ class ErrorBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final visibleMessage = onLogin != null
-        ? "You're not signed in to your music source. Log in to load this section."
-        : _friendlyErrorMessage(error);
+        ? context.l10n.error_not_signed_in
+        : _friendlyErrorMessage(context, error);
 
     // Make a monospace error log view. Make sure it's only 4 lines
     return ConstrainedBox(
@@ -152,12 +152,12 @@ class ErrorBox extends StatelessWidget {
     );
   }
 
-  String _friendlyErrorMessage(Object error) {
+  String _friendlyErrorMessage(BuildContext context, Object error) {
     final message = error.toString();
     if (message.contains("status code of 401")) {
-      return "This section needs account access from your selected music source. Log in or choose a different provider, then retry.";
+      return context.l10n.error_needs_account_access;
     }
 
-    return "Something went wrong while loading this section. You can view the full logs for details.";
+    return context.l10n.error_generic_section;
   }
 }

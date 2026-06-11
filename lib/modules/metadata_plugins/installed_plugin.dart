@@ -5,6 +5,7 @@ import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/extensions/constrains.dart';
 import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/l10n/l10n.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/modules/metadata_plugins/plugin_update_available_dialog.dart';
 import 'package:sonolyth/provider/metadata_plugin/core/auth.dart';
@@ -13,10 +14,12 @@ import 'package:sonolyth/provider/metadata_plugin/updater/update_checker.dart';
 import 'package:sonolyth/services/logger/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-final validAbilities = {
-  PluginAbilities.metadata: ("Metadata", SonolythIcons.album),
-  PluginAbilities.audioSource: ("Audio Source", SonolythIcons.music),
-};
+Map<PluginAbilities, (String, IconData)> validAbilities(
+        AppLocalizations l10n) =>
+    {
+      PluginAbilities.metadata: (l10n.metadata, SonolythIcons.album),
+      PluginAbilities.audioSource: (l10n.audio_source, SonolythIcons.music),
+    };
 
 class MetadataInstalledPluginItem extends HookConsumerWidget {
   final PluginConfiguration plugin;
@@ -32,6 +35,7 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final mediaQuery = MediaQuery.sizeOf(context);
+    final abilities = validAbilities(context.l10n);
 
     final metadataPlugin = ref.watch(metadataPluginProvider);
     final audioSourcePlugin = ref.watch(audioSourcePluginProvider);
@@ -121,10 +125,10 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                       runSpacing: 8,
                       children: [
                         for (final ability in plugin.abilities)
-                          if (validAbilities.keys.contains(ability))
+                          if (abilities.keys.contains(ability))
                             SecondaryBadge(
-                              leading: Icon(validAbilities[ability]!.$2),
-                              child: Text(validAbilities[ability]!.$1),
+                              leading: Icon(abilities[ability]!.$2),
+                              child: Text(abilities[ability]!.$1),
                             ),
                       ],
                     ),

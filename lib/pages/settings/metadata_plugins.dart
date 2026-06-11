@@ -275,10 +275,10 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
                   onChanged: (value) {
                     tabState.value = value;
                   },
-                  children: const [
-                    TabItem(child: Text("All")),
-                    TabItem(child: Text("Metadata")),
-                    TabItem(child: Text("Audio Source")),
+                  children: [
+                    TabItem(child: Text(context.l10n.all)),
+                    TabItem(child: Text(context.l10n.metadata)),
+                    TabItem(child: Text(context.l10n.audio_source)),
                   ],
                 ),
               ),

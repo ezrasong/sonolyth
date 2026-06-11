@@ -67,7 +67,7 @@ class SettingsMetadataProviderFormPage extends HookConsumerWidget {
                         validator: FormBuilderValidators.compose([
                           if (field.required == true)
                             FormBuilderValidators.required(
-                              errorText: 'This field is required',
+                              errorText: context.l10n.this_field_is_required,
                             ),
                           if (field.regex != null)
                             FormBuilderValidators.match(

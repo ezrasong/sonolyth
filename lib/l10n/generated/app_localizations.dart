@@ -2930,6 +2930,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'For audiophiles. Provides high-quality/lossless audio streams. Accurate ISRC based track matching.'**
   String get dab_music_source_description;
+
+  /// No description provided for @home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// No description provided for @good_morning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get good_morning;
+
+  /// No description provided for @good_afternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get good_afternoon;
+
+  /// No description provided for @good_evening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get good_evening;
+
+  /// No description provided for @error_not_signed_in.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re not signed in to your music source. Log in to load this section.'**
+  String get error_not_signed_in;
+
+  /// No description provided for @error_needs_account_access.
+  ///
+  /// In en, this message translates to:
+  /// **'This section needs account access from your selected music source. Log in or choose a different provider, then retry.'**
+  String get error_needs_account_access;
+
+  /// No description provided for @error_generic_section.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong while loading this section. You can view the full logs for details.'**
+  String get error_generic_section;
+
+  /// No description provided for @count_done.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} done'**
+  String count_done(Object count);
+
+  /// No description provided for @count_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} failed'**
+  String count_failed(Object count);
+
+  /// No description provided for @retry_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry failed'**
+  String get retry_failed;
+
+  /// No description provided for @download_rate_limit_paused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused to avoid the download rate limit — resuming in {seconds}s'**
+  String download_rate_limit_paused(Object seconds);
+
+  /// No description provided for @lossless_downloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Lossless downloads'**
+  String get lossless_downloads;
+
+  /// No description provided for @lossless_downloads_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracks download in-app — FLAC from Qobuz and Deezer, with YouTube as a lossy fallback. Providers are tried top-to-bottom until one has the track.'**
+  String get lossless_downloads_description;
+
+  /// No description provided for @priority_count.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority {count}'**
+  String priority_count(Object count);
+
+  /// No description provided for @disabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled'**
+  String get disabled;
+
+  /// No description provided for @quality.
+  ///
+  /// In en, this message translates to:
+  /// **'Quality'**
+  String get quality;
+
+  /// No description provided for @lossy.
+  ///
+  /// In en, this message translates to:
+  /// **'Lossy'**
+  String get lossy;
+
+  /// No description provided for @keep_one_download_provider.
+  ///
+  /// In en, this message translates to:
+  /// **'At least one download provider must stay enabled'**
+  String get keep_one_download_provider;
+
+  /// No description provided for @skip_setup.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip setup'**
+  String get skip_setup;
+
+  /// No description provided for @set_up_music_sources.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up music sources'**
+  String get set_up_music_sources;
+
+  /// No description provided for @set_up_music_sources_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Install a provider to search, stream, and download music.'**
+  String get set_up_music_sources_description;
+
+  /// No description provided for @plugin_update_available.
+  ///
+  /// In en, this message translates to:
+  /// **'Plugin update available'**
+  String get plugin_update_available;
+
+  /// No description provided for @dismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get dismiss;
+
+  /// No description provided for @plugin_name_version_available.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} ({version}) available.'**
+  String plugin_name_version_available(Object name, Object version);
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// No description provided for @metadata.
+  ///
+  /// In en, this message translates to:
+  /// **'Metadata'**
+  String get metadata;
+
+  /// No description provided for @authentication_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed'**
+  String get authentication_failed;
+
+  /// No description provided for @username_is_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Username is required'**
+  String get username_is_required;
+
+  /// No description provided for @password_is_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Password is required'**
+  String get password_is_required;
+
+  /// No description provided for @this_field_is_required.
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required'**
+  String get this_field_is_required;
+
+  /// No description provided for @smart_shuffle.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart shuffle'**
+  String get smart_shuffle;
+
+  /// No description provided for @count_tracks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tracks'**
+  String count_tracks(Object count);
+
+  /// No description provided for @size_in_gb.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} GB'**
+  String size_in_gb(Object size);
 }
 
 class _AppLocalizationsDelegate

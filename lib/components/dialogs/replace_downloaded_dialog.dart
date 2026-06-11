@@ -1,25 +1,24 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 
-final replaceDownloadedFileState = StateProvider<bool?>((ref) => null);
-
-class ReplaceDownloadedDialog extends ConsumerWidget {
+class ReplaceDownloadedDialog extends HookWidget {
   final SonolythTrackObject track;
   const ReplaceDownloadedDialog({required this.track, super.key});
 
   @override
-  Widget build(BuildContext context, ref) {
-    final replaceAll = ref.watch(replaceDownloadedFileState);
+  Widget build(BuildContext context) {
+    final replaceAllState = useState<bool?>(null);
+    final replaceAll = replaceAllState.value;
 
     return AlertDialog(
       title: Text(context.l10n.track_exists(track.name)),
       content: RadioGroup(
         value: replaceAll,
         onChanged: (value) {
-          ref.read(replaceDownloadedFileState.notifier).state = value;
+          replaceAllState.value = value;
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -1537,4 +1537,123 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get dab_music_source_description =>
       'Voor audiofielen. Biedt hoge kwaliteit/lossless audiostreams. Nauwkeurige trackmatching op basis van ISRC.';
+
+  @override
+  String get home => 'Home';
+
+  @override
+  String get good_morning => 'Good morning';
+
+  @override
+  String get good_afternoon => 'Good afternoon';
+
+  @override
+  String get good_evening => 'Good evening';
+
+  @override
+  String get error_not_signed_in =>
+      'You\'re not signed in to your music source. Log in to load this section.';
+
+  @override
+  String get error_needs_account_access =>
+      'This section needs account access from your selected music source. Log in or choose a different provider, then retry.';
+
+  @override
+  String get error_generic_section =>
+      'Something went wrong while loading this section. You can view the full logs for details.';
+
+  @override
+  String count_done(Object count) {
+    return '$count done';
+  }
+
+  @override
+  String count_failed(Object count) {
+    return '$count failed';
+  }
+
+  @override
+  String get retry_failed => 'Retry failed';
+
+  @override
+  String download_rate_limit_paused(Object seconds) {
+    return 'Paused to avoid the download rate limit — resuming in ${seconds}s';
+  }
+
+  @override
+  String get lossless_downloads => 'Lossless downloads';
+
+  @override
+  String get lossless_downloads_description =>
+      'Tracks download in-app — FLAC from Qobuz and Deezer, with YouTube as a lossy fallback. Providers are tried top-to-bottom until one has the track.';
+
+  @override
+  String priority_count(Object count) {
+    return 'Priority $count';
+  }
+
+  @override
+  String get disabled => 'Disabled';
+
+  @override
+  String get quality => 'Quality';
+
+  @override
+  String get lossy => 'Lossy';
+
+  @override
+  String get keep_one_download_provider =>
+      'At least one download provider must stay enabled';
+
+  @override
+  String get skip_setup => 'Skip setup';
+
+  @override
+  String get set_up_music_sources => 'Set up music sources';
+
+  @override
+  String get set_up_music_sources_description =>
+      'Install a provider to search, stream, and download music.';
+
+  @override
+  String get plugin_update_available => 'Plugin update available';
+
+  @override
+  String get dismiss => 'Dismiss';
+
+  @override
+  String plugin_name_version_available(Object name, Object version) {
+    return '$name ($version) available.';
+  }
+
+  @override
+  String get all => 'All';
+
+  @override
+  String get metadata => 'Metadata';
+
+  @override
+  String get authentication_failed => 'Authentication failed';
+
+  @override
+  String get username_is_required => 'Username is required';
+
+  @override
+  String get password_is_required => 'Password is required';
+
+  @override
+  String get this_field_is_required => 'This field is required';
+
+  @override
+  String get smart_shuffle => 'Smart shuffle';
+
+  @override
+  String count_tracks(Object count) {
+    return '$count tracks';
+  }
+
+  @override
+  String size_in_gb(Object size) {
+    return '$size GB';
+  }
 }

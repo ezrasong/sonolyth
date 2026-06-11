@@ -8,6 +8,7 @@ import 'package:sonolyth/collections/routes.gr.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
 import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/provider/scrobbler/scrobbler.dart';
 
 @RoutePage()
 class SettingsScrobblingPage extends HookConsumerWidget {
@@ -17,6 +18,10 @@ class SettingsScrobblingPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
+    final scrobbler = ref.watch(scrobblerProvider);
+    final isConnected = scrobbler.asData?.value != null;
+    final username = scrobbler.asData?.value?.api.username;
+
     return Material(
       type: MaterialType.transparency,
       child: ListTileTheme(
@@ -46,15 +51,26 @@ class SettingsScrobblingPage extends HookConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: ListTile(
                     leading: const Icon(SonolythIcons.lastFm, color: Colors.red),
-                    title: Text(context.l10n.login_with_lastfm),
-                    subtitle: Text(context.l10n.scrobble_to_lastfm),
-                    trailing: Button.secondary(
-                      leading: const Icon(SonolythIcons.lastFm),
-                      onPressed: () {
-                        context.navigateTo(const LastFMLoginRoute());
-                      },
-                      child: Text(context.l10n.connect),
+                    title: Text(
+                      isConnected && username != null
+                          ? username
+                          : context.l10n.login_with_lastfm,
                     ),
+                    subtitle: Text(context.l10n.scrobble_to_lastfm),
+                    trailing: isConnected
+                        ? Button.destructive(
+                            onPressed: () {
+                              ref.read(scrobblerProvider.notifier).logout();
+                            },
+                            child: Text(context.l10n.logout),
+                          )
+                        : Button.secondary(
+                            leading: const Icon(SonolythIcons.lastFm),
+                            onPressed: () {
+                              context.navigateTo(const LastFMLoginRoute());
+                            },
+                            child: Text(context.l10n.connect),
+                          ),
                   ),
                 ),
               ],

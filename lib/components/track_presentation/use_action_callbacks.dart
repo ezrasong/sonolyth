@@ -107,14 +107,15 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
         final allTracks = await options.pagination.onFetchAll();
 
         await playlistNotifier.addTracks(
-          allTracks.sublist(initialTracks.length)..shuffle(),
+          allTracks.skip(initialTracks.length).toList()..shuffle(),
         );
       }
     } catch (e, stack) {
       AppLogger.reportError(e, stack);
-      rethrow;
     } finally {
-      isLoading.value = false;
+      if (context.mounted) {
+        isLoading.value = false;
+      }
     }
   }, [options, playlistNotifier, historyNotifier]);
 
@@ -162,12 +163,11 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
         final allTracks = await options.pagination.onFetchAll();
 
         await playlistNotifier.addTracks(
-          allTracks.sublist(initialTracks.length),
+          allTracks.skip(initialTracks.length).toList(),
         );
       }
     } catch (e, stack) {
       AppLogger.reportError(e, stack);
-      rethrow;
     } finally {
       if (context.mounted) {
         isLoading.value = false;

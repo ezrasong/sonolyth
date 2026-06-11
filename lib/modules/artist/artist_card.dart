@@ -40,7 +40,9 @@ class ArtistCard extends HookConsumerWidget {
         child: Column(
           children: [
             Avatar(
-              initials: artist.name.trim()[0].toUpperCase(),
+              initials: artist.name.trim().isEmpty
+                  ? "?"
+                  : artist.name.trim()[0].toUpperCase(),
               provider: backgroundImage,
               size: 130,
             ),

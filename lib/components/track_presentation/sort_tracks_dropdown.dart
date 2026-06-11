@@ -40,16 +40,6 @@ class SortTracksDropdown extends StatelessWidget {
           child: Text(context.l10n.sort_z_a),
         ),
         AdaptiveMenuButton(
-          value: SortBy.newest,
-          enabled: value != SortBy.newest,
-          child: Text(context.l10n.sort_newest),
-        ),
-        AdaptiveMenuButton(
-          value: SortBy.oldest,
-          enabled: value != SortBy.oldest,
-          child: Text(context.l10n.sort_oldest),
-        ),
-        AdaptiveMenuButton(
           value: SortBy.duration,
           enabled: value != SortBy.duration,
           child: Text(context.l10n.sort_duration),

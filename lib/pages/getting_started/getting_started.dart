@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
+import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/pages/getting_started/sections/greeting.dart';
 import 'package:sonolyth/pages/getting_started/sections/playback.dart';
 import 'package:sonolyth/pages/getting_started/sections/region.dart';
@@ -60,7 +61,7 @@ class GettingStartedPage extends HookConsumerWidget {
                         ? const SizedBox()
                         : Button.secondary(
                             onPressed: onSkip,
-                            child: const Text("Skip setup"),
+                            child: Text(context.l10n.skip_setup),
                           ),
                   );
                 },

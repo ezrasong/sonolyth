@@ -29,12 +29,12 @@ class GettingStartedScreenSupportSection extends HookConsumerWidget {
                       color: material.Theme.of(context).colorScheme.primary,
                     ),
                     const SizedBox(width: 8),
-                    const Text("Set up music sources").semiBold(),
+                    Text(context.l10n.set_up_music_sources).semiBold(),
                   ],
                 ),
                 const Gap(16),
                 Text(
-                  "Install a provider to search, stream, and download music.",
+                  context.l10n.set_up_music_sources_description,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.mutedForeground,
                     height: 1.35,

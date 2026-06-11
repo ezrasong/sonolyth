@@ -1,3 +1,4 @@
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/components/fallbacks/error_box.dart';
@@ -15,7 +16,7 @@ class SearchPageAllTab extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final scrollController = ScrollController();
+    final scrollController = useScrollController();
     final searchTerm = ref.watch(searchTermStateProvider);
     final searchSnapshot =
         ref.watch(metadataPluginSearchAllProvider(searchTerm));

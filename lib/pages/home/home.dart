@@ -12,6 +12,7 @@ import 'package:sonolyth/modules/home/sections/new_releases.dart';
 import 'package:sonolyth/modules/home/sections/recent.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
 import 'package:sonolyth/extensions/constrains.dart';
+import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 import 'package:sonolyth/utils/platform.dart';
 
@@ -29,9 +30,9 @@ class HomePage extends HookConsumerWidget {
         ref.watch(userPreferencesProvider.select((s) => s.layoutMode));
     final hour = DateTime.now().hour;
     final greeting = switch (hour) {
-      >= 5 && < 12 => "Good morning",
-      >= 12 && < 18 => "Good afternoon",
-      _ => "Good evening",
+      >= 5 && < 12 => context.l10n.good_morning,
+      >= 12 && < 18 => context.l10n.good_afternoon,
+      _ => context.l10n.good_evening,
     };
 
     return SafeArea(

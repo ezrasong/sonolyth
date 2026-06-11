@@ -48,8 +48,8 @@ class UserDownloadsPage extends HookConsumerWidget {
                     if (failed > 0 || completed > 0)
                       Text(
                         [
-                          if (completed > 0) "$completed done",
-                          if (failed > 0) "$failed failed",
+                          if (completed > 0) context.l10n.count_done(completed),
+                          if (failed > 0) context.l10n.count_failed(failed),
                         ].join(" · "),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -66,7 +66,7 @@ class UserDownloadsPage extends HookConsumerWidget {
               if (failed > 0) ...[
                 Button.outline(
                   onPressed: downloadManagerNotifier.retryAllFailed,
-                  child: const Text("Retry failed"),
+                  child: Text(context.l10n.retry_failed),
                 ),
                 const SizedBox(width: 8),
               ],
@@ -130,7 +130,8 @@ class UserDownloadsPage extends HookConsumerWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          "Paused to avoid the download rate limit — resuming in ${remaining.inSeconds}s",
+                          context.l10n
+                              .download_rate_limit_paused(remaining.inSeconds),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: theme.typography.xSmall,

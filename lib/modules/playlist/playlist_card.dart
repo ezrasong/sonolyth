@@ -106,8 +106,8 @@ class PlaylistCard extends HookConsumerWidget {
 
           final allTracks = await fetchAllTracks();
 
-          await playlistNotifier
-              .addTracks(allTracks.sublist(fetchedInitialTracks.length));
+          await playlistNotifier.addTracks(
+              allTracks.skip(fetchedInitialTracks.length).toList());
         }
       } finally {
         if (context.mounted) {

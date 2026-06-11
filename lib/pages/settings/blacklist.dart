@@ -6,6 +6,7 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/button/back_button.dart';
+import 'package:sonolyth/components/fallbacks/error_box.dart';
 import 'package:sonolyth/components/inter_scrollbar/inter_scrollbar.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
 import 'package:sonolyth/components/ui/button_tile.dart';
@@ -57,7 +58,6 @@ class BlackListPage extends HookConsumerWidget {
           )
         ],
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -67,38 +67,58 @@ class BlackListPage extends HookConsumerWidget {
                 // prefixIcon: const Icon(SonolythIcons.search),
               ),
             ),
-            InterScrollbar(
-              controller: controller,
-              child: ListView.builder(
-                controller: controller,
-                shrinkWrap: true,
-                itemCount: filteredBlacklist.length,
-                itemBuilder: (context, index) {
-                  final item = filteredBlacklist.elementAt(index);
-                  return ButtonTile(
-                    style: ButtonVariance.ghost,
-                    leading: Text("${index + 1}."),
-                    title: Text(
-                      "${item.name} (${item.elementType.name})",
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    subtitle: Text(
-                      item.elementId,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    trailing: IconButton.ghost(
-                      icon: Icon(SonolythIcons.trash, color: Colors.red[400]),
-                      onPressed: () {
-                        ref.read(blacklistProvider.notifier).remove(
-                            filteredBlacklist.elementAt(index).elementId);
-                      },
-                    ),
-                  );
-                },
+            if (blacklist.hasError)
+              Expanded(
+                child: Center(
+                  child: ErrorBox(
+                    error: blacklist.error!,
+                    onRetry: () {
+                      ref.invalidate(blacklistProvider);
+                    },
+                  ),
+                ),
+              )
+            else if (filteredBlacklist.isEmpty)
+              Expanded(
+                child: Center(
+                  child: Text(context.l10n.nothing_found).muted(),
+                ),
+              )
+            else
+              Expanded(
+                child: InterScrollbar(
+                  controller: controller,
+                  child: ListView.builder(
+                    controller: controller,
+                    itemCount: filteredBlacklist.length,
+                    itemBuilder: (context, index) {
+                      final item = filteredBlacklist.elementAt(index);
+                      return ButtonTile(
+                        style: ButtonVariance.ghost,
+                        leading: Text("${index + 1}."),
+                        title: Text(
+                          "${item.name} (${item.elementType.name})",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          item.elementId,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: IconButton.ghost(
+                          icon: Icon(SonolythIcons.trash,
+                              color: Colors.red[400]),
+                          onPressed: () {
+                            ref.read(blacklistProvider.notifier).remove(
+                                filteredBlacklist.elementAt(index).elementId);
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
-            ),
           ],
         ),
       ),

@@ -26,7 +26,7 @@ List<SideBarTiles> getSidebarTileList(AppLocalizations l10n) => [
         pathPrefix: "/home",
         route: const HomeRoute(),
         icon: SonolythIcons.home,
-        title: "Home",
+        title: l10n.home,
       ),
       SideBarTiles(
         id: "search",
@@ -81,7 +81,7 @@ List<SideBarTiles> getNavbarTileList(AppLocalizations l10n) => [
         pathPrefix: "/home",
         route: const HomeRoute(),
         icon: SonolythIcons.home,
-        title: "Home",
+        title: l10n.home,
       ),
       SideBarTiles(
         id: "search",

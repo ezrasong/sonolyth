@@ -31,9 +31,9 @@ class TrackPresentationTopSection extends HookConsumerWidget {
     final isUserPlaylist = useIsUserPlaylist(ref, options.collectionId);
     final isWide = mediaQuery.mdAndUp;
     final collectionLabel = switch (options.collection) {
-      SonolythSimpleAlbumObject() => "Album",
-      SonolythSimplePlaylistObject() => "Playlist",
-      _ => "Playlist",
+      SonolythSimpleAlbumObject() => context.l10n.album,
+      SonolythSimplePlaylistObject() => context.l10n.playlist,
+      _ => context.l10n.playlist,
     };
 
     final decorationImage = DecorationImage(
@@ -324,7 +324,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
             children: [
               if (options.ownerImage != null)
                 Avatar(
-                  initials: options.owner?[0] ?? "U",
+                  initials: options.owner!.isEmpty ? "U" : options.owner![0],
                   provider: UniversalImage.imageProvider(
                     options.ownerImage!,
                   ),

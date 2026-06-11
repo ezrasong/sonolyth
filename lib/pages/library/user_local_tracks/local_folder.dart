@@ -165,8 +165,12 @@ class LocalLibraryPage extends HookConsumerWidget {
                 FutureBuilder<String>(
                   future: directorySize,
                   builder: (context, snapshot) {
+                    // Show a dash until the size is actually known instead of
+                    // a misleading "0 GB" while loading (or after an error).
                     return Text(
-                      "${(snapshot.data ?? 0)} GB",
+                      snapshot.hasData
+                          ? context.l10n.size_in_gb(snapshot.data!)
+                          : "—",
                     ).xSmall().muted();
                   },
                 )
