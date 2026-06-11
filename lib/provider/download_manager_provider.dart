@@ -38,8 +38,12 @@ class DownloadTask {
   /// collection can be re-discovered later as its own local folder.
   final String? subfolder;
 
-  /// Human-readable failure reason, set when [status] is
-  /// [DownloadStatus.failed] so the UI can say why instead of a bare icon.
+  /// Machine-readable failure reason, set when [status] is
+  /// [DownloadStatus.failed]; the UI maps it to a localized message.
+  final DownloadErrorCode? errorCode;
+
+  /// Technical failure detail (English, e.g. per-provider reasons or an HTTP
+  /// status) shown as supplementary info alongside the localized headline.
   final String? errorMessage;
   final StreamController<int> _downloadedBytesStreamController;
 
@@ -54,6 +58,7 @@ class DownloadTask {
     required this.cancelToken,
     this.totalSizeBytes,
     this.subfolder,
+    this.errorCode,
     this.errorMessage,
     required StreamController<int> downloadedBytesStreamController,
     required this.downloadedBytesStream,
@@ -65,6 +70,7 @@ class DownloadTask {
     required CancelToken cancelToken,
     int? totalSizeBytes,
     String? subfolder,
+    DownloadErrorCode? errorCode,
     String? errorMessage,
   }) {
     final controller = StreamController<int>.broadcast();
@@ -74,6 +80,7 @@ class DownloadTask {
       cancelToken: cancelToken,
       totalSizeBytes: totalSizeBytes,
       subfolder: subfolder,
+      errorCode: errorCode,
       errorMessage: errorMessage,
       downloadedBytesStreamController: controller,
       downloadedBytesStream: controller.stream,
@@ -86,6 +93,7 @@ class DownloadTask {
     CancelToken? cancelToken,
     int? totalSizeBytes,
     String? subfolder,
+    DownloadErrorCode? errorCode,
     String? errorMessage,
     bool clearError = false,
   }) {
@@ -95,6 +103,7 @@ class DownloadTask {
       cancelToken: cancelToken ?? this.cancelToken,
       totalSizeBytes: totalSizeBytes ?? this.totalSizeBytes,
       subfolder: subfolder ?? this.subfolder,
+      errorCode: clearError ? null : (errorCode ?? this.errorCode),
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       downloadedBytesStreamController: _downloadedBytesStreamController,
       downloadedBytesStream: downloadedBytesStream,
@@ -245,7 +254,8 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
 
   void clearAll() {
     for (final task in state) {
-      if (task.status == DownloadStatus.downloading) {
+      if (task.status != DownloadStatus.completed &&
+          !task.cancelToken.isCancelled) {
         task.cancelToken.cancel();
       }
       task._downloadedBytesStreamController.close();
@@ -256,6 +266,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
   void _setStatus(
     SonolythFullTrackObject track,
     DownloadStatus status, {
+    DownloadErrorCode? errorCode,
     String? error,
   }) {
     state = state.map((e) {
@@ -271,8 +282,11 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
         }
         return e.copyWith(
           status: status,
+          errorCode: errorCode,
           errorMessage: error,
-          clearError: error == null && status != DownloadStatus.failed,
+          clearError: errorCode == null &&
+              error == null &&
+              status != DownloadStatus.failed,
         );
       }
       return e;
@@ -328,7 +342,11 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
         onProgress: (progress) => _emitProgress(task.track, progress),
       );
 
-      ref.read(downloadedTracksProvider.notifier).add(task.track.id, filePath);
+      // Await the registry persist so an app kill right after "completed"
+      // can't leave a finished file on disk that the registry forgot.
+      await ref
+          .read(downloadedTracksProvider.notifier)
+          .add(task.track.id, filePath);
       _rateLimitAttempts.remove(task.track.id);
       _completedSincePause++;
       _setStatus(task.track, DownloadStatus.completed);
@@ -354,7 +372,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
         _setStatus(
           task.track,
           DownloadStatus.failed,
-          error: "Rate limited — try again later",
+          errorCode: DownloadErrorCode.rateLimited,
         );
         return;
       }
@@ -362,7 +380,8 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
       _setStatus(
         task.track,
         wasCancelled ? DownloadStatus.canceled : DownloadStatus.failed,
-        error: wasCancelled ? null : _describeError(e),
+        errorCode: wasCancelled ? null : _classifyError(e),
+        error: wasCancelled ? null : _errorDetail(e),
       );
       if (!wasCancelled) {
         AppLogger.reportError(e, stack);
@@ -370,20 +389,32 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
     }
   }
 
-  String _describeError(Object e) {
-    if (e is SpotiFlacDownloadException) return e.message;
+  DownloadErrorCode _classifyError(Object e) {
+    if (e is SpotiFlacDownloadException) return e.code;
     if (e is DioException) {
       final status = e.response?.statusCode;
-      if (status == 429) return "Rate limited by download server (429)";
-      if (status != null) return "Download failed (HTTP $status)";
+      if (status == 429) return DownloadErrorCode.rateLimited;
+      if (status != null) return DownloadErrorCode.httpStatus;
       return switch (e.type) {
         DioExceptionType.connectionTimeout ||
         DioExceptionType.receiveTimeout ||
         DioExceptionType.sendTimeout =>
-          "Connection timed out",
-        DioExceptionType.connectionError => "No connection to download server",
-        _ => "Network error: ${e.message ?? e.type.name}",
+          DownloadErrorCode.timeout,
+        DioExceptionType.connectionError => DownloadErrorCode.noConnection,
+        _ => DownloadErrorCode.network,
       };
+    }
+    return DownloadErrorCode.unknown;
+  }
+
+  /// Technical detail (kept English) backing the localized headline: provider
+  /// failure reasons, the HTTP status, or the raw error.
+  String? _errorDetail(Object e) {
+    if (e is SpotiFlacDownloadException) return e.message;
+    if (e is DioException) {
+      final status = e.response?.statusCode;
+      if (status != null) return status.toString();
+      return e.message ?? e.type.name;
     }
     return e.toString();
   }

@@ -1,15 +1,19 @@
 class Converters {
   static fun paginated(data: Map, convertItems: (items: List) -> List) -> Map {
-    var hasMore = data["total"] > (data["offset"] + data["items"].length)
-    
+    // Degraded Spotify responses can miss any of these fields — default them
+    // instead of doing arithmetic on null.
+    var items = (data["items"] ?? []).where((item) => item != null).toList()
+    var offset = data["offset"] ?? 0
+    var limit = data["limit"] ?? items.length
+    var total = data["total"] ?? (offset + items.length)
+    var hasMore = total > (offset + items.length)
+
     return {
-      limit: data["limit"],
-      nextOffset: hasMore ? data["offset"] + data["limit"] : null,
+      limit: limit,
+      nextOffset: hasMore ? offset + limit : null,
       hasMore: hasMore,
-      total: data["total"],
-      items: convertItems(
-        data["items"].where((item)=> item != null).toList()
-      ),
+      total: total,
+      items: convertItems(items),
     }.toJson()
   }
   
@@ -21,11 +25,12 @@ class Converters {
     var modified = []
     
     for(var track in tracks) {
-      if(track == null) {
-        modified.add(null)
+      // A track without album data can't be rendered or sourced — skip it
+      // rather than emit null/partial objects the Dart side will choke on.
+      if(track == null || track["album"] == null) {
         continue
       }
-      
+
       var modifiedTrack = {
         id: track["id"],
         name: track["name"],
@@ -45,12 +50,15 @@ class Converters {
 
   static fun fullAlbums(albums: List) -> List {
     if(albums == null || albums.isEmpty) {
-      return
+      return []
     }
 
     var modified = []
 
     for(var album in albums) {
+      if(album == null) {
+        continue
+      }
       var modifiedAlbum = {
         id: album["id"],
         name: album["name"],
@@ -80,6 +88,9 @@ class Converters {
     var modified = []
 
     for(var album in albums) {
+      if(album == null) {
+        continue
+      }
       var albumModified = {
         id: album["id"],
         name: album["name"],
@@ -105,6 +116,9 @@ class Converters {
     var modified = []
 
     for(var artist in artists) {
+      if(artist == null) {
+        continue
+      }
       var artistModified = {
         id: artist["id"],
         name: artist["name"],
@@ -128,6 +142,9 @@ class Converters {
     var modified = []
 
     for(var artist in artists) {
+      if(artist == null) {
+        continue
+      }
       var artistModified = {
         id: artist["id"],
         name: artist["name"],
@@ -156,6 +173,9 @@ class Converters {
     }
     var modified = []
     for (var playlist in playlists) {
+      if (playlist == null) {
+        continue
+      }
       var playlistModified = {
         id: playlist["id"],
         name: playlist["name"],
@@ -177,6 +197,9 @@ class Converters {
     }
     var modified = []
     for (var playlist in playlists) {
+      if (playlist == null) {
+        continue
+      }
       var playlistModified = {
         id: playlist["id"],
         name: playlist["name"],

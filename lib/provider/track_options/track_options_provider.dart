@@ -143,6 +143,14 @@ class TrackOptionsActions {
         );
         break;
       case TrackOptionValue.delete:
+        // Deleting a local file is irreversible — always confirm first.
+        final deleteConfirmed = await showPromptDialog(
+          context: context,
+          title: context.l10n.delete,
+          message: context.l10n.delete_track_file_confirmation(track.name),
+          okText: context.l10n.delete,
+        );
+        if (!deleteConfirmed) break;
         await File((track as SonolythLocalTrackObject).path).delete();
         ref.invalidate(localTracksProvider);
         break;

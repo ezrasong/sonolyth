@@ -1,6 +1,7 @@
 import 'package:hetu_script/hetu_script.dart';
 import 'package:hetu_script/values.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/services/metadata/errors/safe_invoke.dart';
 
 class MetadataPluginTrackEndpoint {
   final Hetu hetu;
@@ -12,7 +13,7 @@ class MetadataPluginTrackEndpoint {
 
   Future<SonolythFullTrackObject> getTrack(String id) async {
     final raw =
-        await hetuMetadataTrack.invoke("getTrack", positionalArgs: [id]) as Map;
+        await hetuMetadataTrack.safeInvoke("getTrack", positionalArgs: [id]) as Map;
 
     return SonolythFullTrackObject.fromJson(
       raw.cast<String, dynamic>(),
@@ -20,15 +21,15 @@ class MetadataPluginTrackEndpoint {
   }
 
   Future<void> save(List<String> ids) async {
-    await hetuMetadataTrack.invoke("save", positionalArgs: [ids]);
+    await hetuMetadataTrack.safeInvoke("save", positionalArgs: [ids]);
   }
 
   Future<void> unsave(List<String> ids) async {
-    await hetuMetadataTrack.invoke("unsave", positionalArgs: [ids]);
+    await hetuMetadataTrack.safeInvoke("unsave", positionalArgs: [ids]);
   }
 
   Future<List<SonolythFullTrackObject>> radio(String id) async {
-    final result = await hetuMetadataTrack.invoke(
+    final result = await hetuMetadataTrack.safeInvoke(
       "radio",
       positionalArgs: [id],
     );

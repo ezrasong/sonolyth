@@ -19,6 +19,7 @@ import 'package:sonolyth/services/metadata/metadata.dart';
 import 'package:sonolyth/utils/service_utils.dart';
 import 'package:archive/archive.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final allowedDomainsRegex = RegExp(
   r"^(https?:\/\/)?(www\.)?(github\.com|codeberg\.org)\/.+",
@@ -466,7 +467,15 @@ class MetadataPluginNotifier extends AsyncNotifier<MetadataPluginState> {
     );
   }
 
-  Future<void> removePlugin(PluginConfiguration plugin) async {
+  /// [clearStorage] wipes the plugin's namespaced LocalStorage
+  /// (credentials, tokens). It must stay false on the update path — storage
+  /// is slug-keyed precisely so logins survive plugin updates — and true for
+  /// user-initiated uninstalls, so a removed plugin doesn't leave secrets
+  /// behind in SharedPreferences.
+  Future<void> removePlugin(
+    PluginConfiguration plugin, {
+    bool clearStorage = false,
+  }) async {
     final pluginExtractionDir = await _getPluginExtractionDir(plugin);
 
     if (pluginExtractionDir.existsSync()) {
@@ -474,6 +483,16 @@ class MetadataPluginNotifier extends AsyncNotifier<MetadataPluginState> {
     }
     await database.pluginsTable.deleteWhere((tbl) =>
         tbl.name.equals(plugin.name) & tbl.author.equals(plugin.author));
+
+    if (clearStorage) {
+      final prefs = await SharedPreferences.getInstance();
+      final storagePrefix = 'spotube_plugin.${plugin.slug}.';
+      for (final key in prefs.getKeys().toList()) {
+        if (key.startsWith(storagePrefix)) {
+          await prefs.remove(key);
+        }
+      }
+    }
 
     // Same here, if the removed plugin is the default plugin
     // set the first available plugin as the default plugin

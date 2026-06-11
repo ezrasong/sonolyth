@@ -1,6 +1,7 @@
 import 'package:hetu_script/hetu_script.dart';
 import 'package:hetu_script/values.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/services/metadata/errors/safe_invoke.dart';
 
 class MetadataPluginArtistEndpoint {
   final Hetu hetu;
@@ -12,7 +13,7 @@ class MetadataPluginArtistEndpoint {
 
   Future<SonolythFullArtistObject> getArtist(String id) async {
     final raw = await hetuMetadataArtist
-        .invoke("getArtist", positionalArgs: [id]) as Map;
+        .safeInvoke("getArtist", positionalArgs: [id]) as Map;
 
     return SonolythFullArtistObject.fromJson(
       raw.cast<String, dynamic>(),
@@ -24,7 +25,7 @@ class MetadataPluginArtistEndpoint {
     int? offset,
     int? limit,
   }) async {
-    final raw = await hetuMetadataArtist.invoke(
+    final raw = await hetuMetadataArtist.safeInvoke(
       "topTracks",
       positionalArgs: [id],
       namedArgs: {
@@ -46,7 +47,7 @@ class MetadataPluginArtistEndpoint {
     int? offset,
     int? limit,
   }) async {
-    final raw = await hetuMetadataArtist.invoke(
+    final raw = await hetuMetadataArtist.safeInvoke(
       "albums",
       positionalArgs: [id],
       namedArgs: {
@@ -64,14 +65,14 @@ class MetadataPluginArtistEndpoint {
   }
 
   Future<void> save(List<String> ids) async {
-    await hetuMetadataArtist.invoke(
+    await hetuMetadataArtist.safeInvoke(
       "save",
       positionalArgs: [ids],
     );
   }
 
   Future<void> unsave(List<String> ids) async {
-    await hetuMetadataArtist.invoke(
+    await hetuMetadataArtist.safeInvoke(
       "unsave",
       positionalArgs: [ids],
     );
@@ -82,7 +83,7 @@ class MetadataPluginArtistEndpoint {
     int? offset,
     int? limit,
   }) async {
-    final raw = await hetuMetadataArtist.invoke(
+    final raw = await hetuMetadataArtist.safeInvoke(
       "related",
       positionalArgs: [id],
       namedArgs: {

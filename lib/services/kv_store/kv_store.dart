@@ -24,6 +24,14 @@ abstract class KVStoreService {
   static Future<void> setAskedForBatteryOptimization(bool value) async =>
       await sharedPreferences.setBool('askedForBatteryOptimization', value);
 
+  /// JSON-encoded scrobbles that failed to submit (offline, Last.fm down);
+  /// retried before the next scrobble so they aren't silently lost.
+  static List<String> get pendingScrobbles =>
+      sharedPreferences.getStringList('pendingScrobbles') ?? [];
+
+  static Future<void> setPendingScrobbles(List<String> value) async =>
+      await sharedPreferences.setStringList('pendingScrobbles', value);
+
   static List<String> get recentSearches =>
       sharedPreferences.getStringList('recentSearches') ?? [];
 

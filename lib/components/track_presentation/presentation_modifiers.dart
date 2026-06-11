@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
@@ -27,6 +30,11 @@ class TrackPresentationModifiersSection extends HookConsumerWidget {
 
     final controller = useShadcnTextEditingController();
     final scale = context.theme.scaling;
+
+    // The filter is a fuzzy scan over the whole track list; debounce it so it
+    // runs once per pause in typing instead of on every keystroke.
+    final filterDebounce = useRef<Timer?>(null);
+    useEffect(() => () => filterDebounce.value?.cancel(), const []);
 
     return LayoutBuilder(builder: (context, constrains) {
       return Padding(
@@ -70,11 +78,15 @@ class TrackPresentationModifiersSection extends HookConsumerWidget {
                         focusNode: focusNode,
                         placeholder: Text(context.l10n.search_tracks),
                         onChanged: (value) {
+                          filterDebounce.value?.cancel();
                           if (value.isEmpty) {
                             notifier.clearFilter();
-                          } else {
-                            notifier.filterTracks(value);
+                            return;
                           }
+                          filterDebounce.value = Timer(
+                            const Duration(milliseconds: 250),
+                            () => notifier.filterTracks(value),
+                          );
                         },
                         features: [
                           InputFeature.leading(
@@ -102,6 +114,7 @@ class TrackPresentationModifiersSection extends HookConsumerWidget {
                                         size: const ButtonSize(.6),
                                         icon: const Icon(SonolythIcons.close),
                                         onPressed: () {
+                                          filterDebounce.value?.cancel();
                                           controller.clear();
                                           notifier.clearFilter();
                                         },

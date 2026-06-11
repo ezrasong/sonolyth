@@ -37,10 +37,13 @@ class YouTubeEngineNotInstalledDialog extends HookConsumerWidget {
         spacing: 8,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(SonolythIcons.error, color: Colors.red),
+          Icon(
+            SonolythIcons.error,
+            color: context.theme.colorScheme.destructive,
+          ),
           Text(
             context.l10n.youtube_engine_not_installed_title(engine.label),
-            style: const TextStyle(color: Colors.red),
+            style: TextStyle(color: context.theme.colorScheme.destructive),
           ),
         ],
       ),

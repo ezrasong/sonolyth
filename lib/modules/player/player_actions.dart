@@ -193,7 +193,9 @@ class PlayerActions extends HookConsumerWidget {
           ],
           icon: Icon(
             SonolythIcons.timer,
-            color: sleepTimer != null ? Colors.red : null,
+            color: sleepTimer != null
+                ? context.theme.colorScheme.destructive
+                : null,
           ),
           onSelected: (value) {
             if (value == Duration.zero) {
@@ -271,7 +273,9 @@ class PlayerActions extends HookConsumerWidget {
               enabled: sleepTimer != Duration.zero && sleepTimer != null,
               child: Text(
                 context.l10n.cancel,
-                style: const TextStyle(color: Colors.green),
+                style: TextStyle(
+                  color: context.theme.colorScheme.primary,
+                ),
               ),
             ),
           ],

@@ -1,6 +1,7 @@
 import 'package:hetu_script/hetu_script.dart';
 import 'package:hetu_script/values.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/services/metadata/errors/safe_invoke.dart';
 
 class MetadataPluginAudioSourceEndpoint {
   final Hetu hetu;
@@ -22,7 +23,7 @@ class MetadataPluginAudioSourceEndpoint {
     SonolythFullTrackObject track,
   ) async {
     final raw = await hetuMetadataAudioSource
-        .invoke("matches", positionalArgs: [track.toJson()]) as List;
+        .safeInvoke("matches", positionalArgs: [track.toJson()]) as List;
 
     return raw.map((e) => SonolythAudioSourceMatchObject.fromJson(e)).toList();
   }
@@ -31,7 +32,7 @@ class MetadataPluginAudioSourceEndpoint {
     SonolythAudioSourceMatchObject match,
   ) async {
     final raw = await hetuMetadataAudioSource
-        .invoke("streams", positionalArgs: [match.toJson()]) as List;
+        .safeInvoke("streams", positionalArgs: [match.toJson()]) as List;
 
     return raw.map((e) => SonolythAudioSourceStreamObject.fromJson(e)).toList();
   }

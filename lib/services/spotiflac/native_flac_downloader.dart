@@ -10,9 +10,28 @@ import 'package:sonolyth/services/spotiflac/providers/spotiflac_provider.dart';
 import 'package:sonolyth/services/spotiflac/zarz_client.dart';
 import 'package:sonolyth/utils/service_utils.dart';
 
+/// Machine-readable failure reason carried alongside the (English, technical)
+/// exception message so the UI can render a localized headline and keep the
+/// raw detail for tooltips/logs.
+enum DownloadErrorCode {
+  rateLimited,
+  noProviders,
+  noSource,
+  emptyStream,
+  httpStatus,
+  timeout,
+  noConnection,
+  network,
+  unknown,
+}
+
 class SpotiFlacDownloadException implements Exception {
   final String message;
-  const SpotiFlacDownloadException(this.message);
+  final DownloadErrorCode code;
+  const SpotiFlacDownloadException(
+    this.message, [
+    this.code = DownloadErrorCode.unknown,
+  ]);
   @override
   String toString() => "SpotiFlacDownloadException: $message";
 }
@@ -23,7 +42,10 @@ class SpotiFlacDownloadException implements Exception {
 /// the track permanently failed.
 class SpotiFlacRateLimitException extends SpotiFlacDownloadException {
   const SpotiFlacRateLimitException()
-      : super("Rate limited by the download gateway");
+      : super(
+          "Rate limited by the download gateway",
+          DownloadErrorCode.rateLimited,
+        );
 }
 
 /// Downloads a track's lossless file entirely in-app: resolves a direct URL
@@ -51,7 +73,10 @@ class NativeFlacDownloader {
     void Function(double progress)? onProgress,
   }) async {
     if (providers.isEmpty) {
-      throw const SpotiFlacDownloadException("No download providers enabled");
+      throw const SpotiFlacDownloadException(
+        "No download providers enabled",
+        DownloadErrorCode.noProviders,
+      );
     }
 
     SpotiFlacDownloadResolution? resolution;
@@ -104,6 +129,7 @@ class NativeFlacDownloader {
       }
       throw SpotiFlacDownloadException(
         "Couldn't source this track — ${failures.join("; ")}",
+        DownloadErrorCode.noSource,
       );
     }
 
@@ -146,7 +172,10 @@ class NativeFlacDownloader {
       final partFile = File(partPath);
       final fileLength = await partFile.length();
       if (fileLength == 0) {
-        throw const SpotiFlacDownloadException("Empty download stream");
+        throw const SpotiFlacDownloadException(
+          "Empty download stream",
+          DownloadErrorCode.emptyStream,
+        );
       }
 
       if (resolution.encryption == SpotiFlacEncryption.deezerBlowfish) {
@@ -165,10 +194,16 @@ class NativeFlacDownloader {
         await partFile.rename(outputPath);
       }
     } catch (_) {
-      // Never leave half-written .part files behind.
+      // Never leave half-written files behind — neither the .part download
+      // nor a partially-decrypted output, which would otherwise sit at the
+      // final path looking like a completed download.
       final partFile = File(partPath);
       if (await partFile.exists()) {
         await partFile.delete().catchError((_) => partFile);
+      }
+      final outputFile = File(outputPath);
+      if (await outputFile.exists()) {
+        await outputFile.delete().catchError((_) => outputFile);
       }
       rethrow;
     }

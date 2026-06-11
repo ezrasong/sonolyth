@@ -43,6 +43,7 @@ class SettingsDesktopSection extends HookConsumerWidget {
         ListTile(
           leading: const Icon(SonolythIcons.tray),
           title: Text(context.l10n.show_tray_icon),
+          subtitle: Text(context.l10n.show_tray_icon_description),
           trailing: Switch(
             value: preferences.showSystemTrayIcon,
             onChanged: preferencesNotifier.setShowSystemTrayIcon,
@@ -51,6 +52,7 @@ class SettingsDesktopSection extends HookConsumerWidget {
         ListTile(
           leading: const Icon(SonolythIcons.window),
           title: Text(context.l10n.use_system_title_bar),
+          subtitle: Text(context.l10n.use_system_title_bar_description),
           trailing: Switch(
             value: preferences.systemTitleBar,
             onChanged: preferencesNotifier.setSystemTitleBar,
@@ -59,6 +61,7 @@ class SettingsDesktopSection extends HookConsumerWidget {
         ListTile(
           leading: const Icon(SonolythIcons.discord),
           title: Text(context.l10n.discord_rich_presence),
+          subtitle: Text(context.l10n.discord_rich_presence_description),
           trailing: Switch(
             value: preferences.discordPresence,
             onChanged: preferencesNotifier.setDiscordPresence,

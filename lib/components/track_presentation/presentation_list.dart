@@ -76,6 +76,16 @@ class PresentationListSection extends HookConsumerWidget {
       onFetchData: options.pagination.onFetchMore,
       itemCount: state.presentationTracks.length,
       hasReachedMax: !options.pagination.hasNextPage,
+      // Surfaces failures on page 2+ as an inline row; without this the
+      // error is only visible when the very first page fails (empty list).
+      hasError: options.error != null,
+      errorBuilder: (context) => Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ErrorBox(
+          error: options.error!,
+          onRetry: options.pagination.onFetchMore,
+        ),
+      ),
       loadingBuilder: (context) {
         return Skeletonizer(
           enabled: true,

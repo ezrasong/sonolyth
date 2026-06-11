@@ -1,6 +1,7 @@
 import 'package:hetu_script/hetu_script.dart';
 import 'package:hetu_script/values.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/services/metadata/errors/safe_invoke.dart';
 
 class MetadataPluginSearchEndpoint {
   final Hetu hetu;
@@ -24,7 +25,7 @@ class MetadataPluginSearchEndpoint {
       );
     }
 
-    final raw = await hetuMetadataSearch.invoke(
+    final raw = await hetuMetadataSearch.safeInvoke(
       "all",
       positionalArgs: [query],
     ) as Map;
@@ -47,7 +48,7 @@ class MetadataPluginSearchEndpoint {
       );
     }
 
-    final raw = await hetuMetadataSearch.invoke(
+    final raw = await hetuMetadataSearch.safeInvoke(
       "albums",
       positionalArgs: [query],
       namedArgs: {
@@ -77,7 +78,7 @@ class MetadataPluginSearchEndpoint {
       );
     }
 
-    final raw = await hetuMetadataSearch.invoke(
+    final raw = await hetuMetadataSearch.safeInvoke(
       "artists",
       positionalArgs: [query],
       namedArgs: {
@@ -110,7 +111,7 @@ class MetadataPluginSearchEndpoint {
       );
     }
 
-    final raw = await hetuMetadataSearch.invoke(
+    final raw = await hetuMetadataSearch.safeInvoke(
       "playlists",
       positionalArgs: [query],
       namedArgs: {
@@ -143,7 +144,7 @@ class MetadataPluginSearchEndpoint {
       );
     }
 
-    final raw = await hetuMetadataSearch.invoke(
+    final raw = await hetuMetadataSearch.safeInvoke(
       "tracks",
       positionalArgs: [query],
       namedArgs: {

@@ -12,11 +12,26 @@ class BrowseEndpoint {
 
   construct (this.client, this.auth)
 
+  // Browse requires the sp_t cookie; credentials can be null (logged out) or
+  // missing the cookie (stale session) — fail with a clear message instead of
+  // a null-subscript error.
+  fun _spTCookie() {
+    var credentials = auth.credentials
+    if (credentials == null || credentials["cookies"] == null) {
+      throw "Not authenticated: Spotify credentials are missing. Login required for browse."
+    }
+    var spT = credentials["cookies"].where((c) => c["name"] == "sp_t").toList()
+    if (spT.isEmpty) {
+      throw "Not authenticated: sp_t cookie is missing. Re-login required for browse."
+    }
+    return spT.first["value"]
+  }
+
   fun sections({offset: int, limit: int}) {
     return Timezone.getLocalTimeZone().then((timeZone){
       return client.browse.home(
         timeZone: timeZone,
-        spTCookie: auth.credentials["cookies"].where((c)=>c["name"] == "sp_t").elementAt(0)["value"]
+        spTCookie: _spTCookie(),
         limit: limit,
       ).then((sections){
         return {
@@ -24,10 +39,11 @@ class BrowseEndpoint {
           nextOffset: null,
           hasMore: false,
           total: sections.length,
-          items: sections.map((section) {            
-            var playlists = section["items"].where((item) => item["objectType"] == "Playlist").toList()
-            var albums = section["items"].where((item) => item["objectType"] == "Album").toList()
-            var artists = section["items"].where((item) => item["objectType"] == "Artist").toList()
+          items: sections.map((section) {
+            var sectionItems = (section["items"] ?? []).where((item) => item != null).toList()
+            var playlists = sectionItems.where((item) => item["objectType"] == "Playlist").toList()
+            var albums = sectionItems.where((item) => item["objectType"] == "Album").toList()
+            var artists = sectionItems.where((item) => item["objectType"] == "Artist").toList()
             
             return {
               id: section["id"],
@@ -49,18 +65,20 @@ class BrowseEndpoint {
   fun sectionItems(id: string, {offset: int, limit: int}) {
     return Timezone.getLocalTimeZone().then((timeZone) {
       return client.browse.homeSection(
-        id, 
+        id,
         timeZone: timeZone,
-        spTCookie: auth.credentials["cookies"].where((c)=>c["name"] == "sp_t").elementAt(0)["value"],
+        spTCookie: _spTCookie(),
         offset: offset,
         limit: limit,
       ).then((section){
         return Converters.paginated(
           section,
           (items) {
-            var playlists = section["items"].where((item) => item["objectType"] == "Playlist").toList()
-            var albums = section["items"].where((item) => item["objectType"] == "Album").toList()
-            var artists = section["items"].where((item) => item["objectType"] == "Artist").toList()
+            // Use the null-filtered `items` paginated() hands us — reading
+            // section["items"] directly bypasses that filter.
+            var playlists = items.where((item) => item["objectType"] == "Playlist").toList()
+            var albums = items.where((item) => item["objectType"] == "Album").toList()
+            var artists = items.where((item) => item["objectType"] == "Artist").toList()
 
             return [
                 ...Converters.simplePlaylistsFromLibraryV3(playlists),

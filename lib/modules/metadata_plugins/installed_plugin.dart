@@ -2,6 +2,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
+import 'package:sonolyth/collections/official_plugin_owners.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/extensions/constrains.dart';
 import 'package:sonolyth/extensions/context.dart';
@@ -91,8 +92,8 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                   : null;
               final repoOwner = repoUrl?.pathSegments.firstOrNull;
 
-              final isOfficial =
-                  repoUrl?.host == "github.com" && repoOwner == "KRTirtho";
+              final isOfficial = repoUrl?.host == "github.com" &&
+                  officialPluginOwners.contains(repoOwner);
 
               return Basic(
                 leading: snapshot.hasData
@@ -150,7 +151,7 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.blue,
+                                color: context.theme.colorScheme.primary,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Row(
@@ -215,7 +216,10 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                       if (accepted != true) return;
 
                       try {
-                        await pluginsNotifier.removePlugin(plugin);
+                        await pluginsNotifier.removePlugin(
+                          plugin,
+                          clearStorage: true,
+                        );
                       } catch (e, stackTrace) {
                         AppLogger.reportError(e, stackTrace);
                         if (context.mounted) {
@@ -225,9 +229,10 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                             builder: (context, overlay) {
                               return SurfaceCard(
                                 child: Basic(
-                                  leading: const Icon(
+                                  leading: Icon(
                                     SonolythIcons.error,
-                                    color: Colors.red,
+                                    color:
+                                        context.theme.colorScheme.destructive,
                                   ),
                                   title: Text(
                                     context.l10n.error(e.toString()),
@@ -239,9 +244,9 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                         }
                       }
                     },
-                    icon: const Icon(
+                    icon: Icon(
                       SonolythIcons.trash,
-                      color: Colors.red,
+                      color: context.theme.colorScheme.destructive,
                     ),
                   ),
                 ),

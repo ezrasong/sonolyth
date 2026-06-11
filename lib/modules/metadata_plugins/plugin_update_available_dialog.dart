@@ -27,7 +27,10 @@ class MetadataPluginUpdateAvailableDialog extends HookConsumerWidget {
             builder: (context, overlay) {
               return SurfaceCard(
                 child: Basic(
-                  leading: const Icon(SonolythIcons.error, color: Colors.red),
+                  leading: Icon(
+                    SonolythIcons.error,
+                    color: Theme.of(context).colorScheme.destructive,
+                  ),
                   title: Text(message),
                   leadingAlignment: Alignment.center,
                   trailing: IconButton.ghost(

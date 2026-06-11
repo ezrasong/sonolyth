@@ -106,29 +106,22 @@ class SpotifyAuthEndpoint {
         }.toJson(),
       )
     ).then((res) {
-      print("[auth] nuance status=${res.statusCode}");
       // The auth HttpClient auto-decodes JSON responses to a Map (server-time
       // reads res.data["serverTime"] directly), so DON'T JSON.decode it again.
       var content = res.data["files"]["nuances.json"]["content"]
-      print("[auth] n1 contentLen=${content?.length}");
       var data = JSON.decode(content)
-      print("[auth] n2 dataLen=${data.length}");
       data.sort((a, b) => b["v"].compareTo(a["v"]))
-      print("[auth] nuance fetched v=${data.first["v"]}");
       return data.first
     })
   }
 
   fun generateTimedOnTimePassword(secret: string) -> Future {
-    print("[auth] totp start secret=${secret != null}");
 		return client.get_req(
       "https://open.spotify.com/api/server-time",
       options: RequestOptions(headers: { "User-Agent": "Mozilla/5.0" }.toJson())
     )
     .then((res) {
-      print("[auth] server-time status=${res.statusCode}");
       final timestampSeconds = res.data["serverTime"]
-      print("[auth] server-time ok serverTime=${timestampSeconds}");
 
       final totp = TOTP(
         secret: secret,
@@ -151,6 +144,8 @@ class SpotifyAuthEndpoint {
     for (int i = 0; i < length; i++) {
       bytes.add(Random().nextInt(256).toString())
     }
+
+    return bytes.join("")
   }
 
   fun getToken({
@@ -158,10 +153,8 @@ class SpotifyAuthEndpoint {
 		timestamp: DateTime,
 		totp: string,
 		spDc: string,
-    mode: string,
     totpVer: int
 	}) -> Future {
-    print("Timestamp: ${timestamp}, TOTP: ${totp}, Mode: ${mode}, spDc: ${spDc}")
     final timestampSeconds = (timestamp.millisecondsSinceEpoch / 1000).floor()
 		final accessTokenUrl = "https://open.spotify.com/api/token?reason=${mode}&productType=web-player&totp=${totp}&totpServer=${totp}&totpVer=${totpVer}"
 
@@ -241,7 +234,6 @@ class SpotifyAuthEndpoint {
     var captured = false
 
     var sub: StreamSubscription = webview.onUrlRequestStream.listen((url){
-      print("[auth] webview url: ${url}")
       if (captured) {
         return
       }
@@ -253,7 +245,6 @@ class SpotifyAuthEndpoint {
       return webview.getCookies("https://accounts.spotify.com/").then((cookies){
         var cookieMaps = cookies.map((cookie) => cookie.toJson()).toList()
         var spDc = cookieMaps.where((c) => c["name"] == "sp_dc").toList()
-        print("[auth] cookies=${cookieMaps.length} sp_dc=${!spDc.isEmpty}")
         if (spDc.isEmpty) {
           return
         }
@@ -262,7 +253,6 @@ class SpotifyAuthEndpoint {
             return
           }
           captured = true
-          print("[auth] login complete, closing webview")
           return webview.close()
         })
       })

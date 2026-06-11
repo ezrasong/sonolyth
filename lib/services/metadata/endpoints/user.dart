@@ -1,6 +1,7 @@
 import 'package:hetu_script/hetu_script.dart';
 import 'package:hetu_script/values.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/services/metadata/errors/safe_invoke.dart';
 
 class MetadataPluginUserEndpoint {
   final Hetu hetu;
@@ -11,7 +12,7 @@ class MetadataPluginUserEndpoint {
           as HTInstance;
 
   Future<SonolythUserObject> me() async {
-    final raw = await hetuMetadataUser.invoke("me") as Map;
+    final raw = await hetuMetadataUser.safeInvoke("me") as Map;
 
     return SonolythUserObject.fromJson(
       raw.cast<String, dynamic>(),
@@ -22,7 +23,7 @@ class MetadataPluginUserEndpoint {
     int? offset,
     int? limit,
   }) async {
-    final raw = await hetuMetadataUser.invoke(
+    final raw = await hetuMetadataUser.safeInvoke(
       "savedTracks",
       namedArgs: {
         "offset": offset,
@@ -42,7 +43,7 @@ class MetadataPluginUserEndpoint {
     int? offset,
     int? limit,
   }) async {
-    final raw = await hetuMetadataUser.invoke(
+    final raw = await hetuMetadataUser.safeInvoke(
       "savedPlaylists",
       namedArgs: {
         "offset": offset,
@@ -63,7 +64,7 @@ class MetadataPluginUserEndpoint {
     int? offset,
     int? limit,
   }) async {
-    final raw = await hetuMetadataUser.invoke(
+    final raw = await hetuMetadataUser.safeInvoke(
       "savedAlbums",
       namedArgs: {
         "offset": offset,
@@ -83,7 +84,7 @@ class MetadataPluginUserEndpoint {
     int? offset,
     int? limit,
   }) async {
-    final raw = await hetuMetadataUser.invoke(
+    final raw = await hetuMetadataUser.safeInvoke(
       "savedArtists",
       namedArgs: {
         "offset": offset,
@@ -99,14 +100,14 @@ class MetadataPluginUserEndpoint {
   }
 
   Future<bool> isSavedPlaylist(String playlistId) async {
-    return await hetuMetadataUser.invoke(
+    return await hetuMetadataUser.safeInvoke(
       "isSavedPlaylist",
       positionalArgs: [playlistId],
     ) as bool;
   }
 
   Future<List<bool>> isSavedTracks(List<String> ids) async {
-    final values = await hetuMetadataUser.invoke(
+    final values = await hetuMetadataUser.safeInvoke(
       "isSavedTracks",
       positionalArgs: [ids],
     );
@@ -114,7 +115,7 @@ class MetadataPluginUserEndpoint {
   }
 
   Future<List<bool>> isSavedAlbums(List<String> ids) async {
-    final values = await hetuMetadataUser.invoke(
+    final values = await hetuMetadataUser.safeInvoke(
       "isSavedAlbums",
       positionalArgs: [ids],
     ) as List;
@@ -122,7 +123,7 @@ class MetadataPluginUserEndpoint {
   }
 
   Future<List<bool>> isSavedArtists(List<String> ids) async {
-    final values = await hetuMetadataUser.invoke(
+    final values = await hetuMetadataUser.safeInvoke(
       "isSavedArtists",
       positionalArgs: [ids],
     ) as List;

@@ -145,7 +145,8 @@ class TrackOptions extends HookConsumerWidget {
             leading: isLiked
                 ? const Icon(
                     SonolythIcons.heartFilled,
-                    color: Colors.pink,
+                    // Matches the liked-heart red used by HeartButton.
+                    color: Colors.red,
                   )
                 : const Icon(SonolythIcons.heart),
             title: Text(
@@ -238,14 +239,18 @@ class TrackOptions extends HookConsumerWidget {
             },
             leading: Icon(
               SonolythIcons.playlistRemove,
-              color: isBlacklisted != true ? Colors.red[400] : null,
+              color: isBlacklisted != true
+                  ? context.theme.colorScheme.destructive
+                  : null,
             ),
             title: Text(
               isBlacklisted == true
                   ? context.l10n.remove_from_blacklist
                   : context.l10n.add_to_blacklist,
               style: TextStyle(
-                color: isBlacklisted != true ? Colors.red[400] : null,
+                color: isBlacklisted != true
+                    ? context.theme.colorScheme.destructive
+                    : null,
               ),
             ),
           ),

@@ -55,7 +55,7 @@ class UserDownloadsPage extends HookConsumerWidget {
                         overflow: TextOverflow.ellipsis,
                         style: theme.typography.xSmall.copyWith(
                           color: failed > 0
-                              ? Colors.red[400]
+                              ? theme.colorScheme.destructive
                               : theme.colorScheme.mutedForeground,
                         ),
                       ),
@@ -166,7 +166,7 @@ class UserDownloadsPage extends HookConsumerWidget {
                     padding: const EdgeInsets.only(bottom: 200),
                     itemBuilder: (context, index) {
                       return DownloadItem(
-                        task: downloadQueue.elementAt(index),
+                        task: downloadQueue[index],
                       );
                     },
                   ),

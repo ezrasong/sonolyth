@@ -22,7 +22,7 @@ class UserEndpoint {
     return client.user.savedPlaylists(offset: offset, limit: limit).then((data){           
       return Converters.paginated(
         data, 
-        (items) => Converters.simplePlaylistsFromLibraryV3(data["items"])
+        (items) => Converters.simplePlaylistsFromLibraryV3(items)
       )
     })
   }

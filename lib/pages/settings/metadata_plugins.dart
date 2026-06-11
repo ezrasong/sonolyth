@@ -161,9 +161,11 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
                                   builder: (context, overlay) {
                                     return SurfaceCard(
                                       child: Basic(
-                                        leading: const Icon(
+                                        leading: Icon(
                                           SonolythIcons.error,
-                                          color: Colors.red,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .destructive,
                                         ),
                                         title: Text(
                                           context.l10n
@@ -244,9 +246,11 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
                                   builder: (context, overlay) {
                                     return SurfaceCard(
                                       child: Basic(
-                                        leading: const Icon(
+                                        leading: Icon(
                                           SonolythIcons.error,
-                                          color: Colors.red,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .destructive,
                                         ),
                                         title: Text(
                                           context.l10n

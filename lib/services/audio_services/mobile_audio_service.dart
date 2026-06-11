@@ -94,13 +94,13 @@ class MobileAudioService extends BaseAudioHandler {
   Future<void> setShuffleMode(AudioServiceShuffleMode shuffleMode) async {
     await super.setShuffleMode(shuffleMode);
 
-    audioPlayer.setShuffle(shuffleMode == AudioServiceShuffleMode.all);
+    await audioPlayer.setShuffle(shuffleMode == AudioServiceShuffleMode.all);
   }
 
   @override
   Future<void> setRepeatMode(AudioServiceRepeatMode repeatMode) async {
-    super.setRepeatMode(repeatMode);
-    audioPlayer.setLoopMode(switch (repeatMode) {
+    await super.setRepeatMode(repeatMode);
+    await audioPlayer.setLoopMode(switch (repeatMode) {
       AudioServiceRepeatMode.all ||
       AudioServiceRepeatMode.group =>
         PlaylistMode.loop,

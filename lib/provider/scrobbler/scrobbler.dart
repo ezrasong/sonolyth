@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,11 +8,71 @@ import 'package:sonolyth/collections/env.dart';
 import 'package:sonolyth/models/database/database.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/database/database.dart';
+import 'package:sonolyth/services/kv_store/kv_store.dart';
 import 'package:sonolyth/services/logger/logger.dart';
 
 class ScrobblerNotifier extends AsyncNotifier<Scrobblenaut?> {
+  /// Cap on the offline retry queue so it can't grow without bound during a
+  /// long stretch without connectivity.
+  static const _maxPendingScrobbles = 100;
+
   final StreamController<SonolythTrackObject> _scrobbleController =
       StreamController<SonolythTrackObject>.broadcast();
+
+  Future<void> _submit(
+    Scrobblenaut scrobbler,
+    Map<String, dynamic> payload,
+  ) async {
+    await scrobbler.track.scrobble(
+      artist: payload["artist"],
+      track: payload["track"],
+      album: payload["album"],
+      chosenByUser: true,
+      duration: Duration(milliseconds: payload["durationMs"]),
+      timestamp: DateTime.fromMillisecondsSinceEpoch(
+        payload["timestamp"],
+        isUtc: true,
+      ),
+    );
+  }
+
+  /// Retries queued scrobbles in order; Last.fm accepts an explicit timestamp
+  /// so late submissions still land at the time the track was actually
+  /// played. Stops at the first failure (still offline) and keeps the rest.
+  ///
+  /// Concurrent callers share one in-flight flush — the startup flush and the
+  /// scrobble-event flush both read-modify-write the same KVStore list, and
+  /// overlapping runs would double-submit or resurrect already-sent entries.
+  Future<void>? _flushInFlight;
+
+  Future<void> _flushPending(Scrobblenaut scrobbler) {
+    return _flushInFlight ??=
+        _doFlushPending(scrobbler).whenComplete(() => _flushInFlight = null);
+  }
+
+  Future<void> _doFlushPending(Scrobblenaut scrobbler) async {
+    final pending = KVStoreService.pendingScrobbles;
+    if (pending.isEmpty) return;
+    final remaining = [...pending];
+    for (final raw in pending) {
+      Map<String, dynamic> payload;
+      try {
+        payload = (jsonDecode(raw) as Map).cast<String, dynamic>();
+      } catch (_) {
+        remaining.remove(raw); // corrupt entry — drop it
+        continue;
+      }
+      try {
+        await _submit(scrobbler, payload);
+        remaining.remove(raw);
+      } catch (_) {
+        break;
+      }
+    }
+    if (remaining.length != pending.length) {
+      await KVStoreService.setPendingScrobbles(remaining);
+    }
+  }
   @override
   build() async {
     final database = ref.watch(databaseProvider);
@@ -44,17 +105,27 @@ class ScrobblerNotifier extends AsyncNotifier<Scrobblenaut?> {
 
     final scrobblerSubscription =
         _scrobbleController.stream.listen((track) async {
+      final scrobbler = state.asData?.value;
+      if (scrobbler == null) return;
+      if (track.artists.isEmpty) return;
+      final payload = <String, dynamic>{
+        "artist": track.artists.first.name,
+        "track": track.name,
+        "album": track.album.name,
+        "durationMs": track.durationMs,
+        "timestamp": DateTime.now().toUtc().millisecondsSinceEpoch,
+      };
       try {
-        await state.asData?.value?.track.scrobble(
-          artist: track.artists.first.name,
-          track: track.name,
-          album: track.album.name,
-          chosenByUser: true,
-          duration: Duration(milliseconds: track.durationMs),
-          timestamp: DateTime.now().toUtc(),
-        );
+        await _flushPending(scrobbler);
+        await _submit(scrobbler, payload);
       } catch (e, stackTrace) {
         AppLogger.reportError(e, stackTrace);
+        final pending = KVStoreService.pendingScrobbles;
+        if (pending.length < _maxPendingScrobbles) {
+          await KVStoreService.setPendingScrobbles(
+            [...pending, jsonEncode(payload)],
+          );
+        }
       }
     });
 
@@ -67,7 +138,7 @@ class ScrobblerNotifier extends AsyncNotifier<Scrobblenaut?> {
       return null;
     }
 
-    return Scrobblenaut(
+    final scrobbler = Scrobblenaut(
       lastFM: await LastFM.authenticateWithPasswordHash(
         apiKey: Env.lastFmApiKey,
         apiSecret: Env.lastFmApiSecret,
@@ -75,6 +146,13 @@ class ScrobblerNotifier extends AsyncNotifier<Scrobblenaut?> {
         passwordHash: loginInfo.passwordHash.value,
       ),
     );
+    // Anything that failed to submit last session can go out now.
+    unawaited(
+      _flushPending(scrobbler).catchError((e, stack) {
+        AppLogger.reportError(e, stack);
+      }),
+    );
+    return scrobbler;
   }
 
   Future<void> login(

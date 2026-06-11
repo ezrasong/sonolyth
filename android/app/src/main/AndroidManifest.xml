@@ -4,6 +4,10 @@
   <uses-permission android:name="android.permission.WAKE_LOCK" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+  <!-- Media-session (MediaStyle) notifications are exempt from the Android 13+
+       runtime prompt, but the permission must still be declared for any
+       non-media notification to be deliverable. -->
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
   <queries>
     <intent>
@@ -50,13 +54,6 @@
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
-      </intent-filter>
-
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW" />
-
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
       </intent-filter>
 
       <intent-filter>

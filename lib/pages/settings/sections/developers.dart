@@ -19,6 +19,7 @@ class SettingsDevelopersSection extends HookWidget {
         ListTile(
           leading: const Icon(SonolythIcons.logs),
           title: Text(context.l10n.logs),
+          subtitle: Text(context.l10n.logs_description),
           trailing: const Icon(SonolythIcons.angleRight),
           onTap: () {
             context.navigateTo(const LogsRoute());

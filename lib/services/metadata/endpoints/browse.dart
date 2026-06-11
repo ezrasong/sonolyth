@@ -1,6 +1,7 @@
 import 'package:hetu_script/hetu_script.dart';
 import 'package:hetu_script/values.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/services/metadata/errors/safe_invoke.dart';
 
 class MetadataPluginBrowseEndpoint {
   final Hetu hetu;
@@ -15,7 +16,7 @@ class MetadataPluginBrowseEndpoint {
     int? offset,
     int? limit,
   }) async {
-    final raw = await hetuMetadataBrowse.invoke(
+    final raw = await hetuMetadataBrowse.safeInvoke(
       "sections",
       namedArgs: {
         "offset": offset,
@@ -54,7 +55,7 @@ class MetadataPluginBrowseEndpoint {
     int? offset,
     int? limit,
   }) async {
-    final raw = await hetuMetadataBrowse.invoke(
+    final raw = await hetuMetadataBrowse.safeInvoke(
       "sectionItems",
       positionalArgs: [id],
       namedArgs: {

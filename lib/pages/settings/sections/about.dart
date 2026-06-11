@@ -25,6 +25,7 @@ class SettingsAboutSection extends HookConsumerWidget {
           ListTile(
             leading: const Icon(SonolythIcons.update),
             title: Text(context.l10n.check_for_updates),
+            subtitle: Text(context.l10n.check_for_updates_description),
             trailing: Switch(
               value: preferences.checkUpdate,
               onChanged: (checked) =>
@@ -34,6 +35,7 @@ class SettingsAboutSection extends HookConsumerWidget {
         ListTile(
           leading: const Icon(SonolythIcons.info),
           title: Text(context.l10n.about_spotube),
+          subtitle: Text(context.l10n.about_description),
           trailing: const Icon(SonolythIcons.angleRight),
           onTap: () {
             context.navigateTo(const AboutSonolythRoute());

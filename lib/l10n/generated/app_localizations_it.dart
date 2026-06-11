@@ -865,6 +865,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get disconnect_lastfm => 'Disconnetti Last.fm';
 
   @override
+  String get disconnect_lastfm_confirmation =>
+      'Disconnect Last.fm? Scrobbling will stop until you sign in again.';
+
+  @override
   String get disconnect => 'Disconnetti';
 
   @override
@@ -1658,4 +1662,66 @@ class AppLocalizationsIt extends AppLocalizations {
   String size_in_gb(Object size) {
     return '$size GB';
   }
+
+  @override
+  String get download_error_rate_limited => 'Rate limited — try again later';
+
+  @override
+  String get download_error_no_providers => 'No download providers enabled';
+
+  @override
+  String get download_error_no_source =>
+      'Couldn\'t find a source for this track';
+
+  @override
+  String get download_error_empty_stream =>
+      'The download server returned an empty file';
+
+  @override
+  String download_error_http(Object status) {
+    return 'Download failed (HTTP $status)';
+  }
+
+  @override
+  String get download_error_timeout => 'Connection timed out';
+
+  @override
+  String get download_error_no_connection => 'Can\'t reach the download server';
+
+  @override
+  String get download_error_network => 'Network error';
+
+  @override
+  String get download_error_unknown => 'Download failed';
+
+  @override
+  String delete_track_file_confirmation(Object track) {
+    return 'Permanently delete $track from this device? This can\'t be undone.';
+  }
+
+  @override
+  String get check_for_updates_description =>
+      'Show a notice when a new version is available';
+
+  @override
+  String get about_description => 'Version, licenses, and credits';
+
+  @override
+  String get show_tray_icon_description =>
+      'Keep an icon in the system tray while the app runs';
+
+  @override
+  String get use_system_title_bar_description =>
+      'Use the OS window frame instead of the in-app title bar';
+
+  @override
+  String get discord_rich_presence_description =>
+      'Show what you\'re listening to on your Discord profile';
+
+  @override
+  String get logs_description => 'App logs for troubleshooting and bug reports';
+
+  @override
+  String get audio_scrobblers_description =>
+      'Connect Last.fm to keep a record of what you listen to';
 }

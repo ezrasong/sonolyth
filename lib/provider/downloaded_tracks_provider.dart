@@ -79,10 +79,12 @@ class DownloadedTracksNotifier extends Notifier<Map<String, String>> {
     SonolythMedia.downloadedPaths = state;
   }
 
-  void add(String trackId, String filePath) {
+  /// Returns when the registry write has landed on disk, so callers can
+  /// order "mark completed" after the entry is durably recorded.
+  Future<void> add(String trackId, String filePath) {
     state = Map.unmodifiable({...state, trackId: filePath});
     _syncMediaPaths();
-    _persist();
+    return _persist();
   }
 
   void remove(String trackId) {

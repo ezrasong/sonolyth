@@ -87,7 +87,8 @@ class ArtistPageHeader extends HookConsumerWidget {
             child: IconButton(
               icon: Icon(
                 SonolythIcons.userRemove,
-                color: !isBlackListed ? Colors.red[400] : null,
+                color:
+                    !isBlackListed ? theme.colorScheme.destructive : null,
               ),
               variance: isBlackListed
                   ? ButtonVariance.destructive

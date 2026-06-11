@@ -3,9 +3,11 @@ import 'package:collection/collection.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/button/back_button.dart';
+import 'package:sonolyth/components/dialogs/prompt_dialog.dart';
 import 'package:sonolyth/components/fallbacks/error_box.dart';
 import 'package:sonolyth/components/inter_scrollbar/inter_scrollbar.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
@@ -107,11 +109,20 @@ class BlackListPage extends HookConsumerWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         trailing: IconButton.ghost(
-                          icon: Icon(SonolythIcons.trash,
-                              color: Colors.red[400]),
-                          onPressed: () {
-                            ref.read(blacklistProvider.notifier).remove(
-                                filteredBlacklist.elementAt(index).elementId);
+                          icon: Icon(
+                            SonolythIcons.trash,
+                            color: context.theme.colorScheme.destructive,
+                          ),
+                          onPressed: () async {
+                            final confirmed = await showPromptDialog(
+                              context: context,
+                              title: context.l10n.remove_from_blacklist,
+                              message: context.l10n.are_you_sure,
+                            );
+                            if (!confirmed) return;
+                            ref
+                                .read(blacklistProvider.notifier)
+                                .remove(item.elementId);
                           },
                         ),
                       );

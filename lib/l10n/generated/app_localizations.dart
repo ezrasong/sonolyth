@@ -1737,6 +1737,12 @@ abstract class AppLocalizations {
   /// **'Disconnect Last.fm'**
   String get disconnect_lastfm;
 
+  /// No description provided for @disconnect_lastfm_confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect Last.fm? Scrobbling will stop until you sign in again.'**
+  String get disconnect_lastfm_confirmation;
+
   /// No description provided for @disconnect.
   ///
   /// In en, this message translates to:
@@ -3128,6 +3134,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{size} GB'**
   String size_in_gb(Object size);
+
+  /// No description provided for @download_error_rate_limited.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate limited — try again later'**
+  String get download_error_rate_limited;
+
+  /// No description provided for @download_error_no_providers.
+  ///
+  /// In en, this message translates to:
+  /// **'No download providers enabled'**
+  String get download_error_no_providers;
+
+  /// No description provided for @download_error_no_source.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t find a source for this track'**
+  String get download_error_no_source;
+
+  /// No description provided for @download_error_empty_stream.
+  ///
+  /// In en, this message translates to:
+  /// **'The download server returned an empty file'**
+  String get download_error_empty_stream;
+
+  /// No description provided for @download_error_http.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed (HTTP {status})'**
+  String download_error_http(Object status);
+
+  /// No description provided for @download_error_timeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection timed out'**
+  String get download_error_timeout;
+
+  /// No description provided for @download_error_no_connection.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t reach the download server'**
+  String get download_error_no_connection;
+
+  /// No description provided for @download_error_network.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error'**
+  String get download_error_network;
+
+  /// No description provided for @download_error_unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed'**
+  String get download_error_unknown;
+
+  /// No description provided for @delete_track_file_confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently delete {track} from this device? This can\'t be undone.'**
+  String delete_track_file_confirmation(Object track);
+
+  /// No description provided for @check_for_updates_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Show a notice when a new version is available'**
+  String get check_for_updates_description;
+
+  /// No description provided for @about_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Version, licenses, and credits'**
+  String get about_description;
+
+  /// No description provided for @show_tray_icon_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep an icon in the system tray while the app runs'**
+  String get show_tray_icon_description;
+
+  /// No description provided for @use_system_title_bar_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the OS window frame instead of the in-app title bar'**
+  String get use_system_title_bar_description;
+
+  /// No description provided for @discord_rich_presence_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Show what you\'re listening to on your Discord profile'**
+  String get discord_rich_presence_description;
+
+  /// No description provided for @logs_description.
+  ///
+  /// In en, this message translates to:
+  /// **'App logs for troubleshooting and bug reports'**
+  String get logs_description;
+
+  /// No description provided for @audio_scrobblers_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Last.fm to keep a record of what you listen to'**
+  String get audio_scrobblers_description;
 }
 
 class _AppLocalizationsDelegate

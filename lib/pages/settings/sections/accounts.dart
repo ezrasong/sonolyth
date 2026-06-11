@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/dialogs/prompt_dialog.dart';
 import 'package:sonolyth/modules/settings/section_card_with_heading.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/scrobbler/scrobbler.dart';
@@ -32,6 +33,7 @@ class SettingsAccountSection extends HookConsumerWidget {
           ListTile(
             leading: const Icon(SonolythIcons.music),
             title: Text(context.l10n.audio_scrobblers),
+            subtitle: Text(context.l10n.audio_scrobblers_description),
             onTap: () {
               context.pushRoute(const SettingsScrobblingRoute());
             },
@@ -42,8 +44,15 @@ class SettingsAccountSection extends HookConsumerWidget {
             leading: const Icon(SonolythIcons.lastFm),
             title: Text(context.l10n.disconnect_lastfm),
             trailing: Button.destructive(
-              onPressed: () {
-                ref.read(scrobblerProvider.notifier).logout();
+              onPressed: () async {
+                final confirmed = await showPromptDialog(
+                  context: context,
+                  title: context.l10n.disconnect_lastfm,
+                  message: context.l10n.disconnect_lastfm_confirmation,
+                  okText: context.l10n.disconnect,
+                );
+                if (!confirmed) return;
+                await ref.read(scrobblerProvider.notifier).logout();
               },
               child: Text(context.l10n.disconnect),
             ),

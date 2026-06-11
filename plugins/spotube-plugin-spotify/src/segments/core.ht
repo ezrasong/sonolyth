@@ -31,53 +31,13 @@ class CorePlugin {
   /// - [changelog] Optionally, a changelog for the update (markdown supported).
   ///
   /// If no update is available, it will return null.
+  ///
+  /// This vendored copy ships bundled with the app and is updated through app
+  /// releases, so the remote check (which pointed at the third-party
+  /// sonic-liberation repo) is disabled: it would prompt users with updates
+  /// that can't pass the app's name+author install validation anyway.
   fun checkUpdate(currentConfig: Map) -> Future {
-    var versionParts = currentConfig["version"].split(".")
-    var major = int.parse(versionParts[0])
-    var minor = int.parse(versionParts[1])
-    var patch = int.parse(versionParts[2])
-
-    return client.get_req(
-      "https://api.github.com/repos/sonic-liberation/spotube-plugin-spotify/releases/latest",
-      options: RequestOptions(
-        headers: {
-          "Accept": "application/vnd.github.v3+json"
-        }.toJson()
-      ),
-    ).then((res) {
-      var data = res.data
-      var latestVersion = data["tag_name"].split(".")
-
-      if (latestVersion.length < 3) {
-        throw "Invalid version format from GitHub API. Expected format: <major>.<minor>.<patch>. Got: ${data["tag_name"]}"
-      }
-
-      var latestMajor = int.parse(latestVersion[0])
-      var latestMinor = int.parse(latestVersion[1])
-      var latestPatch = int.parse(latestVersion[2])
-
-      var isUpdateAvailable = latestMajor > major ||
-        (latestMajor == major && latestMinor > minor) ||
-        (latestMajor == major && latestMinor == minor && latestPatch > patch)
-
-      if (!isUpdateAvailable) return null
-
-      var pluginFileAsset = data["assets"].firstWhere(
-        (asset) => asset["name"] == "plugin.smplug",
-        orElse: () => null
-      )
-
-      if (pluginFileAsset == null || pluginFileAsset["browser_download_url"] == null) {
-        throw "No download URL found for the plugin update"
-      }
-
-      var changelog = data["body"] ?? "No changelog available"
-      return {
-        "downloadUrl": pluginFileAsset["browser_download_url"],
-        "version": data["tag_name"],
-        "changelog": changelog
-      }.toJson()
-    })
+    return null
   }
 
     /// Returns the support information for the plugin in Markdown or plain text.

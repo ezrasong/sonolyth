@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
+import 'package:sonolyth/collections/official_plugin_owners.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/markdown/markdown.dart';
 import 'package:sonolyth/extensions/context.dart';
@@ -58,7 +59,8 @@ class MetadataPluginRepositoryItem extends HookConsumerWidget {
                       .downloadAndCachePlugin(pluginRepo.repoUrl);
 
                   if (!context.mounted) return;
-                  final isOfficialPlugin = pluginRepo.owner == "KRTirtho";
+                  final isOfficialPlugin =
+                      officialPluginOwners.contains(pluginRepo.owner);
 
                   final isAllowed = isOfficialPlugin
                       ? true
@@ -158,15 +160,15 @@ class MetadataPluginRepositoryItem extends HookConsumerWidget {
               child: Text(context.l10n.install),
             ),
           ),
-          if (pluginRepo.owner != "KRTirtho")
+          if (!officialPluginOwners.contains(pluginRepo.owner))
             Text.rich(
               TextSpan(
                 children: [
                   TextSpan(text: context.l10n.source),
                   TextSpan(
                     text: pluginRepo.repoUrl.replaceAll("https://", ""),
-                    style: const TextStyle(
-                      color: Colors.blue,
+                    style: TextStyle(
+                      color: context.theme.colorScheme.primary,
                       decoration: TextDecoration.underline,
                     ),
                     recognizer: TapGestureRecognizer()
@@ -182,7 +184,7 @@ class MetadataPluginRepositoryItem extends HookConsumerWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              if (pluginRepo.owner == "KRTirtho")
+              if (officialPluginOwners.contains(pluginRepo.owner))
                 PrimaryBadge(
                   leading: const Icon(SonolythIcons.done),
                   child: Text(context.l10n.official),
@@ -198,7 +200,7 @@ class MetadataPluginRepositoryItem extends HookConsumerWidget {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.blue,
+                    color: context.theme.colorScheme.primary,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Row(

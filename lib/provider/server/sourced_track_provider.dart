@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/metadata_plugin/audio_source/quality_presets.dart';
 import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
+import 'package:sonolyth/services/sourced_track/exceptions.dart';
 import 'package:sonolyth/services/sourced_track/sourced_track.dart';
 
 class SourcedTrackNotifier
@@ -38,7 +40,14 @@ class SourcedTrackNotifier
 
   Future<SourcedTrack> swapWithNextSibling() async {
     return await update((prev) async {
-      return await prev.swapWithSibling(prev.siblings.first) as SourcedTrack;
+      // siblings can be exhausted (no fallback sources left); throw a clear
+      // error instead of letting `.first` raise a bare StateError and the
+      // null-returning swap blow up the cast.
+      final next = prev.siblings.firstOrNull;
+      if (next == null) {
+        throw TrackNotFoundError(prev.query);
+      }
+      return await prev.swapWithSibling(next) ?? prev;
     });
   }
 }

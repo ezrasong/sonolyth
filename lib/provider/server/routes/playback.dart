@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:dio/dio.dart' hide Response;
 import 'package:dio/dio.dart' as dio_lib;
 import 'package:flutter/foundation.dart';
@@ -58,24 +59,30 @@ class ServerPlaybackRoutes {
     Request request,
     String trackId,
   ) async {
+    // Requests can race queue mutations (track skipped/removed while a
+    // stream request is in flight) — treat a missing track/media as a 404
+    // rather than letting firstWhere throw.
     final track =
-        playlist.tracks.firstWhere((element) => element.id == trackId);
+        playlist.tracks.firstWhereOrNull((element) => element.id == trackId);
+    if (track == null) return null;
 
     final activeSourcedTrack =
         await ref.read(activeTrackSourcesProvider.future);
 
+    if (activeSourcedTrack?.track.id == track.id) {
+      return activeSourcedTrack?.source;
+    }
+
     final media = audioPlayer.playlist.medias
-        .firstWhere((e) => e.uri == request.requestedUri.toString());
+        .firstWhereOrNull((e) => e.uri == request.requestedUri.toString());
+    if (media == null) return null;
+
     final spotubeMedia =
         media is SonolythMedia ? media : SonolythMedia.media(media);
-    final sourcedTrack = activeSourcedTrack?.track.id == track.id
-        ? activeSourcedTrack?.source
-        : await ref.read(
-            sourcedTrackProvider(spotubeMedia.track as SonolythFullTrackObject)
-                .future,
-          );
+    final mediaTrack = spotubeMedia.track;
+    if (mediaTrack is! SonolythFullTrackObject) return null;
 
-    return sourcedTrack;
+    return await ref.read(sourcedTrackProvider(mediaTrack).future);
   }
 
   /// Serves a local file (downloaded or cached) honoring single-range Range
@@ -159,7 +166,7 @@ class ServerPlaybackRoutes {
   ) async {
     AppLogger.log.i(
       "HEAD request for track: ${track.query.name}\n"
-      "Headers: ${request.headers}",
+      "Range: ${request.headers['range']}",
     );
 
     String url = track.url ??
@@ -190,7 +197,7 @@ class ServerPlaybackRoutes {
   ) async {
     AppLogger.log.i(
       "GET request for track: ${track.query.name}\n"
-      "Headers: ${request.headers}",
+      "Range: ${request.headers['range']}",
     );
 
     final trackCacheFile = File(await _getTrackCacheFilePath(track));
@@ -203,7 +210,10 @@ class ServerPlaybackRoutes {
 
     final options = Options(
       headers: {
-        ...headers,
+        // Forward only the range header — spreading all client headers would
+        // leak whatever a LAN client sends (cookies, auth) to the upstream
+        // content server.
+        if (headers["range"] != null) "range": headers["range"],
         "user-agent": _randomUserAgent,
         "Cache-Control": "max-age=3600",
         "Connection": "keep-alive",
