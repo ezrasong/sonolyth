@@ -43,19 +43,42 @@ class DownloadTask {
   final String? errorMessage;
   final StreamController<int> _downloadedBytesStreamController;
 
-  Stream<int> get downloadedBytesStream =>
-      _downloadedBytesStreamController.stream;
+  /// Cached once per task lineage: a broadcast controller's `.stream` getter
+  /// mints a new wrapper on every access, which would make StreamBuilder see
+  /// a different stream identity each rebuild, resubscribe, and flash 0%.
+  final Stream<int> downloadedBytesStream;
 
-  DownloadTask({
+  DownloadTask._({
     required this.track,
     required this.status,
     required this.cancelToken,
     this.totalSizeBytes,
     this.subfolder,
     this.errorMessage,
-    StreamController<int>? downloadedBytesStreamController,
-  }) : _downloadedBytesStreamController =
-            downloadedBytesStreamController ?? StreamController.broadcast();
+    required StreamController<int> downloadedBytesStreamController,
+    required this.downloadedBytesStream,
+  }) : _downloadedBytesStreamController = downloadedBytesStreamController;
+
+  factory DownloadTask({
+    required SonolythFullTrackObject track,
+    required DownloadStatus status,
+    required CancelToken cancelToken,
+    int? totalSizeBytes,
+    String? subfolder,
+    String? errorMessage,
+  }) {
+    final controller = StreamController<int>.broadcast();
+    return DownloadTask._(
+      track: track,
+      status: status,
+      cancelToken: cancelToken,
+      totalSizeBytes: totalSizeBytes,
+      subfolder: subfolder,
+      errorMessage: errorMessage,
+      downloadedBytesStreamController: controller,
+      downloadedBytesStream: controller.stream,
+    );
+  }
 
   DownloadTask copyWith({
     SonolythFullTrackObject? track,
@@ -65,17 +88,16 @@ class DownloadTask {
     String? subfolder,
     String? errorMessage,
     bool clearError = false,
-    StreamController<int>? downloadedBytesStreamController,
   }) {
-    return DownloadTask(
+    return DownloadTask._(
       track: track ?? this.track,
       status: status ?? this.status,
       cancelToken: cancelToken ?? this.cancelToken,
       totalSizeBytes: totalSizeBytes ?? this.totalSizeBytes,
       subfolder: subfolder ?? this.subfolder,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
-      downloadedBytesStreamController:
-          downloadedBytesStreamController ?? _downloadedBytesStreamController,
+      downloadedBytesStreamController: _downloadedBytesStreamController,
+      downloadedBytesStream: downloadedBytesStream,
     );
   }
 }
@@ -108,6 +130,11 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
         task._downloadedBytesStreamController.close();
       }
     });
+
+    // Fire-and-forget: clear .part files orphaned by an app kill mid-download.
+    nativeFlacDownloader.sweepOrphanedPartFiles(
+      ref.read(userPreferencesProvider).downloadLocation,
+    );
 
     return [];
   }
@@ -159,17 +186,25 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
     _startDownloading(); // No await should be invoked to avoid stuck UI
   }
 
-  void addAllToQueue(
+  /// Returns how many tracks were actually enqueued (after dropping
+  /// duplicates and already-downloaded tracks) so callers can report an
+  /// accurate count.
+  int addAllToQueue(
     List<SonolythFullTrackObject> tracks, {
     String? collectionUrl,
     String? collectionName,
   }) {
     final queuedTrackIds = state.map((task) => task.track.id).toSet();
+    // seenIds also dedupes within the input — playlists can contain the same
+    // track twice, which would otherwise create two tasks with one id.
+    final seenIds = <String>{};
     final newTracks = tracks
         .where((track) =>
-            !queuedTrackIds.contains(track.id) && !_alreadyDownloaded(track))
+            !queuedTrackIds.contains(track.id) &&
+            !_alreadyDownloaded(track) &&
+            seenIds.add(track.id))
         .toList();
-    if (newTracks.isEmpty) return;
+    if (newTracks.isEmpty) return 0;
 
     // Group a collection's files under their own folder so the playlist/album
     // can be re-discovered later as a local folder.
@@ -187,6 +222,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
     ];
 
     _startDownloading(); // No await should be invoked to avoid stuck UI
+    return newTracks.length;
   }
 
   void retry(SonolythFullTrackObject track) {
@@ -212,6 +248,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
       if (task.status == DownloadStatus.downloading) {
         task.cancelToken.cancel();
       }
+      task._downloadedBytesStreamController.close();
     }
     state = [];
   }
@@ -251,6 +288,13 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
 
   Future<void> _downloadTrack(DownloadTask task) async {
     try {
+      // The worker may have awaited a cooldown between picking this task and
+      // getting here; if the user cancelled (or cleared) it in that window,
+      // don't resurrect it.
+      final current =
+          state.firstWhereOrNull((e) => e.track.id == task.track.id);
+      if (current == null || current.status != DownloadStatus.queued) return;
+
       _setStatus(task.track, DownloadStatus.downloading);
       final task0 = state.firstWhereOrNull((e) => e.track.id == task.track.id);
       if (task0 == null) return;
@@ -291,10 +335,13 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
     } catch (e, stack) {
       final wasCancelled = e is DioException && CancelToken.isCancel(e);
 
-      // Gateway rate limit: don't burn the track. Keep it queued, pause the
+      // Rate limit — from the resolve phase (gateway) or a raw 429 from the
+      // file download itself: don't burn the track. Keep it queued, pause the
       // whole queue (escalating with each consecutive hit) and let the loop
       // retry it once the cooldown passes. Give up only after several tries.
-      if (e is SpotiFlacRateLimitException && !wasCancelled) {
+      final isRateLimit = e is SpotiFlacRateLimitException ||
+          (e is DioException && e.response?.statusCode == 429);
+      if (isRateLimit && !wasCancelled) {
         final attempts = (_rateLimitAttempts[task.track.id] ?? 0) + 1;
         _rateLimitAttempts[task.track.id] = attempts;
         if (attempts <= _maxRateLimitRetries) {

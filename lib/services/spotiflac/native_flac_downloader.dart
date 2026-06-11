@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -31,7 +32,15 @@ class SpotiFlacRateLimitException extends SpotiFlacDownloadException {
 class NativeFlacDownloader {
   final Dio _dio;
 
-  NativeFlacDownloader([Dio? dio]) : _dio = dio ?? Dio();
+  NativeFlacDownloader([Dio? dio])
+      : _dio = dio ??
+            Dio(BaseOptions(
+              connectTimeout: const Duration(seconds: 30),
+              // Bounds the gap between stream chunks during download(); a CDN
+              // connection that stalls without closing would otherwise hang
+              // the task — and the serial queue behind it — forever.
+              receiveTimeout: const Duration(seconds: 60),
+            ));
 
   Future<String> download({
     required SonolythFullTrackObject track,
@@ -53,6 +62,15 @@ class NativeFlacDownloader {
     // the manager can pause-and-retry instead of failing the track outright.
     var rateLimited = false;
     for (final provider in providers) {
+      // The resolve phase can take a minute+ (serialized gateway calls with
+      // backoff); honor cancellation between providers instead of only once
+      // the file download starts.
+      if (cancelToken?.isCancelled ?? false) {
+        throw DioException.requestCancelled(
+          requestOptions: RequestOptions(),
+          reason: "Download cancelled",
+        );
+      }
       final quality = qualityByProvider[provider.id] ?? provider.defaultQuality;
       try {
         resolution = await provider.resolve(track, quality);
@@ -94,8 +112,20 @@ class NativeFlacDownloader {
       await directory.create(recursive: true);
     }
 
-    final fileName = _buildFileName(track, resolution.fileExtension);
-    final outputPath = path.join(downloadDirectory, fileName);
+    var outputPath = path.join(
+      downloadDirectory,
+      _buildFileName(track, resolution.fileExtension),
+    );
+    // Different tracks can share "<artists> - <title>" (clean/explicit
+    // versions, re-recordings); never clobber an existing file — pick a
+    // track-id-suffixed name instead. Re-downloads of the *same* track are
+    // already filtered out upstream by the downloaded-tracks registry.
+    if (await File(outputPath).exists()) {
+      outputPath = path.join(
+        downloadDirectory,
+        _buildFileName(track, resolution.fileExtension, withIdSuffix: true),
+      );
+    }
     final partPath = "$outputPath.part";
 
     try {
@@ -120,11 +150,13 @@ class NativeFlacDownloader {
       }
 
       if (resolution.encryption == SpotiFlacEncryption.deezerBlowfish) {
-        final decrypted = DeezerCrypto.decrypt(
-          await partFile.readAsBytes(),
-          resolution.decryptionSeed ?? "",
+        // Chunked decrypt straight from disk to disk; buffering the whole
+        // file would peak at ~2× its size in RAM.
+        await DeezerCrypto.decryptFile(
+          inputPath: partPath,
+          outputPath: outputPath,
+          trackId: resolution.decryptionSeed ?? "",
         );
-        await File(outputPath).writeAsBytes(decrypted);
         await partFile.delete();
       } else {
         if (await File(outputPath).exists()) {
@@ -173,12 +205,49 @@ class NativeFlacDownloader {
     }
   }
 
-  String _buildFileName(SonolythFullTrackObject track, String extension) {
+  String _buildFileName(
+    SonolythFullTrackObject track,
+    String extension, {
+    bool withIdSuffix = false,
+  }) {
     final artists = track.artists.map((a) => a.name).join(", ");
     final base = artists.isEmpty ? track.name : "$artists - ${track.name}";
-    final sanitized = ServiceUtils.sanitizeFilename(base).trim();
+    // ext4 caps filenames at 255 *bytes*; keep the base well under that so
+    // the extension and a ".part" suffix always fit, even for CJK titles.
+    final sanitized =
+        _truncateUtf8(ServiceUtils.sanitizeFilename(base).trim(), 180);
     final safe = sanitized.isEmpty ? track.id : sanitized;
-    return "$safe.$extension";
+    final suffix = withIdSuffix
+        ? " [${track.id.length > 8 ? track.id.substring(0, 8) : track.id}]"
+        : "";
+    return "$safe$suffix.$extension";
+  }
+
+  String _truncateUtf8(String input, int maxBytes) {
+    if (utf8.encode(input).length <= maxBytes) return input;
+    final runes = input.runes.toList();
+    var result = input;
+    while (runes.isNotEmpty && utf8.encode(result).length > maxBytes) {
+      runes.removeLast();
+      result = String.fromCharCodes(runes);
+    }
+    return result.trim();
+  }
+
+  /// Deletes orphaned `.part` files left behind if the app was killed
+  /// mid-download. Called once when the download manager initializes.
+  Future<void> sweepOrphanedPartFiles(String downloadDirectory) async {
+    try {
+      final dir = Directory(downloadDirectory);
+      if (!await dir.exists()) return;
+      await for (final entity in dir.list(recursive: true)) {
+        if (entity is File && entity.path.endsWith(".part")) {
+          await entity.delete().catchError((_) => entity);
+        }
+      }
+    } catch (_) {
+      // Best-effort cleanup; never block downloads on it.
+    }
   }
 }
 

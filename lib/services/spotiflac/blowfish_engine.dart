@@ -95,12 +95,16 @@ class BlowfishEngine {
 
   /// Decrypts [input] (a multiple of 8 bytes) in CBC mode with the given [iv].
   Uint8List decryptCbc(Uint8List input, Uint8List iv) {
+    // A non-multiple-of-8 input would silently zero its tail bytes below.
+    assert(input.length % 8 == 0, "CBC input must be a multiple of 8 bytes");
     final output = Uint8List(input.length);
     final view = ByteData.sublistView(input);
     final outView = ByteData.sublistView(output);
 
-    var prevL = iv.buffer.asByteData().getUint32(0, Endian.big);
-    var prevR = iv.buffer.asByteData().getUint32(4, Endian.big);
+    // sublistView honors iv.offsetInBytes; iv.buffer.asByteData() would not.
+    final ivView = ByteData.sublistView(iv);
+    var prevL = ivView.getUint32(0, Endian.big);
+    var prevR = ivView.getUint32(4, Endian.big);
 
     for (var offset = 0; offset + 8 <= input.length; offset += 8) {
       final cipherL = view.getUint32(offset, Endian.big);

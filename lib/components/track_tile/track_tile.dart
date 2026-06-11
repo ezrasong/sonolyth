@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
@@ -78,20 +79,29 @@ class TrackTile extends HookConsumerWidget {
     final isPlaying = playlist.activeTrack?.id == track.id;
 
     final isSelected = isPlaying || isLoading.value;
-    ref.watch(downloadManagerProvider);
     final downloadManager = ref.read(downloadManagerProvider.notifier);
+    // select() this track's task only — watching the whole queue would
+    // rebuild every visible tile on every status change of any download.
     final downloadTask = track is SonolythFullTrackObject
-        ? downloadManager.getTaskByTrackId(track.id)
+        ? ref.watch(downloadManagerProvider.select(
+            (tasks) =>
+                tasks.firstWhereOrNull((t) => t.track.id == track.id),
+          ))
         : null;
     final isDownloading = const [
       DownloadStatus.queued,
       DownloadStatus.downloading,
     ].contains(downloadTask?.status);
+    final isDownloadFailed = const [
+      DownloadStatus.failed,
+      DownloadStatus.canceled,
+    ].contains(downloadTask?.status);
     // The persistent registry keeps showing the checkmark after a restart or
     // a stopped-partway playlist download, when the in-memory queue is gone.
     final isDownloaded = downloadTask?.status == DownloadStatus.completed ||
         (track is SonolythFullTrackObject &&
-            ref.watch(downloadedTracksProvider).containsKey(track.id));
+            ref.watch(downloadedTracksProvider
+                .select((tracks) => tracks.containsKey(track.id))));
 
     final imageProvider = useMemoized(
       () => UniversalImage.imageProvider(
@@ -347,7 +357,11 @@ class TrackTile extends HookConsumerWidget {
                 if (track is SonolythFullTrackObject)
                   Tooltip(
                     tooltip: TooltipContainer(
-                      child: Text(context.l10n.download_track),
+                      child: Text(
+                        isDownloadFailed
+                            ? context.l10n.retry
+                            : context.l10n.download_track,
+                      ),
                     ).call,
                     child: IconButton.ghost(
                       size: ButtonSize.small,
@@ -372,15 +386,26 @@ class TrackTile extends HookConsumerWidget {
                           : Icon(
                               isDownloaded
                                   ? SonolythIcons.done
-                                  : SonolythIcons.download,
+                                  : isDownloadFailed
+                                      ? SonolythIcons.refresh
+                                      : SonolythIcons.download,
                               color: isDownloaded
                                   ? theme.colorScheme.primary
-                                  : null,
+                                  : isDownloadFailed
+                                      ? theme.colorScheme.destructive
+                                      : null,
                             ),
                       onPressed: () {
-                        downloadManager.addToQueue(
-                          track as SonolythFullTrackObject,
-                        );
+                        // A failed/canceled task still sits in the queue, so
+                        // addToQueue would no-op; route it through retry.
+                        if (isDownloadFailed) {
+                          downloadManager
+                              .retry(track as SonolythFullTrackObject);
+                        } else {
+                          downloadManager.addToQueue(
+                            track as SonolythFullTrackObject,
+                          );
+                        }
                       },
                     ),
                   ),

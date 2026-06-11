@@ -50,7 +50,12 @@ Future<void> Function(SonolythTrackObject track, int index)
       final remoteQueue = ref.read(queueProvider);
       if (remoteQueue.collections.contains(options.collectionId) ||
           remoteQueue.tracks.any((s) => s.id == track.id)) {
-        await playlistNotifier.jumpToTrack(track);
+        // Jump on the remote device, not the local player.
+        final remoteIndex =
+            remoteQueue.tracks.indexWhere((s) => s.id == track.id);
+        if (remoteIndex >= 0) {
+          await remotePlayback.jumpTo(remoteIndex);
+        }
       } else {
         final tracks = await options.pagination.onFetchAll();
         await remotePlayback.load(

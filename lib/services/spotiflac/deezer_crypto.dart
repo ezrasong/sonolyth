@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
@@ -44,5 +45,35 @@ abstract class DeezerCrypto {
       chunkIndex++;
     }
     return output;
+  }
+
+  /// Streaming variant of [decrypt]: reads the file in 2048-byte chunks and
+  /// writes decrypted output as it goes. The in-memory variant peaks at ~2×
+  /// file size, which is an OOM risk for hi-res FLACs on low-RAM devices.
+  static Future<void> decryptFile({
+    required String inputPath,
+    required String outputPath,
+    required String trackId,
+  }) async {
+    final engine = BlowfishEngine(_blowfishKey(trackId));
+    final input = await File(inputPath).open();
+    final output = File(outputPath).openWrite();
+    try {
+      var chunkIndex = 0;
+      while (true) {
+        final chunk = await input.read(_chunkSize);
+        if (chunk.isEmpty) break;
+        if (chunk.length == _chunkSize && chunkIndex % 3 == 0) {
+          output.add(engine.decryptCbc(chunk, _iv));
+        } else {
+          output.add(chunk);
+        }
+        chunkIndex++;
+      }
+      await output.flush();
+    } finally {
+      await input.close();
+      await output.close();
+    }
   }
 }

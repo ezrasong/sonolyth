@@ -47,16 +47,29 @@ class DownloadedTracksNotifier extends Notifier<Map<String, String>> {
     }
   }
 
-  Future<void> _persist() async {
-    try {
-      final file = await _file();
-      await file.writeAsString(jsonEncode({
-        'formatVersion': _formatVersion,
-        'tracks': state,
-      }));
-    } catch (e, stack) {
-      AppLogger.reportError(e, stack);
-    }
+  /// Chains persists so overlapping add/remove calls can't interleave writes
+  /// to the same file.
+  Future<void> _persistChain = Future.value();
+
+  Future<void> _persist() {
+    return _persistChain = _persistChain.then((_) async {
+      try {
+        final file = await _file();
+        // Temp-file + rename keeps the write atomic: a crash mid-write must
+        // not corrupt the registry, or every downloaded track is forgotten.
+        final tmp = File("${file.path}.tmp");
+        await tmp.writeAsString(
+          jsonEncode({
+            'formatVersion': _formatVersion,
+            'tracks': state,
+          }),
+          flush: true,
+        );
+        await tmp.rename(file.path);
+      } catch (e, stack) {
+        AppLogger.reportError(e, stack);
+      }
+    });
   }
 
   /// Mirror the registry into [SonolythMedia.downloadedPaths] so media
