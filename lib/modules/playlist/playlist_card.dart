@@ -159,6 +159,8 @@ class PlaylistCard extends HookConsumerWidget {
       if (context.mounted) {
         showToast(
           context: context,
+          // Bottom toasts hide behind the mini player on phones.
+          location: ToastLocation.topRight,
           builder: (context, overlay) {
             return SurfaceCard(
               child: Basic(
