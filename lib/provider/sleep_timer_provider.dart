@@ -9,6 +9,7 @@ class SleepTimerNotifier extends StateNotifier<Duration?> {
   Timer? _timer;
 
   void setSleepTimer(Duration duration) {
+    _timer?.cancel();
     state = duration;
 
     _timer = Timer(duration, () {

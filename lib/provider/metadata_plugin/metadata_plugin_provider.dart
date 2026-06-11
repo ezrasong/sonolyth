@@ -343,10 +343,16 @@ class MetadataPluginNotifier extends AsyncNotifier<MetadataPluginState> {
       if (file.isFile) {
         final filename = file.name;
         final data = file.content as List<int>;
-        final extractedFile = File(join(
+        final extractedPath = normalize(join(
           pluginExtractionDir.path,
           filename,
         ));
+        // Zip-slip guard: entries like "../../x" must not escape the
+        // plugin's extraction directory.
+        if (!isWithin(pluginExtractionDir.path, extractedPath)) {
+          throw MetadataPluginException.maliciousArchiveEntry();
+        }
+        final extractedFile = File(extractedPath);
         await extractedFile.create(recursive: true);
         await extractedFile.writeAsBytes(data);
       }

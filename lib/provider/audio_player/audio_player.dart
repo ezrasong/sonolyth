@@ -328,8 +328,10 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
 
   Future<void> removeTracks(Iterable<String> trackIds) async {
     final trackIndexes = state.tracks
-        .where((element) => trackIds.any((trackId) => trackId == element.id))
-        .mapIndexed((index, element) => index);
+        .mapIndexed((index, element) => (index, element.id))
+        .where((entry) => trackIds.contains(entry.$2))
+        .map((entry) => entry.$1)
+        .toList();
 
     final tracks = state.tracks.where(
       (element) => !trackIds.contains(element.id),
@@ -339,7 +341,9 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
       tracks: tracks.toList(),
     );
 
-    for (final index in trackIndexes) {
+    // Remove from the end so earlier indexes stay valid as the player's
+    // playlist shrinks.
+    for (final index in trackIndexes.reversed) {
       await audioPlayer.removeTrack(index);
     }
 

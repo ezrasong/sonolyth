@@ -7,6 +7,14 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import 'dart:async';
 
+/// Error payload sent back from the isolate. Exceptions themselves may not
+/// be sendable across isolates, so they travel as strings.
+class _IsolateError {
+  final String error;
+  final String stackTrace;
+  const _IsolateError(this.error, this.stackTrace);
+}
+
 /// It contains methods that are computationally expensive
 class IsolatedYoutubeExplode {
   final Isolate _isolate;
@@ -83,24 +91,31 @@ class IsolatedYoutubeExplode {
         }
       }
 
-      // Run the requested method on YoutubeExplode
-      var result = switch (methodName) {
-        "search" => youtubeExplode.search
-            .search(
+      // Run the requested method on YoutubeExplode. An uncaught error here
+      // would kill the isolate and hang every future request, so failures
+      // are reported back to the caller instead.
+      try {
+        var result = switch (methodName) {
+          "search" => youtubeExplode.search
+              .search(
+                arguments[0] as String,
+                filter: arguments.elementAtOrNull(1) ?? TypeFilters.video,
+              )
+              .then((s) => s.toList()),
+          "video" => youtubeExplode.videos.get(arguments[0] as String),
+          "manifest" => youtubeExplode.videos.streamsClient.getManifest(
               arguments[0] as String,
-              filter: arguments.elementAtOrNull(1) ?? TypeFilters.video,
-            )
-            .then((s) => s.toList()),
-        "video" => youtubeExplode.videos.get(arguments[0] as String),
-        "manifest" => youtubeExplode.videos.streamsClient.getManifest(
-            arguments[0] as String,
-            requireWatchPage: arguments.elementAtOrNull(1) ?? true,
-            ytClients: arguments.elementAtOrNull(2) as List<YoutubeApiClient>?,
-          ),
-        _ => throw ArgumentError('Invalid method name: $methodName'),
-      };
+              requireWatchPage: arguments.elementAtOrNull(1) ?? true,
+              ytClients:
+                  arguments.elementAtOrNull(2) as List<YoutubeApiClient>?,
+            ),
+          _ => throw ArgumentError('Invalid method name: $methodName'),
+        };
 
-      replyPort.send(await result);
+        replyPort.send(await result);
+      } catch (error, stackTrace) {
+        replyPort.send(_IsolateError("$error", "$stackTrace"));
+      }
     });
   }
 
@@ -109,7 +124,14 @@ class IsolatedYoutubeExplode {
     final responsePort = ReceivePort();
 
     responsePort.listen((message) {
-      completer.complete(message as T);
+      if (message is _IsolateError) {
+        completer.completeError(
+          Exception(message.error),
+          StackTrace.fromString(message.stackTrace),
+        );
+      } else {
+        completer.complete(message as T);
+      }
       responsePort.close();
     });
 

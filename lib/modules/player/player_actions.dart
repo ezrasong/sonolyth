@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -39,20 +40,22 @@ class PlayerActions extends HookConsumerWidget {
   Widget build(BuildContext context, ref) {
     final playlist = ref.watch(audioPlayerProvider);
     final isLocalTrack = playlist.activeTrack is SonolythLocalTrackObject;
-    ref.watch(downloadManagerProvider);
     final downloader = ref.watch(downloadManagerProvider.notifier);
-    final isInQueue = useMemoized(() {
-      if (playlist.activeTrack is! SonolythFullTrackObject) return false;
-      final downloadTask =
-          downloader.getTaskByTrackId(playlist.activeTrack!.id);
-      return const [
-        DownloadStatus.queued,
-        DownloadStatus.downloading,
-      ].contains(downloadTask?.status);
-    }, [
-      playlist.activeTrack,
-      downloader,
-    ]);
+    // Watch only the active track's task status so the button reacts to
+    // queue/start/complete transitions without memo staleness.
+    final activeTrackId = playlist.activeTrack?.id;
+    final activeTaskStatus = ref.watch(
+      downloadManagerProvider.select(
+        (tasks) => tasks
+            .firstWhereOrNull((task) => task.track.id == activeTrackId)
+            ?.status,
+      ),
+    );
+    final isInQueue = playlist.activeTrack is SonolythFullTrackObject &&
+        const [
+          DownloadStatus.queued,
+          DownloadStatus.downloading,
+        ].contains(activeTaskStatus);
 
     final localTracks = ref.watch(localTracksProvider).value;
     final authenticated = ref.watch(metadataPluginAuthenticatedProvider);
@@ -245,11 +248,15 @@ class PlayerActions extends HookConsumerWidget {
                 );
 
                 if (time != null) {
+                  // Minutes until the picked wall-clock time; a time earlier
+                  // than now means tomorrow.
+                  final pickedMinutes = time.hour * 60 + time.minute;
+                  final nowMinutes =
+                      currentTime.hour * 60 + currentTime.minute;
+                  var deltaMinutes = pickedMinutes - nowMinutes;
+                  if (deltaMinutes <= 0) deltaMinutes += 24 * 60;
                   sleepTimerNotifier.setSleepTimer(
-                    Duration(
-                      hours: (time.hour - currentTime.hour).abs(),
-                      minutes: (time.minute - currentTime.minute).abs(),
-                    ),
+                    Duration(minutes: deltaMinutes),
                   );
                 }
               },

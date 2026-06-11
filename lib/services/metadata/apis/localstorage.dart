@@ -12,8 +12,15 @@ class SharedPreferencesLocalStorage implements Localstorage {
   }
 
   @override
-  Future<void> clear() {
-    return _prefs.clear();
+  Future<void> clear() async {
+    // Only clear this plugin's namespace — _prefs.clear() would wipe every
+    // other plugin's storage plus app-level keys (encryption key/IV, etc).
+    final pluginPrefix = prefix('');
+    for (final key in _prefs.getKeys().toList()) {
+      if (key.startsWith(pluginPrefix)) {
+        await _prefs.remove(key);
+      }
+    }
   }
 
   @override

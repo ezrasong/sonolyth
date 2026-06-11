@@ -30,6 +30,7 @@ import 'package:sonolyth/components/track_tile/track_tile.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/local_tracks/local_tracks_provider.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/services/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 import 'package:sonolyth/utils/service_utils.dart';
 import 'package:auto_route/auto_route.dart';
@@ -53,6 +54,7 @@ class LocalLibraryPage extends HookConsumerWidget {
     List<SonolythLocalTrackObject> tracks, {
     SonolythLocalTrackObject? currentTrack,
   }) async {
+    if (tracks.isEmpty) return;
     final playlist = ref.read(audioPlayerProvider);
     final playback = ref.read(audioPlayerProvider.notifier);
     currentTrack ??= tracks.first;
@@ -74,6 +76,7 @@ class LocalLibraryPage extends HookConsumerWidget {
     WidgetRef ref,
     List<SonolythLocalTrackObject> tracks,
   ) async {
+    if (tracks.isEmpty) return;
     final playlist = ref.read(audioPlayerProvider);
     final playback = ref.read(audioPlayerProvider.notifier);
     final isPlaylistPlaying = playlist.containsTracks(tracks);
@@ -92,6 +95,7 @@ class LocalLibraryPage extends HookConsumerWidget {
     WidgetRef ref,
     List<SonolythLocalTrackObject> tracks,
   ) async {
+    if (tracks.isEmpty) return;
     final playlist = ref.read(audioPlayerProvider);
     final playback = ref.read(audioPlayerProvider.notifier);
     final isPlaylistPlaying = playlist.containsTracks(tracks);
@@ -108,12 +112,14 @@ class LocalLibraryPage extends HookConsumerWidget {
     final sortBy = useState<SortBy>(SortBy.none);
     final playlist = ref.watch(audioPlayerProvider);
     final trackSnapshot = ref.watch(localTracksProvider);
+    final folderTracks = trackSnapshot.asData?.value[location] ??
+        const <SonolythLocalTrackObject>[];
     final isPlaylistPlaying = useMemoized(
-      () => playlist.containsTracks(
-        trackSnapshot.asData?.value[location] ?? [],
-      ),
+      () => folderTracks.isNotEmpty && playlist.containsTracks(folderTracks),
       [playlist, trackSnapshot, location],
     );
+    final playing =
+        useStream(audioPlayer.playingStream).data ?? audioPlayer.isPlaying;
 
     final searchController = useShadcnTextEditingController();
     useValueListenable(searchController);
@@ -267,23 +273,22 @@ class LocalLibraryPage extends HookConsumerWidget {
                       tooltip:
                           TooltipContainer(child: Text(context.l10n.play)).call,
                       child: IconButton.primary(
-                        onPressed: trackSnapshot.asData?.value != null
+                        // When this folder is already the active playlist the
+                        // button toggles pause/resume instead of restarting.
+                        onPressed: folderTracks.isNotEmpty
                             ? () async {
-                                if (trackSnapshot.asData?.value.isNotEmpty ==
-                                    true) {
-                                  if (!isPlaylistPlaying) {
-                                    await playLocalTracks(
-                                      ref,
-                                      trackSnapshot.asData!.value[location] ??
-                                          [],
-                                    );
-                                  }
+                                if (isPlaylistPlaying) {
+                                  playing
+                                      ? await audioPlayer.pause()
+                                      : await audioPlayer.resume();
+                                } else {
+                                  await playLocalTracks(ref, folderTracks);
                                 }
                               }
                             : null,
                         icon: Icon(
-                          isPlaylistPlaying
-                              ? SonolythIcons.stop
+                          isPlaylistPlaying && playing
+                              ? SonolythIcons.pause
                               : SonolythIcons.play,
                         ),
                       ),
@@ -294,21 +299,17 @@ class LocalLibraryPage extends HookConsumerWidget {
                           TooltipContainer(child: Text(context.l10n.shuffle))
                               .call,
                       child: IconButton.outline(
-                        onPressed: trackSnapshot.asData?.value != null
+                        onPressed: folderTracks.isNotEmpty
                             ? () async {
-                                if (trackSnapshot.asData?.value.isNotEmpty ==
-                                    true) {
-                                  if (!isPlaylistPlaying) {
-                                    await shufflePlayLocalTracks(
-                                      ref,
-                                      trackSnapshot.asData!.value[location] ??
-                                          [],
-                                    );
-                                  }
+                                if (!isPlaylistPlaying) {
+                                  await shufflePlayLocalTracks(
+                                    ref,
+                                    folderTracks,
+                                  );
                                 }
                               }
                             : null,
-                        enabled: !isPlaylistPlaying,
+                        enabled: folderTracks.isNotEmpty && !isPlaylistPlaying,
                         icon: const Icon(SonolythIcons.shuffle),
                       ),
                     ),
@@ -318,22 +319,18 @@ class LocalLibraryPage extends HookConsumerWidget {
                               child: Text(context.l10n.add_to_queue))
                           .call,
                       child: IconButton.outline(
-                        onPressed: trackSnapshot.asData?.value != null
+                        onPressed: folderTracks.isNotEmpty
                             ? () async {
-                                if (trackSnapshot.asData?.value.isNotEmpty ==
-                                    true) {
-                                  if (!isPlaylistPlaying) {
-                                    await addToQueueLocalTracks(
-                                      context,
-                                      ref,
-                                      trackSnapshot.asData!.value[location] ??
-                                          [],
-                                    );
-                                  }
+                                if (!isPlaylistPlaying) {
+                                  await addToQueueLocalTracks(
+                                    context,
+                                    ref,
+                                    folderTracks,
+                                  );
                                 }
                               }
                             : null,
-                        enabled: !isPlaylistPlaying,
+                        enabled: folderTracks.isNotEmpty && !isPlaylistPlaying,
                         icon: const Icon(SonolythIcons.queueAdd),
                       ),
                     ),
@@ -374,12 +371,16 @@ class LocalLibraryPage extends HookConsumerWidget {
                   ],
                 ),
               ),
-              ExpandableSearchField(
-                searchController: searchController,
-                searchFocus: searchFocus,
-                isFiltering: isFiltering.value,
-                onChangeFiltering: (value) => isFiltering.value = value,
-              ),
+              // Wide layouts already render an inline search field in the
+              // toolbar; mounting this one too would attach two TextFields
+              // to the same FocusNode/controller.
+              if (constraints.smAndDown)
+                ExpandableSearchField(
+                  searchController: searchController,
+                  searchFocus: searchFocus,
+                  isFiltering: isFiltering.value,
+                  onChangeFiltering: (value) => isFiltering.value = value,
+                ),
               HookBuilder(builder: (context) {
                 return trackSnapshot.when(
                   data: (tracks) {

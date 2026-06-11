@@ -11,6 +11,7 @@ enum MetadataPluginErrorCode {
   pluginByteCodeFileNotFound,
   noDefaultMetadataPlugin,
   noDefaultAudiSourcePlugin,
+  maliciousArchiveEntry,
 }
 
 class MetadataPluginException implements Exception {
@@ -78,6 +79,11 @@ class MetadataPluginException implements Exception {
       : this._(
           'No default audio source plugin is set. Please set a default plugin in the settings.',
           errorCode: MetadataPluginErrorCode.noDefaultAudiSourcePlugin,
+        );
+  MetadataPluginException.maliciousArchiveEntry()
+      : this._(
+          'Plugin archive contains an entry that escapes the plugin directory.',
+          errorCode: MetadataPluginErrorCode.maliciousArchiveEntry,
         );
 
   @override

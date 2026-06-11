@@ -125,7 +125,9 @@ class PlaylistCreateDialog extends HookConsumerWidget {
           );
         }
 
-        if (trackIds.isNotEmpty) {
+        // Only seed tracks when creating; modifying a playlist must not
+        // re-append its already-loaded tracks.
+        if (!isUpdatingPlaylist && trackIds.isNotEmpty) {
           await playlistNotifier.addTracks(trackIds, onError);
         }
       } finally {
