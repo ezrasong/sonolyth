@@ -65,9 +65,29 @@ class UserLocalLibraryPage extends HookConsumerWidget {
 
     final tracksSnapshot = ref.watch(localTracksProvider);
 
+    // Downloaded collections live in subfolders of the download folder and
+    // surface as their own keys in the provider; list them as folders too so
+    // re-downloaded playlists/albums reappear here.
+    final downloadSubfolders = useMemoized(() {
+      final keys = tracksSnapshot.asData?.value.keys ?? const <String>[];
+      return keys
+          .where((k) =>
+              k != preferences.downloadLocation &&
+              k != cacheDir.data &&
+              !preferences.localLibraryLocation.contains(k) &&
+              isWithin(preferences.downloadLocation, k))
+          .sorted((a, b) => basename(a).compareTo(basename(b)));
+    }, [
+      tracksSnapshot,
+      preferences.downloadLocation,
+      preferences.localLibraryLocation,
+      cacheDir.data,
+    ]);
+
     final locations = useMemoized(() {
       final all = [
         preferences.downloadLocation,
+        ...downloadSubfolders,
         if (cacheDir.hasData) cacheDir.data!,
         ...preferences.localLibraryLocation,
       ];
@@ -83,6 +103,7 @@ class UserLocalLibraryPage extends HookConsumerWidget {
     }, [
       preferences.downloadLocation,
       preferences.localLibraryLocation,
+      downloadSubfolders,
       cacheDir.data,
       searchText.value,
     ]);

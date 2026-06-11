@@ -78,12 +78,14 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
       required List<SonolythTrackObject> tracks,
       required String action,
       String? collectionUrl,
+      String? collectionName,
     }) async {
       final fullTrackObjects =
           tracks.whereType<SonolythFullTrackObject>().toList();
       downloader.addAllToQueue(
         fullTrackObjects,
         collectionUrl: collectionUrl,
+        collectionName: collectionName,
       );
       notifier.deselectAllTracks();
       if (!context.mounted) return;
@@ -117,6 +119,7 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
               tracks: tracks,
               action: action,
               collectionUrl: isWholeCollectionAction ? options.shareUrl : null,
+              collectionName: options.title,
             );
             break;
           case "add-to-playlist":

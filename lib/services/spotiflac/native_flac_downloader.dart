@@ -16,6 +16,15 @@ class SpotiFlacDownloadException implements Exception {
   String toString() => "SpotiFlacDownloadException: $message";
 }
 
+/// Thrown when a track couldn't be sourced specifically because the gateway
+/// rate-limited every provider. The download manager treats this differently
+/// from a real "no match": it pauses the queue and retries rather than marking
+/// the track permanently failed.
+class SpotiFlacRateLimitException extends SpotiFlacDownloadException {
+  const SpotiFlacRateLimitException()
+      : super("Rate limited by the download gateway");
+}
+
 /// Downloads a track's lossless file entirely in-app: resolves a direct URL
 /// from the ordered [providers], streams it to disk with progress, decrypts
 /// when the source requires it, and tags the result.
@@ -40,6 +49,9 @@ class NativeFlacDownloader {
     // Per-provider failure reasons, so a total failure can say *why*
     // (rate limited vs no match vs network) instead of a generic message.
     final failures = <String>[];
+    // Whether every failure so far was a rate-limit (vs a genuine no-match), so
+    // the manager can pause-and-retry instead of failing the track outright.
+    var rateLimited = false;
     for (final provider in providers) {
       final quality = qualityByProvider[provider.id] ?? provider.defaultQuality;
       try {
@@ -49,11 +61,14 @@ class NativeFlacDownloader {
         }
       } on DioException catch (e) {
         if (CancelToken.isCancel(e)) rethrow;
+        final is429 = e.response?.statusCode == 429;
+        rateLimited = rateLimited || is429;
         failures.add(
-          "${provider.displayName}: ${e.response?.statusCode == 429 ? "rate limited" : "network error"}",
+          "${provider.displayName}: ${is429 ? "rate limited" : "network error"}",
         );
         resolution = null;
       } on ZarzRateLimitedException {
+        rateLimited = true;
         failures.add("${provider.displayName}: rate limited");
         resolution = null;
       } catch (e) {
@@ -64,6 +79,11 @@ class NativeFlacDownloader {
     }
 
     if (resolution == null) {
+      // If a provider actually matched but the gateway was rate-limiting,
+      // signal that distinctly so the queue pauses and retries.
+      if (rateLimited) {
+        throw const SpotiFlacRateLimitException();
+      }
       throw SpotiFlacDownloadException(
         "Couldn't source this track — ${failures.join("; ")}",
       );

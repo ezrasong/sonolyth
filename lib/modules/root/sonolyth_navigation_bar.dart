@@ -112,7 +112,12 @@ class _SpotifyNavigationItem extends StatelessWidget {
           children: [
             Badge(
               isLabelVisible: badgeCount > 0,
-              label: Text(badgeCount.toString()),
+              // Cap wide counts so a 3-digit queue (e.g. 679) doesn't balloon
+              // the badge past the icon.
+              label: Text(
+                badgeCount > 99 ? "99+" : badgeCount.toString(),
+                style: const TextStyle(fontSize: 9),
+              ),
               backgroundColor: colorScheme.primary,
               child: Icon(icon, color: foreground, size: 23),
             ),

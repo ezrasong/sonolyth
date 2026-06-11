@@ -35,6 +35,11 @@ class LocalFolderItem extends HookConsumerWidget {
 
     final isDownloadFolder = folder == downloadFolder;
     final isCacheFolder = folder == cacheFolder.data;
+    // A per-collection subfolder created by downloading a playlist/album. It's
+    // managed by the downloader, not a user-added library location.
+    final isDownloadSubfolder = downloadFolder.isNotEmpty &&
+        folder != downloadFolder &&
+        isWithin(downloadFolder, folder);
 
     final trackSnapshot = ref.watch(
       localTracksProvider.select(
@@ -106,7 +111,8 @@ class LocalFolderItem extends HookConsumerWidget {
       );
     }, [context, colorScheme, ref, folder]);
 
-    final isRemovable = !isDownloadFolder && !isCacheFolder;
+    final isRemovable =
+        !isDownloadFolder && !isCacheFolder && !isDownloadSubfolder;
 
     if (_isTile) {
       final tile = PlaybuttonTile(

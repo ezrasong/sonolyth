@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:path/path.dart' as p;
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/downloaded_tracks_provider.dart';
 import 'package:sonolyth/provider/spotiflac/download_settings.dart';
@@ -11,6 +12,7 @@ import 'package:sonolyth/provider/youtube_engine/youtube_engine.dart';
 import 'package:sonolyth/services/logger/logger.dart';
 import 'package:sonolyth/services/spotiflac/native_flac_downloader.dart';
 import 'package:sonolyth/services/spotiflac/providers/youtube_provider.dart';
+import 'package:sonolyth/utils/service_utils.dart';
 
 enum DownloadStatus {
   queued,
@@ -31,6 +33,11 @@ class DownloadTask {
   final CancelToken cancelToken;
   final int? totalSizeBytes;
 
+  /// Sanitized collection name (playlist/album) this download belongs to.
+  /// When set, the file is written to `<downloadLocation>/<subfolder>/` so the
+  /// collection can be re-discovered later as its own local folder.
+  final String? subfolder;
+
   /// Human-readable failure reason, set when [status] is
   /// [DownloadStatus.failed] so the UI can say why instead of a bare icon.
   final String? errorMessage;
@@ -44,6 +51,7 @@ class DownloadTask {
     required this.status,
     required this.cancelToken,
     this.totalSizeBytes,
+    this.subfolder,
     this.errorMessage,
     StreamController<int>? downloadedBytesStreamController,
   }) : _downloadedBytesStreamController =
@@ -54,6 +62,7 @@ class DownloadTask {
     DownloadStatus? status,
     CancelToken? cancelToken,
     int? totalSizeBytes,
+    String? subfolder,
     String? errorMessage,
     bool clearError = false,
     StreamController<int>? downloadedBytesStreamController,
@@ -63,6 +72,7 @@ class DownloadTask {
       status: status ?? this.status,
       cancelToken: cancelToken ?? this.cancelToken,
       totalSizeBytes: totalSizeBytes ?? this.totalSizeBytes,
+      subfolder: subfolder ?? this.subfolder,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       downloadedBytesStreamController:
           downloadedBytesStreamController ?? _downloadedBytesStreamController,
@@ -71,6 +81,23 @@ class DownloadTask {
 }
 
 class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
+  /// Proactive pacing: after this many completed downloads, pause for
+  /// [_batchPause] so a long batch doesn't trip the gateway's cumulative
+  /// rate limit (which otherwise blocks all further downloads).
+  static const _batchSize = 40;
+  static const _batchPause = Duration(seconds: 12);
+
+  /// Reactive cooldown when the gateway actually rate-limits us. Escalates per
+  /// consecutive attempt on the same track; after [_maxRateLimitRetries] the
+  /// track is failed so the queue isn't stuck forever.
+  static const _rateLimitCooldown = Duration(seconds: 45);
+  static const _maxRateLimitRetries = 4;
+
+  /// Re-entrancy guard so the queue is only ever processed by one loop.
+  bool _isProcessing = false;
+  int _completedSincePause = 0;
+  final Map<String, int> _rateLimitAttempts = {};
+
   @override
   build() {
     ref.onDispose(() {
@@ -85,8 +112,27 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
     return [];
   }
 
+  /// Pauses the queue for [d], publishing a resume-at timestamp so the UI can
+  /// show "paused for rate limit".
+  Future<void> _coolDown(Duration d) async {
+    ref.read(downloadCooldownProvider.notifier).state = DateTime.now().add(d);
+    try {
+      await Future<void>.delayed(d);
+    } finally {
+      ref.read(downloadCooldownProvider.notifier).state = null;
+    }
+  }
+
   DownloadTask? getTaskByTrackId(String trackId) {
     return state.firstWhereOrNull((element) => element.track.id == trackId);
+  }
+
+  /// Sanitized folder name for a collection download, or null when there's no
+  /// usable name (single tracks, or a name that sanitizes to nothing).
+  String? _subfolderFor(String? collectionName) {
+    if (collectionName == null) return null;
+    final sanitized = ServiceUtils.sanitizeFilename(collectionName).trim();
+    return sanitized.isEmpty ? null : sanitized;
   }
 
   /// Tracks already on disk (from this or a previous session) are skipped so
@@ -116,6 +162,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
   void addAllToQueue(
     List<SonolythFullTrackObject> tracks, {
     String? collectionUrl,
+    String? collectionName,
   }) {
     final queuedTrackIds = state.map((task) => task.track.id).toSet();
     final newTracks = tracks
@@ -124,6 +171,10 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
         .toList();
     if (newTracks.isEmpty) return;
 
+    // Group a collection's files under their own folder so the playlist/album
+    // can be re-discovered later as a local folder.
+    final subfolder = _subfolderFor(collectionName);
+
     state = [
       ...state,
       ...newTracks.map((e) => DownloadTask(
@@ -131,6 +182,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
             status: DownloadStatus.queued,
             cancelToken: CancelToken(),
             totalSizeBytes: _progressScale,
+            subfolder: subfolder,
           )),
     ];
 
@@ -217,20 +269,49 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
           .toList();
       final downloadLocation =
           ref.read(userPreferencesProvider).downloadLocation;
+      // Collection downloads land in their own subfolder; single-track
+      // downloads stay in the root download folder.
+      final downloadDirectory = task0.subfolder == null
+          ? downloadLocation
+          : p.join(downloadLocation, task0.subfolder);
 
       final filePath = await nativeFlacDownloader.download(
         track: task.track,
         providers: providers,
-        downloadDirectory: downloadLocation,
+        downloadDirectory: downloadDirectory,
         qualityByProvider: settings.qualityByProvider,
         cancelToken: task0.cancelToken,
         onProgress: (progress) => _emitProgress(task.track, progress),
       );
 
       ref.read(downloadedTracksProvider.notifier).add(task.track.id, filePath);
+      _rateLimitAttempts.remove(task.track.id);
+      _completedSincePause++;
       _setStatus(task.track, DownloadStatus.completed);
     } catch (e, stack) {
       final wasCancelled = e is DioException && CancelToken.isCancel(e);
+
+      // Gateway rate limit: don't burn the track. Keep it queued, pause the
+      // whole queue (escalating with each consecutive hit) and let the loop
+      // retry it once the cooldown passes. Give up only after several tries.
+      if (e is SpotiFlacRateLimitException && !wasCancelled) {
+        final attempts = (_rateLimitAttempts[task.track.id] ?? 0) + 1;
+        _rateLimitAttempts[task.track.id] = attempts;
+        if (attempts <= _maxRateLimitRetries) {
+          _completedSincePause = 0;
+          _setStatus(task.track, DownloadStatus.queued);
+          await _coolDown(_rateLimitCooldown * attempts);
+          return;
+        }
+        _rateLimitAttempts.remove(task.track.id);
+        _setStatus(
+          task.track,
+          DownloadStatus.failed,
+          error: "Rate limited — try again later",
+        );
+        return;
+      }
+
       _setStatus(
         task.track,
         wasCancelled ? DownloadStatus.canceled : DownloadStatus.failed,
@@ -272,18 +353,29 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
   }
 
   Future<void> _startDownloading() async {
-    for (final task in state) {
-      if (task.status == DownloadStatus.downloading) return;
+    // One serial worker drains the queue (iterative, not recursive, so a
+    // 700-track batch doesn't build a 700-deep call stack).
+    if (_isProcessing) return;
+    _isProcessing = true;
+    try {
+      while (true) {
+        final task =
+            state.firstWhereOrNull((t) => t.status == DownloadStatus.queued);
+        if (task == null) break;
 
-      if (task.status == DownloadStatus.queued) {
-        try {
-          await _downloadTrack(task);
-        } finally {
-          // After completion, check for more queued tasks.
-          // Ignore errors of the prior task to allow next task to complete.
-          await _startDownloading();
+        // Proactive pause between batches keeps a long run under the gateway's
+        // cumulative limit so downloads don't stop working partway through.
+        if (_completedSincePause >= _batchSize) {
+          _completedSincePause = 0;
+          await _coolDown(_batchPause);
         }
+
+        await _downloadTrack(task);
       }
+    } finally {
+      _isProcessing = false;
+      _completedSincePause = 0;
+      ref.read(downloadCooldownProvider.notifier).state = null;
     }
   }
 }
@@ -292,3 +384,7 @@ final downloadManagerProvider =
     NotifierProvider<DownloadManagerNotifier, List<DownloadTask>>(
   DownloadManagerNotifier.new,
 );
+
+/// When set to a future instant, the download queue is paused (rate-limit
+/// cooldown or batch pause) and will resume at that time. Null when running.
+final downloadCooldownProvider = StateProvider<DateTime?>((ref) => null);

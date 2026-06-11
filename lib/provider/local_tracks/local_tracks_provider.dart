@@ -138,7 +138,24 @@ final localTracksProvider =
           )
           .toList();
 
-      libraryToTracks[location] = tracksFromMetadata;
+      // Downloaded collections live in `<downloadLocation>/<name>/` subfolders
+      // (see DownloadManager). Group the download folder's tracks by their
+      // immediate subfolder so each downloaded playlist/album resurfaces as
+      // its own local folder; root-level files stay under the download folder.
+      if (location == downloadLocation) {
+        for (final track in tracksFromMetadata) {
+          final segments = split(relative(track.path, from: downloadLocation));
+          final key = segments.length > 1
+              ? join(downloadLocation, segments.first)
+              : downloadLocation;
+          (libraryToTracks[key] ??= []).add(track);
+        }
+        // Ensure the root folder always has an entry even when every file is
+        // nested in a subfolder, so the "Downloads" tile still shows.
+        libraryToTracks[downloadLocation] ??= [];
+      } else {
+        libraryToTracks[location] = tracksFromMetadata;
+      }
     }
     return libraryToTracks;
   } catch (e, stack) {

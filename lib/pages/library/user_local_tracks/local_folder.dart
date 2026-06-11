@@ -8,6 +8,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_undraw/flutter_undraw.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:path/path.dart' show basename;
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -151,7 +152,9 @@ class LocalLibraryPage extends HookConsumerWidget {
                       ? context.l10n.downloads
                       : isCache
                           ? context.l10n.cache_folder.capitalize()
-                          : location,
+                          : basename(location),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 FutureBuilder<String>(
                   future: directorySize,

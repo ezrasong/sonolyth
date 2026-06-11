@@ -63,6 +63,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
       downloader.addAllToQueue(
         fullTracks,
         collectionUrl: options.shareUrl,
+        collectionName: options.title,
       );
       if (!context.mounted) return;
       showToast(

@@ -17,6 +17,7 @@ class UserDownloadsPage extends HookConsumerWidget {
     final theme = Theme.of(context);
     final downloadQueue = ref.watch(downloadManagerProvider);
     final downloadManagerNotifier = ref.watch(downloadManagerProvider.notifier);
+    final cooldownUntil = ref.watch(downloadCooldownProvider);
 
     final active = downloadQueue
         .where((t) => const [DownloadStatus.queued, DownloadStatus.downloading]
@@ -79,6 +80,43 @@ class UserDownloadsPage extends HookConsumerWidget {
             ],
           ),
         ),
+        if (cooldownUntil != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(15, 8, 15, 0),
+            child: StreamBuilder(
+              stream: Stream.periodic(const Duration(seconds: 1)),
+              builder: (context, _) {
+                final remaining = cooldownUntil.difference(DateTime.now());
+                if (remaining.isNegative) return const SizedBox.shrink();
+                return Container(
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.muted,
+                    borderRadius: theme.borderRadiusMd,
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox.square(
+                        dimension: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          "Paused to avoid the download rate limit — resuming in ${remaining.inSeconds}s",
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.typography.xSmall,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
         Expanded(
           child: SafeArea(
             child: ListView.builder(
