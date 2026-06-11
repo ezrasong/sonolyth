@@ -88,21 +88,29 @@ class SpotifyPlaylistEndpoint {
       }
       var playlist = data["data"]["playlistV2"]
       var owner = playlist["ownerV2"]["data"]
-      var tracks = playlist["content"]["items"].map((track){
+      var rawItems = playlist["content"]["items"] ?? []
+      // Playlists can hold unavailable/region-locked tracks, local files and
+      // podcast episodes whose itemV2.data is null or isn't a Track. Mapping
+      // those dereferenced a null `item` and crashed the whole playlist load
+      // (sent the user back to Home). Keep only real tracks.
+      var tracks = rawItems.where((track){
+        return track?["itemV2"]?["data"]?["__typename"] == "Track"
+      }).map((track){
         var item = track["itemV2"]["data"]
         var trackArtists = item["artists"]?["items"]?.map((artist){
           var id = artist["uri"].split(":").last
           return {
             id: id,
             uri: artist["uri"],
-            name: artist["profile"]["name"],
+            name: artist["profile"]?["name"],
             external_urls: {
               spotify: "https://open.spotify.com/artist/${id}",
             },
           }.toJson()
         }).toList() ?? []
 
-        var albumId = item["albumOfTrack"]["uri"].split(":").last
+        var albumOfTrack = item["albumOfTrack"]
+        var albumId = albumOfTrack?["uri"]?.split(":")?.last
 
         return {
           id: item["uri"].split(":").last,
@@ -111,13 +119,13 @@ class SpotifyPlaylistEndpoint {
           album: {
             album_type: "album",
             id: albumId,
-            name: item["albumOfTrack"]["name"],
-            images: item["albumOfTrack"]["coverArt"]?["sources"] ?? [],
+            name: albumOfTrack?["name"],
+            images: albumOfTrack?["coverArt"]?["sources"] ?? [],
             external_urls: {
               spotify: "https://open.spotify.com/album/${albumId}",
             },
             href: "https://api.spotify.com/v1/albums/${albumId}",
-            artists: [trackArtists[0]]
+            artists: trackArtists.isEmpty ? [] : [trackArtists[0]]
           },
           artists: trackArtists,
           // fetchPlaylist exposes the length as trackDuration (older payloads
@@ -129,12 +137,16 @@ class SpotifyPlaylistEndpoint {
         }.toJson()
       }).toList()
 
+      // Pagination advances by the raw page size (what the server returned),
+      // not the post-filter count, so skipped items don't desync offsets.
+      var itemCount = rawItems.length
+
       return {
         href: "https://api.spotify.com/v1/playlists/${playlistId}/tracks?offset=${offset ?? 0}&limit=${limit ?? 20}",
         limit: limit ?? 50,
         offset: offset ?? 0,
         total: playlist["content"]["totalCount"],
-        next: tracks.length < (limit ?? 50) ? "https://api.spotify.com/v1/playlists/${playlistId}/tracks?offset=${(offset ?? 0) + tracks.length}&limit=${limit ?? 50}" : null,
+        next: itemCount < (limit ?? 50) ? "https://api.spotify.com/v1/playlists/${playlistId}/tracks?offset=${(offset ?? 0) + itemCount}&limit=${limit ?? 50}" : null,
         previous: offset != null && offset > 0 ? "https://api.spotify.com/v1/playlists/${playlistId}/tracks?offset=${Math.max(0, (offset ?? 0) - (limit ?? 50))}&limit=${limit ?? 50}" : null,
         items: tracks,
       }.toJson()
