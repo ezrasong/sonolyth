@@ -19,13 +19,18 @@ import 'package:sonolyth/services/logger/logger.dart';
 typedef UseActionCallbacks = ({
   bool isActive,
   bool isLoading,
+  bool isPlayLoading,
+  bool isShuffleLoading,
   Future<void> Function() onShuffle,
   Future<void> Function() onPlay,
   VoidCallback onAddToQueue,
 });
 
 UseActionCallbacks useActionCallbacks(WidgetRef ref) {
-  final isLoading = useState(false);
+  // Tracked per action so only the pressed button shows a spinner instead of
+  // every button swapping its icon at once.
+  final isPlayLoading = useState(false);
+  final isShuffleLoading = useState(false);
   final context = useContext();
   final options = TrackPresentationOptions.of(context);
   final playlist = ref.watch(audioPlayerProvider);
@@ -55,7 +60,7 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
 
   final onShuffle = useCallback(() async {
     try {
-      isLoading.value = true;
+      isShuffleLoading.value = true;
 
       final initialTracks = options.tracks;
       if (!context.mounted) return;
@@ -114,14 +119,14 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
       AppLogger.reportError(e, stack);
     } finally {
       if (context.mounted) {
-        isLoading.value = false;
+        isShuffleLoading.value = false;
       }
     }
   }, [options, playlistNotifier, historyNotifier]);
 
   final onPlay = useCallback(() async {
     try {
-      isLoading.value = true;
+      isPlayLoading.value = true;
 
       final initialTracks = options.tracks;
 
@@ -170,14 +175,21 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
       AppLogger.reportError(e, stack);
     } finally {
       if (context.mounted) {
-        isLoading.value = false;
+        isPlayLoading.value = false;
       }
     }
   }, [options, playlistNotifier, historyNotifier]);
 
   final onAddToQueue = useCallback(() {
     final tracks = options.tracks;
-    playlistNotifier.addTracks(tracks);
+    if (tracks.isEmpty) return;
+    if (ref.read(audioPlayerProvider).tracks.isEmpty) {
+      // Nothing to queue behind — start playing right away instead of
+      // appending tracks to a stopped player.
+      playlistNotifier.load(tracks, autoPlay: true);
+    } else {
+      playlistNotifier.addTracks(tracks);
+    }
     playlistNotifier.addCollection(options.collectionId);
     if (options.collection is SonolythSimpleAlbumObject) {
       historyNotifier
@@ -192,7 +204,9 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
 
   return (
     isActive: isActive,
-    isLoading: isLoading.value,
+    isLoading: isPlayLoading.value || isShuffleLoading.value,
+    isPlayLoading: isPlayLoading.value,
+    isShuffleLoading: isShuffleLoading.value,
     onShuffle: onShuffle,
     onPlay: onPlay,
     onAddToQueue: onAddToQueue,

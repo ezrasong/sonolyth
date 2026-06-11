@@ -129,6 +129,11 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
   int _completedSincePause = 0;
   final Map<String, int> _rateLimitAttempts = {};
 
+  /// User-requested pause (distinct from rate-limit cooldowns): the worker
+  /// stops picking tasks and the in-flight download is interrupted and
+  /// re-queued so resume picks it back up.
+  bool _userPaused = false;
+
   @override
   build() {
     ref.onDispose(() {
@@ -252,6 +257,28 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
     _setStatus(track, DownloadStatus.canceled);
   }
 
+  /// Pauses the whole queue at the user's request. The currently downloading
+  /// track is aborted and put back in line (not canceled), so [resumeQueue]
+  /// continues exactly where the queue left off.
+  void pauseQueue() {
+    if (_userPaused) return;
+    _userPaused = true;
+    ref.read(downloadsPausedProvider.notifier).state = true;
+    for (final task in state) {
+      if (task.status == DownloadStatus.downloading &&
+          !task.cancelToken.isCancelled) {
+        task.cancelToken.cancel();
+      }
+    }
+  }
+
+  void resumeQueue() {
+    if (!_userPaused) return;
+    _userPaused = false;
+    ref.read(downloadsPausedProvider.notifier).state = false;
+    _startDownloading(); // No await should be invoked to avoid stuck UI
+  }
+
   void clearAll() {
     for (final task in state) {
       if (task.status != DownloadStatus.completed &&
@@ -261,6 +288,10 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
       task._downloadedBytesStreamController.close();
     }
     state = [];
+    // An empty queue has nothing left to pause; reset so the next batch of
+    // downloads doesn't start frozen.
+    _userPaused = false;
+    ref.read(downloadsPausedProvider.notifier).state = false;
   }
 
   void _setStatus(
@@ -353,6 +384,25 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
     } catch (e, stack) {
       final wasCancelled = e is DioException && CancelToken.isCancel(e);
 
+      // Interrupted by a user pause: pauseQueue is the only path that cancels
+      // the token while the task is still marked "downloading" (cancel() and
+      // clearAll() update the status themselves), and the abort can surface
+      // as a non-Dio error from the provider chain. Re-queue rather than
+      // cancel, so resume picks the track back up — even if the user already
+      // resumed before the abort propagated here.
+      final interrupted = state.firstWhereOrNull(
+        (t) =>
+            t.track.id == task.track.id &&
+            t.status == DownloadStatus.downloading &&
+            t.cancelToken.isCancelled,
+      );
+      // The worker loop either breaks (still paused) or picks the re-queued
+      // task right back up (already resumed).
+      if (interrupted != null) {
+        _setStatus(task.track, DownloadStatus.queued);
+        return;
+      }
+
       // Rate limit — from the resolve phase (gateway) or a raw 429 from the
       // file download itself: don't burn the track. Keep it queued, pause the
       // whole queue (escalating with each consecutive hit) and let the loop
@@ -437,6 +487,10 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
     _isProcessing = true;
     try {
       while (true) {
+        // User pause halts the worker between tracks; resumeQueue starts a
+        // fresh loop.
+        if (_userPaused) break;
+
         final task =
             state.firstWhereOrNull((t) => t.status == DownloadStatus.queued);
         if (task == null) break;
@@ -466,3 +520,8 @@ final downloadManagerProvider =
 /// When set to a future instant, the download queue is paused (rate-limit
 /// cooldown or batch pause) and will resume at that time. Null when running.
 final downloadCooldownProvider = StateProvider<DateTime?>((ref) => null);
+
+/// True while the user has manually paused the download queue (see
+/// [DownloadManagerNotifier.pauseQueue]); separate from the automatic
+/// rate-limit cooldown above.
+final downloadsPausedProvider = StateProvider<bool>((ref) => false);

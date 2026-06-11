@@ -79,10 +79,16 @@ class LocalFolderItem extends HookConsumerWidget {
 
     final onAddToQueuePressed = useCallback(() async {
       if (tracks.isEmpty || isPlaying) return;
-      await playlistNotifier.addTracks(tracks);
+      if (ref.read(audioPlayerProvider).tracks.isEmpty) {
+        // Nothing to queue behind — start playing right away instead of
+        // appending tracks to a stopped player.
+        await playlistNotifier.load(tracks, autoPlay: true);
+      } else {
+        await playlistNotifier.addTracks(tracks);
+      }
       if (!context.mounted) return;
       showToastForAction(context, "add-to-queue", tracks.length);
-    }, [tracks, isPlaying, playlistNotifier, context]);
+    }, [tracks, isPlaying, playlistNotifier, ref, context]);
 
     final image = _FolderArtCollage(tracks: tracks);
 

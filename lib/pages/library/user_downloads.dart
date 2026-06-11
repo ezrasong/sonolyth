@@ -3,6 +3,7 @@ import 'package:flutter_undraw/flutter_undraw.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
+import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/modules/library/user_downloads/download_item.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/download_manager_provider.dart';
@@ -19,6 +20,7 @@ class UserDownloadsPage extends HookConsumerWidget {
     final downloadQueue = ref.watch(downloadManagerProvider);
     final downloadManagerNotifier = ref.watch(downloadManagerProvider.notifier);
     final cooldownUntil = ref.watch(downloadCooldownProvider);
+    final isPaused = ref.watch(downloadsPausedProvider);
 
     final active = downloadQueue
         .where((t) => const [DownloadStatus.queued, DownloadStatus.downloading]
@@ -63,6 +65,26 @@ class UserDownloadsPage extends HookConsumerWidget {
                 ),
               ),
               const SizedBox(width: 10),
+              if (active > 0 || isPaused) ...[
+                Tooltip(
+                  tooltip: TooltipContainer(
+                    child: Text(
+                      isPaused
+                          ? context.l10n.resume_downloads
+                          : context.l10n.pause_downloads,
+                    ),
+                  ).call,
+                  child: IconButton.outline(
+                    icon: Icon(
+                      isPaused ? SonolythIcons.play : SonolythIcons.pause,
+                    ),
+                    onPressed: isPaused
+                        ? downloadManagerNotifier.resumeQueue
+                        : downloadManagerNotifier.pauseQueue,
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
               if (failed > 0) ...[
                 Button.outline(
                   onPressed: downloadManagerNotifier.retryAllFailed,
@@ -105,7 +127,33 @@ class UserDownloadsPage extends HookConsumerWidget {
             ],
           ),
         ),
-        if (cooldownUntil != null)
+        if (isPaused)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(15, 8, 15, 0),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.muted,
+                borderRadius: theme.borderRadiusMd,
+              ),
+              child: Row(
+                children: [
+                  const Icon(SonolythIcons.pause, size: 14),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      context.l10n.downloads_paused,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.typography.xSmall,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        if (cooldownUntil != null && !isPaused)
           Padding(
             padding: const EdgeInsets.fromLTRB(15, 8, 15, 0),
             child: StreamBuilder(

@@ -3033,6 +3033,24 @@ abstract class AppLocalizations {
   /// **'Paused to avoid the download rate limit — resuming in {seconds}s'**
   String download_rate_limit_paused(Object seconds);
 
+  /// No description provided for @pause_downloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause downloads'**
+  String get pause_downloads;
+
+  /// No description provided for @resume_downloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume downloads'**
+  String get resume_downloads;
+
+  /// No description provided for @downloads_paused.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads paused — tap the play button to resume'**
+  String get downloads_paused;
+
   /// No description provided for @lossless_downloads.
   ///
   /// In en, this message translates to:

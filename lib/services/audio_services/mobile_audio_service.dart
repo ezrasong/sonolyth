@@ -135,14 +135,17 @@ class MobileAudioService extends BaseAudioHandler {
   Future<PlaybackState> _transformEvent() async {
     try {
       return PlaybackState(
+        // Android 13+ renders every control as a button, so a fourth "stop"
+        // action makes the row lopsided. Keep the standard centred trio;
+        // stop stays reachable as a system action (Bluetooth/headset).
         controls: [
           MediaControl.skipToPrevious,
           audioPlayer.isPlaying ? MediaControl.pause : MediaControl.play,
           MediaControl.skipToNext,
-          MediaControl.stop,
         ],
         systemActions: {
           MediaAction.seek,
+          MediaAction.stop,
         },
         androidCompactActionIndices: const [0, 1, 2],
         playing: audioPlayer.isPlaying,

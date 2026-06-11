@@ -1605,6 +1605,16 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
+  String get pause_downloads => 'Pause downloads';
+
+  @override
+  String get resume_downloads => 'Resume downloads';
+
+  @override
+  String get downloads_paused =>
+      'Downloads paused — tap the play button to resume';
+
+  @override
   String get lossless_downloads => 'Lossless downloads';
 
   @override

@@ -46,8 +46,15 @@ class TrackPresentationTopSection extends HookConsumerWidget {
     final imageDimension =
         isWide ? 200.0 : (mediaQuery.width * 0.56).clamp(160.0, 260.0);
 
-    final (:isLoading, :isActive, :onPlay, :onShuffle, :onAddToQueue) =
-        useActionCallbacks(ref);
+    final (
+      :isLoading,
+      :isActive,
+      :isPlayLoading,
+      :isShuffleLoading,
+      :onPlay,
+      :onShuffle,
+      :onAddToQueue
+    ) = useActionCallbacks(ref);
     final playing =
         useStream(audioPlayer.playingStream).data ?? audioPlayer.isPlaying;
     final isDownloadingAll = useState(false);
@@ -103,11 +110,19 @@ class TrackPresentationTopSection extends HookConsumerWidget {
         child: Text(context.l10n.shuffle_playlist),
       ).call,
       child: IconButton.ghost(
-        icon: isLoading
-            ? const Center(
-                child: CircularProgressIndicator(onSurface: false, size: 20),
-              )
-            : const Icon(SonolythIcons.shuffle),
+        // The icon keeps its footprint while loading (the spinner is overlaid
+        // on a transparent icon) so the action row never re-layouts mid-press.
+        icon: Stack(
+          alignment: Alignment.center,
+          children: [
+            Opacity(
+              opacity: isShuffleLoading ? 0 : 1,
+              child: const Icon(SonolythIcons.shuffle),
+            ),
+            if (isShuffleLoading)
+              const CircularProgressIndicator(onSurface: false, size: 16),
+          ],
+        ),
         shape: ButtonShape.circle,
         enabled: !isLoading && !isActive,
         onPressed: onShuffle,
@@ -164,15 +179,21 @@ class TrackPresentationTopSection extends HookConsumerWidget {
       child: IconButton.primary(
         shape: ButtonShape.circle,
         size: isWide ? ButtonSize.large : const ButtonSize(1.3),
-        icon: switch ((isActive, isLoading)) {
-          (true, false) => Icon(
-              playing ? SonolythIcons.pause : SonolythIcons.play,
+        // Same trick as the shuffle button: the spinner overlays a transparent
+        // icon so the button's size never changes and the row stays put.
+        icon: Stack(
+          alignment: Alignment.center,
+          children: [
+            Opacity(
+              opacity: isPlayLoading ? 0 : 1,
+              child: Icon(
+                isActive && playing ? SonolythIcons.pause : SonolythIcons.play,
+              ),
             ),
-          (false, true) => const Center(
-              child: CircularProgressIndicator(onSurface: true, size: 18),
-            ),
-          _ => const Icon(SonolythIcons.play),
-        },
+            if (isPlayLoading)
+              const CircularProgressIndicator(onSurface: true, size: 18),
+          ],
+        ),
         // When this collection is already playing, the button toggles
         // pause/resume instead of being disabled.
         onPressed: isActive

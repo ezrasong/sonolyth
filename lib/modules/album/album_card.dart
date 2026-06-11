@@ -47,12 +47,18 @@ class AlbumCard extends HookConsumerWidget {
 
     final updating = useState(false);
 
+    final fetchInitialTracks = useCallback(() async {
+      final result =
+          await ref.read(metadataPluginAlbumTracksProvider(album.id).future);
+      return result.items;
+    }, [album.id, ref]);
+
     final fetchAllTrack = useCallback(() async {
-      await ref.read(metadataPluginAlbumTracksProvider(album.id).future);
+      await fetchInitialTracks();
       return ref
           .read(metadataPluginAlbumTracksProvider(album.id).notifier)
           .fetchAll();
-    }, [album.id, ref]);
+    }, [album.id, ref, fetchInitialTracks]);
 
     final imageUrl = useMemoized(
       () => album.images.from200PxTo300PxOrSmallestImage(
@@ -117,47 +123,69 @@ class AlbumCard extends HookConsumerWidget {
         return;
       }
 
+      // Queue the first page immediately so the card doesn't sit in a loading
+      // state while the album is fetched page by page; the rest streams in
+      // behind the toast.
+      var initialTracks = <SonolythTrackObject>[];
       updating.value = true;
       try {
-        final fetchedTracks = await fetchAllTrack();
+        initialTracks = await fetchInitialTracks();
+        if (initialTracks.isEmpty) return;
 
-        if (fetchedTracks.isEmpty) return;
-        playlistNotifier.addTracks(fetchedTracks);
+        if (ref.read(audioPlayerProvider).tracks.isEmpty) {
+          // Nothing to queue behind — start playing right away instead of
+          // appending tracks to a stopped player.
+          await playlistNotifier.load(initialTracks, autoPlay: true);
+        } else {
+          await playlistNotifier.addTracks(initialTracks);
+        }
         playlistNotifier.addCollection(album.id);
         historyNotifier.addAlbums([album]);
-        if (context.mounted) {
-          showToast(
-            context: context,
-            builder: (context, overlay) {
-              return SurfaceCard(
-                child: Basic(
-                  content: Text(
-                    context.l10n.added_to_queue(fetchedTracks.length),
-                  ),
-                  trailing: Button.outline(
-                    child: Text(context.l10n.undo),
-                    onPressed: () {
-                      playlistNotifier
-                          .removeTracks(fetchedTracks.map((e) => e.id));
-                    },
-                  ),
-                ),
-              );
-            },
-          );
-        }
       } finally {
         updating.value = false;
       }
+
+      final addedIds = initialTracks.map((e) => e.id).toList();
+      var undone = false;
+      if (context.mounted) {
+        showToast(
+          context: context,
+          builder: (context, overlay) {
+            return SurfaceCard(
+              child: Basic(
+                content: Text(
+                  context.l10n.added_to_queue(initialTracks.length),
+                ),
+                trailing: Button.outline(
+                  child: Text(context.l10n.undo),
+                  onPressed: () {
+                    undone = true;
+                    playlistNotifier.removeTracks(List.of(addedIds));
+                  },
+                ),
+              ),
+            );
+          },
+        );
+      }
+
+      final allTracks = await fetchAllTrack();
+      if (undone) return;
+      final rest = allTracks.skip(initialTracks.length).toList();
+      if (rest.isEmpty) return;
+      addedIds.addAll(rest.map((e) => e.id));
+      await playlistNotifier.addTracks(rest);
     }, [
       isPlaylistPlaying,
-      updating.value,
+      fetchInitialTracks,
       fetchAllTrack,
+      ref,
       playlistNotifier,
       album.id,
       historyNotifier,
       album,
-      context
+      context,
+      updating
     ]);
 
     if (_isTile) {
