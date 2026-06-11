@@ -22,6 +22,7 @@ import 'package:sonolyth/extensions/duration.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/audio_player/querying_track_info.dart';
 import 'package:sonolyth/provider/audio_player/state.dart';
+import 'package:sonolyth/services/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/blacklist_provider.dart';
 import 'package:sonolyth/provider/download_manager_provider.dart';
 import 'package:sonolyth/provider/downloaded_tracks_provider.dart';
@@ -77,6 +78,10 @@ class TrackTile extends HookConsumerWidget {
     final isLoading = useState(false);
 
     final isPlaying = playlist.activeTrack?.id == track.id;
+    // Whether audio is actually running — the active tile shows a pause
+    // glyph only while playing and a play glyph while paused.
+    final isAudioPlaying =
+        useStream(audioPlayer.playingStream).data ?? audioPlayer.isPlaying;
 
     final isSelected = isPlaying || isLoading.value;
     final downloadManager = ref.read(downloadManagerProvider.notifier);
@@ -222,7 +227,7 @@ class TrackTile extends HookConsumerWidget {
                                 child: switch ((
                                   isPlaying,
                                   isFetchingActiveTrack,
-                                  isPlaying,
+                                  isAudioPlaying,
                                   isHovering,
                                   isLoading.value
                                 )) {
@@ -233,8 +238,14 @@ class TrackTile extends HookConsumerWidget {
                                       height: 26,
                                       child: CircularProgressIndicator(),
                                     ),
-                                  (_, _, true, _, _) => Icon(
+                                  // Active + audio running → pause glyph;
+                                  // active but paused → play glyph.
+                                  (true, _, true, _, _) => Icon(
                                       SonolythIcons.pause,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  (true, _, false, _, _) => Icon(
+                                      SonolythIcons.play,
                                       color: theme.colorScheme.primary,
                                     ),
                                   (_, _, _, true, _) => const Icon(

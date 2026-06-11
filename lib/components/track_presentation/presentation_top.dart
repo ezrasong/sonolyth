@@ -391,16 +391,28 @@ class TrackPresentationTopSection extends HookConsumerWidget {
               titleBlock,
               if (ownerRow != null) ownerRow,
               // Play sits dead-centre, flanked by shuffle (left) and repeat
-              // (right); the secondary icons split evenly to the outer edges so
-              // there's an equal number of controls on each side.
+              // (right). The secondary icons fill equal-width Expanded groups
+              // on each side, so Play stays centred even when the two groups
+              // hold an unequal number of icons (e.g. 3 left / 2 right).
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  ...secondaryActions.take(secondaryLeftCount),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children:
+                          secondaryActions.take(secondaryLeftCount).toList(),
+                    ),
+                  ),
                   shuffleButton,
                   playButton,
                   repeatButton,
-                  ...secondaryActions.skip(secondaryLeftCount),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children:
+                          secondaryActions.skip(secondaryLeftCount).toList(),
+                    ),
+                  ),
                 ],
               ),
             ],

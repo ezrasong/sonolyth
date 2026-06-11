@@ -862,6 +862,24 @@ class AppLocalizationsRu extends AppLocalizations {
   String get connect => 'Подключить';
 
   @override
+  String get background_playback => 'Background playback';
+
+  @override
+  String get background_playback_explanation =>
+      'To keep music playing while the screen is off, Sonolyth needs to be excluded from battery optimization. Android will ask you to confirm on the next screen.';
+
+  @override
+  String get background_playback_manufacturer_hint =>
+      'Your device has extra battery optimizations. Disable them for Sonolyth so playback isn\'t stopped in the background.';
+
+  @override
+  String get download_location_not_writable => 'Can\'t write to this folder';
+
+  @override
+  String get download_location_not_writable_help =>
+      'Sonolyth doesn\'t have permission to save files here. Pick a folder inside Music or Download, or allow \"All files access\" for Sonolyth in Android\'s app settings and try again.';
+
+  @override
   String get disconnect_lastfm => 'Отключиться от Last.fm';
 
   @override

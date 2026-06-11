@@ -1731,6 +1731,36 @@ abstract class AppLocalizations {
   /// **'Connect'**
   String get connect;
 
+  /// No description provided for @background_playback.
+  ///
+  /// In en, this message translates to:
+  /// **'Background playback'**
+  String get background_playback;
+
+  /// No description provided for @background_playback_explanation.
+  ///
+  /// In en, this message translates to:
+  /// **'To keep music playing while the screen is off, Sonolyth needs to be excluded from battery optimization. Android will ask you to confirm on the next screen.'**
+  String get background_playback_explanation;
+
+  /// No description provided for @background_playback_manufacturer_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your device has extra battery optimizations. Disable them for Sonolyth so playback isn\'t stopped in the background.'**
+  String get background_playback_manufacturer_hint;
+
+  /// No description provided for @download_location_not_writable.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t write to this folder'**
+  String get download_location_not_writable;
+
+  /// No description provided for @download_location_not_writable_help.
+  ///
+  /// In en, this message translates to:
+  /// **'Sonolyth doesn\'t have permission to save files here. Pick a folder inside Music or Download, or allow \"All files access\" for Sonolyth in Android\'s app settings and try again.'**
+  String get download_location_not_writable_help;
+
   /// No description provided for @disconnect_lastfm.
   ///
   /// In en, this message translates to:

@@ -1,5 +1,10 @@
 {
   "ar": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -54,6 +59,11 @@
   ],
 
   "bn": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -108,6 +118,11 @@
   ],
 
   "ca": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -162,6 +177,11 @@
   ],
 
   "cs": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -216,6 +236,11 @@
   ],
 
   "de": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -270,6 +295,11 @@
   ],
 
   "es": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -324,6 +354,11 @@
   ],
 
   "eu": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -378,6 +413,11 @@
   ],
 
   "fa": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -432,6 +472,11 @@
   ],
 
   "fi": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -486,6 +531,11 @@
   ],
 
   "fr": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -540,6 +590,11 @@
   ],
 
   "hi": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -594,6 +649,11 @@
   ],
 
   "id": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -648,6 +708,11 @@
   ],
 
   "it": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -702,6 +767,11 @@
   ],
 
   "ja": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -756,6 +826,11 @@
   ],
 
   "ka": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -810,6 +885,11 @@
   ],
 
   "ko": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -864,6 +944,11 @@
   ],
 
   "ne": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -918,6 +1003,11 @@
   ],
 
   "nl": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -972,6 +1062,11 @@
   ],
 
   "pl": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -1026,6 +1121,11 @@
   ],
 
   "pt": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -1080,6 +1180,11 @@
   ],
 
   "ru": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -1134,6 +1239,11 @@
   ],
 
   "ta": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -1188,6 +1298,11 @@
   ],
 
   "th": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -1242,6 +1357,11 @@
   ],
 
   "tl": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -1296,6 +1416,11 @@
   ],
 
   "tr": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -1350,6 +1475,11 @@
   ],
 
   "uk": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -1404,6 +1534,11 @@
   ],
 
   "vi": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -1458,6 +1593,11 @@
   ],
 
   "zh": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",
@@ -1512,6 +1652,11 @@
   ],
 
   "zh_TW": [
+    "background_playback",
+    "background_playback_explanation",
+    "background_playback_manufacturer_hint",
+    "download_location_not_writable",
+    "download_location_not_writable_help",
     "disconnect_lastfm_confirmation",
     "home",
     "good_morning",

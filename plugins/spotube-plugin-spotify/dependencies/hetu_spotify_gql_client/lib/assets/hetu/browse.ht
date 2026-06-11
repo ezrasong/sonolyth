@@ -28,10 +28,14 @@ class SpotifyBrowseEndpoint {
         if(wrapperTypeName == "PlaylistResponseWrapper" && contentTypeName == "Playlist") {
           var id = item["uri"].split(":").last
           var playlist = item["content"]["data"]
-          var ownerV2 = playlist["ownerV2"]["data"]
-          var ownerId = ownerV2["uri"].split(":")?.last
+          // Editorial/auto-generated playlists (Daily Mixes etc.) can come
+          // without ownerV2 — fall back to the Spotify house account instead
+          // of crashing the whole home feed.
+          var ownerV2 = playlist["ownerV2"]?["data"]
+          var ownerUri = ownerV2?["uri"] ?? "spotify:user:spotify"
+          var ownerId = ownerUri.split(":").last
 
-          
+
           return {
             objectType: "Playlist",
             id: id,
@@ -47,9 +51,9 @@ class SpotifyBrowseEndpoint {
                 "spotify": "https://open.spotify.com/user/${ownerId}"
               },
               "id": ownerId,
-              "uri": ownerV2["uri"],
-              "display_name": ownerV2["name"],
-              images: ownerV2["avatar"]?["sources"] ?? []
+              "uri": ownerUri,
+              "display_name": ownerV2?["name"] ?? "Spotify",
+              images: ownerV2?["avatar"]?["sources"] ?? []
             },
             "uri": item["uri"],
           }.toJson()
@@ -177,8 +181,6 @@ class SpotifyBrowseEndpoint {
       var pagingInfo = homeSection["pagingInfo"]
 
       var items = this.parseSectionItems(data["data"]["homeSections"]["sections"][0])["items"]
-
-      print("Items: ${items.length}")
 
       return {
         offset: pagingInfo["offset"] ?? offset ?? 0,

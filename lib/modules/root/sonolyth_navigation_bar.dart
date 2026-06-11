@@ -110,16 +110,41 @@ class _SpotifyNavigationItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 2,
           children: [
-            Badge(
-              isLabelVisible: badgeCount > 0,
-              // Cap wide counts so a 3-digit queue (e.g. 679) doesn't balloon
-              // the badge past the icon.
-              label: Text(
-                badgeCount > 99 ? "99+" : badgeCount.toString(),
-                style: const TextStyle(fontSize: 9),
-              ),
-              backgroundColor: colorScheme.primary,
-              child: Icon(icon, color: foreground, size: 23),
+            // Hand-rolled pill instead of material.Badge: Badge hangs its
+            // label above the icon's bounds where the mini player paints over
+            // it (count appeared decapitated), and its label color fell back
+            // to the unconfigured Material theme. The pill sits beside the
+            // icon, fully inside the navbar row, with explicit colors.
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(icon, color: foreground, size: 23),
+                if (badgeCount > 0)
+                  Positioned(
+                    left: 25,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        // Cap wide counts so a 3-digit queue (e.g. 679)
+                        // doesn't balloon the pill past the tab.
+                        badgeCount > 99 ? "99+" : badgeCount.toString(),
+                        style: TextStyle(
+                          fontSize: 8,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.primaryForeground,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             Text(
               label,

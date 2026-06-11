@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart' show ListTile;
+import 'package:path/path.dart' as p;
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
@@ -19,20 +22,53 @@ class SettingsDownloadsSection extends HookConsumerWidget {
     final preferencesNotifier = ref.watch(userPreferencesProvider.notifier);
     final preferences = ref.watch(userPreferencesProvider);
 
-    final pickDownloadLocation = useCallback(() async {
-      if (kIsMobile || kIsMacOS) {
-        final dirStr = await FilePicker.platform.getDirectoryPath(
-          initialDirectory: preferences.downloadLocation,
-        );
-        if (dirStr == null) return;
-        preferencesNotifier.setDownloadLocation(dirStr);
-      } else {
-        String? dirStr = await getDirectoryPath(
-          initialDirectory: preferences.downloadLocation,
-        );
-        if (dirStr == null) return;
-        preferencesNotifier.setDownloadLocation(dirStr);
+    // Scoped storage (Android 11+) silently rejects raw writes outside the
+    // app dir and the public media collections — verify we can actually
+    // create a file there before accepting the folder, instead of letting
+    // every download fail later.
+    Future<bool> isWritable(String dir) async {
+      try {
+        final probe = File(p.join(dir, ".sonolyth-write-test"));
+        await probe.create(recursive: true);
+        await probe.delete();
+        return true;
+      } catch (_) {
+        return false;
       }
+    }
+
+    final pickDownloadLocation = useCallback(() async {
+      final String? dirStr;
+      if (kIsMobile || kIsMacOS) {
+        dirStr = await FilePicker.platform.getDirectoryPath(
+          initialDirectory: preferences.downloadLocation,
+        );
+      } else {
+        dirStr = await getDirectoryPath(
+          initialDirectory: preferences.downloadLocation,
+        );
+      }
+      if (dirStr == null) return;
+
+      if (!await isWritable(dirStr)) {
+        if (!context.mounted) return;
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(context.l10n.download_location_not_writable),
+            content: Text(context.l10n.download_location_not_writable_help),
+            actions: [
+              Button.primary(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(context.l10n.ok),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
+      preferencesNotifier.setDownloadLocation(dirStr);
     }, [preferences.downloadLocation]);
 
     return SectionCardWithHeading(
