@@ -14,8 +14,20 @@ class UserDownloadsPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
+    final theme = Theme.of(context);
     final downloadQueue = ref.watch(downloadManagerProvider);
     final downloadManagerNotifier = ref.watch(downloadManagerProvider.notifier);
+
+    final active = downloadQueue
+        .where((t) => const [DownloadStatus.queued, DownloadStatus.downloading]
+            .contains(t.status))
+        .length;
+    final failed = downloadQueue
+        .where((t) => t.status == DownloadStatus.failed)
+        .length;
+    final completed = downloadQueue
+        .where((t) => t.status == DownloadStatus.completed)
+        .length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -23,15 +35,41 @@ class UserDownloadsPage extends HookConsumerWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: AutoSizeText(
-                  context.l10n.currently_downloading(downloadQueue.length),
-                  maxLines: 1,
-                ).semiBold(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AutoSizeText(
+                      context.l10n.currently_downloading(active),
+                      maxLines: 1,
+                    ).semiBold(),
+                    if (failed > 0 || completed > 0)
+                      Text(
+                        [
+                          if (completed > 0) "$completed done",
+                          if (failed > 0) "$failed failed",
+                        ].join(" · "),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.typography.xSmall.copyWith(
+                          color: failed > 0
+                              ? Colors.red[400]
+                              : theme.colorScheme.mutedForeground,
+                        ),
+                      ),
+                  ],
+                ),
               ),
               const SizedBox(width: 10),
+              if (failed > 0) ...[
+                Button.outline(
+                  onPressed: downloadManagerNotifier.retryAllFailed,
+                  child: const Text("Retry failed"),
+                ),
+                const SizedBox(width: 8),
+              ],
               Button.destructive(
                 onPressed: downloadQueue.isEmpty
                     ? null

@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -166,9 +167,16 @@ class _LibraryTopNavigationItem extends StatelessWidget {
           isLabelVisible: badgeCount > 0,
           label: Text(badgeCount.toString()),
           backgroundColor: accent,
-          child: Text(
+          // Offset the badge clear of the text so a count doesn't sit on top
+          // of the last letters of a long label like "Downloads".
+          alignment: Alignment.topRight,
+          offset: const Offset(8, -4),
+          // Equal-width tabs leave a long label like "Downloads" + badge
+          // tight; shrink to fit rather than truncating to "Downloa…".
+          child: AutoSizeText(
             label,
             maxLines: 1,
+            minFontSize: 8,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: foreground,

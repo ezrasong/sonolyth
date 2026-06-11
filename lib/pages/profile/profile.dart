@@ -72,6 +72,8 @@ class ProfilePage extends HookConsumerWidget {
                 child: Text(
                   meData.name,
                   textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ).h4(),
               ),
               const SliverGap(20),

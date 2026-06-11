@@ -53,19 +53,25 @@ class ArtistCard extends HookConsumerWidget {
               style: theme.typography.bold,
             ),
             const Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                if (isBlackListed == true) ...[
-                  DestructiveBadge(
-                    child: Text(context.l10n.blacklisted.toUpperCase()),
-                  ),
-                  const Gap(5),
+            // Both badges together can outgrow the fixed card width in
+            // longer locales; scale them down instead of overflowing.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (isBlackListed == true) ...[
+                    DestructiveBadge(
+                      child: Text(context.l10n.blacklisted.toUpperCase()),
+                    ),
+                    const Gap(5),
+                  ],
+                  SecondaryBadge(
+                    child: Text(context.l10n.artist.toUpperCase()),
+                  )
                 ],
-                SecondaryBadge(
-                  child: Text(context.l10n.artist.toUpperCase()),
-                )
-              ],
+              ),
             )
           ],
         ),

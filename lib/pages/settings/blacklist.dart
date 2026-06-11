@@ -78,8 +78,16 @@ class BlackListPage extends HookConsumerWidget {
                   return ButtonTile(
                     style: ButtonVariance.ghost,
                     leading: Text("${index + 1}."),
-                    title: Text("${item.name} (${item.elementType.name})"),
-                    subtitle: Text(item.elementId),
+                    title: Text(
+                      "${item.name} (${item.elementType.name})",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(
+                      item.elementId,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     trailing: IconButton.ghost(
                       icon: Icon(SonolythIcons.trash, color: Colors.red[400]),
                       onPressed: () {

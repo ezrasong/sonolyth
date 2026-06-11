@@ -28,6 +28,7 @@ import 'package:sonolyth/models/database/database.dart';
 import 'package:sonolyth/modules/settings/color_scheme_picker_dialog.dart';
 import 'package:sonolyth/provider/audio_player/audio_player_streams.dart';
 import 'package:sonolyth/provider/database/database.dart';
+import 'package:sonolyth/provider/downloaded_tracks_provider.dart';
 import 'package:sonolyth/provider/glance/glance.dart';
 import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
 import 'package:sonolyth/provider/metadata_plugin/updater/update_checker.dart';
@@ -113,13 +114,13 @@ Future<void> main(List<String> rawArgs) async {
 
     final database = AppDatabase();
 
-    // One-time: drop audio-source matches picked by the old MV-biased
-    // ranking so the song-over-music-video preference applies everywhere.
-    if (KVStoreService.sharedPreferences.getBool('sourceMatchRankingV2') !=
+    // One-time: drop audio-source matches picked by older rankings (v2 was
+    // MV-biased; v3 added variant penalties for live/remix/cover uploads).
+    if (KVStoreService.sharedPreferences.getBool('sourceMatchRankingV3') !=
         true) {
       await database.delete(database.sourceMatchTable).go();
       await KVStoreService.sharedPreferences
-          .setBool('sourceMatchRankingV2', true);
+          .setBool('sourceMatchRankingV3', true);
     }
 
     if (kIsDesktop) {
@@ -198,6 +199,9 @@ class SonolythApp extends HookConsumerWidget {
     }
 
     ref.listen(audioPlayerStreamListenersProvider, (_, __) {});
+    // Load the downloaded-tracks registry up front so media construction can
+    // route already-downloaded tracks to their local files.
+    ref.listen(downloadedTracksProvider, (_, __) {});
     ref.listen(bonsoirProvider, (_, __) {});
     ref.listen(connectClientsProvider, (_, __) {});
     ref.listen(serverProvider, (_, __) {});

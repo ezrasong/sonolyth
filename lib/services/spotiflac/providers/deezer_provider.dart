@@ -79,6 +79,8 @@ class DeezerProvider extends SpotiFlacProvider {
             : SpotiFlacEncryption.none,
         decryptionSeed: trackId,
       );
+    } on ZarzRateLimitedException {
+      rethrow;
     } catch (_) {
       return null;
     }

@@ -52,8 +52,24 @@ jobs:
           flutter pub get
           dart cli/cli.dart install-dependencies --platform=android --arch=all
 
-      # No keystore is configured for the fork yet; the build falls back to
-      # debug signing (fine for sideloading, not for store distribution).
+      # A consistent release keystore (from repo secrets) signs every build;
+      # without it each CI run debug-signs with a fresh key, and Android
+      # refuses to update an installed app over a signature mismatch.
+      - name: Setup release keystore
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/release.keystore
+          cat > android/key.properties <<EOF
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyPassword=$ANDROID_KEY_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          storeFile=release.keystore
+          EOF
 
       - name: Build android apk
         run: dart cli/cli.dart build --arch=all android

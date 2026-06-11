@@ -168,7 +168,11 @@ class MiniLyricsPage extends HookConsumerWidget {
         child: Column(
           children: [
             if (playlistQueue.activeTrack != null)
-              Text(playlistQueue.activeTrack!.name!).semiBold(),
+              Text(
+                playlistQueue.activeTrack!.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ).semiBold(),
             if (showLyrics.value)
               Expanded(
                 child: IndexedStack(

@@ -23,6 +23,7 @@ import 'package:sonolyth/provider/audio_player/querying_track_info.dart';
 import 'package:sonolyth/provider/audio_player/state.dart';
 import 'package:sonolyth/provider/blacklist_provider.dart';
 import 'package:sonolyth/provider/download_manager_provider.dart';
+import 'package:sonolyth/provider/downloaded_tracks_provider.dart';
 import 'package:sonolyth/utils/platform.dart';
 
 final isBlacklistedProvider =
@@ -86,7 +87,11 @@ class TrackTile extends HookConsumerWidget {
       DownloadStatus.queued,
       DownloadStatus.downloading,
     ].contains(downloadTask?.status);
-    final isDownloaded = downloadTask?.status == DownloadStatus.completed;
+    // The persistent registry keeps showing the checkmark after a restart or
+    // a stopped-partway playlist download, when the in-memory queue is gone.
+    final isDownloaded = downloadTask?.status == DownloadStatus.completed ||
+        (track is SonolythFullTrackObject &&
+            ref.watch(downloadedTracksProvider).containsKey(track.id));
 
     final imageProvider = useMemoized(
       () => UniversalImage.imageProvider(

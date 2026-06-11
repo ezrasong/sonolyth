@@ -4,6 +4,7 @@ import 'package:sonolyth/provider/metadata_plugin/library/playlists.dart';
 import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
 import 'package:sonolyth/provider/metadata_plugin/core/user.dart';
 import 'package:sonolyth/provider/metadata_plugin/utils/common.dart';
+import 'package:sonolyth/services/cache/metadata_object_cache.dart';
 import 'package:sonolyth/services/metadata/errors/exceptions.dart';
 import 'package:sonolyth/services/metadata/metadata.dart';
 
@@ -23,7 +24,17 @@ class MetadataPluginPlaylistNotifier
   build(playlistId) async {
     ref.cacheFor();
 
-    return (await metadataPlugin).playlist.getPlaylist(playlistId);
+    // Short disk cache: playlist headers (name/image/owner) change rarely, and
+    // the tracks listing has its own change detection. Stale entries still
+    // serve as a fallback when the provider rate-limits.
+    return MetadataObjectCache.fetchWithCache(
+      namespace: 'playlist',
+      id: playlistId,
+      maxAge: const Duration(hours: 6),
+      fetch: () async => (await metadataPlugin).playlist.getPlaylist(playlistId),
+      fromJson: SonolythFullPlaylistObject.fromJson,
+      toJson: (playlist) => playlist.toJson(),
+    );
   }
 
   Future<void> create({
@@ -78,6 +89,7 @@ class MetadataPluginPlaylistNotifier
             public: public,
             collaborative: collaborative,
           );
+      await MetadataObjectCache.evict('playlist', arg);
       ref.invalidateSelf();
     } on Exception catch (e) {
       onError?.call(e);

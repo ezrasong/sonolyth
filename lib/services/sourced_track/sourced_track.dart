@@ -15,6 +15,7 @@ import 'package:sonolyth/services/logger/logger.dart';
 import 'package:sonolyth/services/metadata/errors/exceptions.dart';
 
 import 'package:sonolyth/services/sourced_track/exceptions.dart';
+import 'package:sonolyth/services/spotiflac/track_matching.dart';
 
 /// Markers of audio-first uploads (what we want to play).
 final audioOnlyRegex = RegExp(
@@ -116,6 +117,7 @@ class SourcedTrack extends BasicSourcedTrack {
         .map((sibling) {
           int score = 0;
           final title = sibling.title.toLowerCase();
+          final normalizedTitle = TrackMatching.normalize(sibling.title);
 
           for (final artist in track.artists) {
             final artistName = artist.name.toLowerCase();
@@ -130,14 +132,25 @@ class SourcedTrack extends BasicSourcedTrack {
               score += 4;
             }
 
-            if (title.contains(artistName)) {
+            if (normalizedTitle.contains(TrackMatching.normalize(artist.name))) {
               score += 1;
             }
           }
 
-          if (title.contains(track.name.toLowerCase())) {
+          // Normalized comparison so punctuation/feat. formatting differences
+          // ("Song (feat. X)" vs "Song ft. X") don't lose the title match.
+          if (normalizedTitle.contains(TrackMatching.normalize(track.name)) ||
+              TrackMatching.titleSimilarity(sibling.title, track.name) >= 0.8) {
             score += 3;
           }
+
+          // Live/remix/cover/sped-up... uploads of a plain studio title are
+          // wrong recordings; one stray keyword shouldn't be outweighed by a
+          // good duration match.
+          score -= (TrackMatching.mismatchedVariants(track.name, sibling.title)
+                      .length *
+                  5)
+              .clamp(0, 10);
 
           // Prefer the song itself over the music video: MVs carry intros,
           // outros and dialogue, so audio-marked uploads win and duration

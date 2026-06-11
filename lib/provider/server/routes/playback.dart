@@ -14,6 +14,7 @@ import 'package:sonolyth/models/parser/range_headers.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/audio_player/state.dart';
 
+import 'package:sonolyth/provider/downloaded_tracks_provider.dart';
 import 'package:sonolyth/provider/server/active_track_sources.dart';
 import 'package:sonolyth/provider/server/sourced_track_provider.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
@@ -174,12 +175,12 @@ class ServerPlaybackRoutes {
       validateStatus: (status) => status! < 400,
     );
 
-    final contentLengthRes = await Future<dio_lib.Response?>.value(
-      dio.head(
-        url,
-        options: options.copyWith(responseType: ResponseType.bytes),
-      ),
-    ).catchError((e, stack) async {
+    // GET directly (no probing HEAD first — that cost a full roundtrip at
+    // every track start); if the cached URL has expired, refresh and retry.
+    dio_lib.Response<ResponseBody> res;
+    try {
+      res = await dio.get<ResponseBody>(url, options: options);
+    } catch (e, stack) {
       AppLogger.reportError(e, stack);
 
       final sourcedTrack = await ref
@@ -187,12 +188,11 @@ class ServerPlaybackRoutes {
           .refreshStreamingUrl();
 
       url = sourcedTrack.url!;
-
-      return dio.head(url, options: options);
-    });
+      res = await dio.get<ResponseBody>(url, options: options);
+    }
 
     // Redirect to m3u8 link directly as it handles range requests internally
-    if (contentLengthRes?.headers.value("content-type") ==
+    if (res.headers.value("content-type") ==
         "application/vnd.apple.mpegurl") {
       return dio_lib.Response<Uint8List>(
         statusCode: 301,
@@ -205,8 +205,6 @@ class ServerPlaybackRoutes {
         isRedirect: true,
       );
     }
-
-    final res = await dio.get<ResponseBody>(url, options: options);
 
     AppLogger.log.i(
       "Response for track: ${track.query.name}\n"
@@ -274,9 +272,39 @@ class ServerPlaybackRoutes {
     return res;
   }
 
+  /// Serves a natively downloaded file for tracks whose media was enqueued
+  /// (pointing at the server) before the download finished, so playback still
+  /// uses the local file instead of an online stream.
+  Future<Response?> _serveDownloadedFile(
+    String trackId, {
+    required bool headOnly,
+  }) async {
+    final path =
+        ref.read(downloadedTracksProvider.notifier).pathFor(trackId);
+    if (path == null) return null;
+
+    final file = File(path);
+    final length = await file.length();
+    final extension =
+        path.split('.').last.toLowerCase().replaceAll("m4a", "mp4");
+    final headers = {
+      "content-type": "audio/$extension",
+      "content-length": "$length",
+      "accept-ranges": "bytes",
+      "content-range": "bytes 0-$length/$length",
+    };
+
+    if (headOnly) return Response(200, headers: headers);
+    return Response(200, body: file.openRead(), headers: headers);
+  }
+
   /// @head('/stream/<trackId>')
   Future<Response> headStreamTrackId(Request request, String trackId) async {
     try {
+      final downloaded =
+          await _serveDownloadedFile(trackId, headOnly: true);
+      if (downloaded != null) return downloaded;
+
       final sourcedTrack = await _getSourcedTrack(request, trackId);
 
       if (sourcedTrack == null) {
@@ -301,6 +329,10 @@ class ServerPlaybackRoutes {
   /// @get('/stream/<trackId>')
   Future<Response> getStreamTrackId(Request request, String trackId) async {
     try {
+      final downloaded =
+          await _serveDownloadedFile(trackId, headOnly: false);
+      if (downloaded != null) return downloaded;
+
       final sourcedTrack = await _getSourcedTrack(request, trackId);
 
       if (sourcedTrack == null) {

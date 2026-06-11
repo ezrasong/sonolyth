@@ -85,6 +85,9 @@ class QobuzProvider extends SpotiFlacProvider {
         if (url == null || url.isEmpty) continue;
 
         return SpotiFlacDownloadResolution(url: url, fileExtension: "flac");
+      } on ZarzRateLimitedException {
+        // Lower tiers would hit the same limiter; let the caller report it.
+        rethrow;
       } catch (_) {
         // Try the next quality tier.
       }
@@ -113,6 +116,8 @@ class QobuzProvider extends SpotiFlacProvider {
       final tracks = payload["tracks"];
       final items = tracks is Map ? tracks["items"] : null;
       return items is List ? items.whereType<Map>().toList() : const [];
+    } on ZarzRateLimitedException {
+      rethrow;
     } catch (_) {
       return const [];
     }

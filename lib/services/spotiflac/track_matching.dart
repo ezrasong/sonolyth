@@ -6,12 +6,23 @@ abstract class TrackMatching {
     r"\s*[\(\[]\s*(feat|ft|featuring|with)\.?\s.*?[\)\]]",
     caseSensitive: false,
   );
+
+  /// Bare (unbracketed) feature credits, e.g. "Song ft. X" or
+  /// "Song featuring X" — these run to the end of the title. "with" is
+  /// deliberately excluded here (too many real titles contain it, e.g.
+  /// "Gone with the Wind"); only the unambiguous feat./ft. markers are
+  /// stripped, and a leading space requirement keeps words like "Lift" safe.
+  static final _bareFeatureRegex = RegExp(
+    r"\s+(feat|ft|featuring)\.?\s+.*$",
+    caseSensitive: false,
+  );
   static final _nonAlphaNum = RegExp(r"[^a-z0-9\s]");
   static final _spaces = RegExp(r"\s+");
 
   static String normalize(String value) {
     var text = value.toLowerCase();
     text = text.replaceAll(_featureRegex, " ");
+    text = text.replaceAll(_bareFeatureRegex, " ");
     text = _stripDiacritics(text);
     text = text.replaceAll(_nonAlphaNum, " ");
     return text.replaceAll(_spaces, " ").trim();
@@ -58,7 +69,37 @@ abstract class TrackMatching {
     return 0;
   }
 
-  /// Combined score: title 60%, artist 40%, with a small duration bonus.
+  /// Alternate-version markers. A candidate carrying one of these when the
+  /// expected title doesn't is almost always the wrong recording, even when
+  /// every other word matches.
+  static const variantWords = {
+    "live",
+    "remix",
+    "cover",
+    "acoustic",
+    "instrumental",
+    "karaoke",
+    "sped",
+    "slowed",
+    "nightcore",
+    "reverb",
+    "mashup",
+    "demo",
+    "unplugged",
+  };
+
+  /// Variant markers present in [candidate] but not in [expected]
+  /// (normalized word-wise).
+  static Set<String> mismatchedVariants(String expected, String candidate) {
+    final expectedWords = normalize(expected).split(" ").toSet();
+    final candidateWords = normalize(candidate).split(" ").toSet();
+    return variantWords
+        .where((w) => candidateWords.contains(w) && !expectedWords.contains(w))
+        .toSet();
+  }
+
+  /// Combined score: title 60%, artist 40%, with duration and
+  /// alternate-version corrections.
   static double score({
     required String expectedTitle,
     required String candidateTitle,
@@ -70,9 +111,20 @@ abstract class TrackMatching {
     var value = titleSimilarity(expectedTitle, candidateTitle) * 0.6 +
         artistSimilarity(expectedArtists, candidateArtists) * 0.4;
 
+    // A "(Live)" / "(Remix)" / etc. candidate for a plain studio title is the
+    // wrong recording no matter how well the words overlap.
+    final variants = mismatchedVariants(expectedTitle, candidateTitle).length;
+    value -= (variants * 0.3).clamp(0.0, 0.6);
+
     if (expectedDurationMs > 0 && candidateDurationMs > 0) {
       final diff = (expectedDurationMs - candidateDurationMs).abs();
-      if (diff <= 3000) value += 0.05;
+      if (diff <= 3000) {
+        value += 0.05;
+      } else if (diff > 30000) {
+        value -= 0.3;
+      } else if (diff > 10000) {
+        value -= 0.1;
+      }
     }
     return value;
   }

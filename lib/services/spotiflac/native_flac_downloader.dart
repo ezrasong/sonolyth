@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:metadata_god/metadata_god.dart';
@@ -7,6 +6,7 @@ import 'package:path/path.dart' as path;
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/services/spotiflac/deezer_crypto.dart';
 import 'package:sonolyth/services/spotiflac/providers/spotiflac_provider.dart';
+import 'package:sonolyth/services/spotiflac/zarz_client.dart';
 import 'package:sonolyth/utils/service_utils.dart';
 
 class SpotiFlacDownloadException implements Exception {
@@ -17,8 +17,8 @@ class SpotiFlacDownloadException implements Exception {
 }
 
 /// Downloads a track's lossless file entirely in-app: resolves a direct URL
-/// from the ordered [providers], streams it with progress, decrypts when the
-/// source requires it, writes it into [downloadDirectory] and tags it.
+/// from the ordered [providers], streams it to disk with progress, decrypts
+/// when the source requires it, and tags the result.
 class NativeFlacDownloader {
   final Dio _dio;
 
@@ -37,19 +37,35 @@ class NativeFlacDownloader {
     }
 
     SpotiFlacDownloadResolution? resolution;
+    // Per-provider failure reasons, so a total failure can say *why*
+    // (rate limited vs no match vs network) instead of a generic message.
+    final failures = <String>[];
     for (final provider in providers) {
       final quality = qualityByProvider[provider.id] ?? provider.defaultQuality;
       try {
         resolution = await provider.resolve(track, quality);
-      } catch (_) {
+        if (resolution == null) {
+          failures.add("${provider.displayName}: no match");
+        }
+      } on DioException catch (e) {
+        if (CancelToken.isCancel(e)) rethrow;
+        failures.add(
+          "${provider.displayName}: ${e.response?.statusCode == 429 ? "rate limited" : "network error"}",
+        );
+        resolution = null;
+      } on ZarzRateLimitedException {
+        failures.add("${provider.displayName}: rate limited");
+        resolution = null;
+      } catch (e) {
+        failures.add("${provider.displayName}: $e");
         resolution = null;
       }
       if (resolution != null) break;
     }
 
     if (resolution == null) {
-      throw const SpotiFlacDownloadException(
-        "No provider could find this track",
+      throw SpotiFlacDownloadException(
+        "Couldn't source this track — ${failures.join("; ")}",
       );
     }
 
@@ -60,48 +76,57 @@ class NativeFlacDownloader {
 
     final fileName = _buildFileName(track, resolution.fileExtension);
     final outputPath = path.join(downloadDirectory, fileName);
+    final partPath = "$outputPath.part";
 
-    final bytes = await _downloadBytes(
-      resolution.url,
-      cancelToken: cancelToken,
-      onProgress: (received, total) {
-        if (total > 0 && onProgress != null) {
-          // Reserve the last 10% for decrypt + tagging.
-          onProgress((received / total) * 0.9);
+    try {
+      // Stream straight to disk; buffering whole FLACs in memory adds up
+      // fast on mobile during long playlist runs.
+      await _dio.download(
+        resolution.url,
+        partPath,
+        cancelToken: cancelToken,
+        onReceiveProgress: (received, total) {
+          if (total > 0 && onProgress != null) {
+            // Reserve the last 10% for decrypt + tagging.
+            onProgress((received / total) * 0.9);
+          }
+        },
+      );
+
+      final partFile = File(partPath);
+      final fileLength = await partFile.length();
+      if (fileLength == 0) {
+        throw const SpotiFlacDownloadException("Empty download stream");
+      }
+
+      if (resolution.encryption == SpotiFlacEncryption.deezerBlowfish) {
+        final decrypted = DeezerCrypto.decrypt(
+          await partFile.readAsBytes(),
+          resolution.decryptionSeed ?? "",
+        );
+        await File(outputPath).writeAsBytes(decrypted);
+        await partFile.delete();
+      } else {
+        if (await File(outputPath).exists()) {
+          await File(outputPath).delete();
         }
-      },
-    );
+        await partFile.rename(outputPath);
+      }
+    } catch (_) {
+      // Never leave half-written .part files behind.
+      final partFile = File(partPath);
+      if (await partFile.exists()) {
+        await partFile.delete().catchError((_) => partFile);
+      }
+      rethrow;
+    }
 
-    final finalBytes = resolution.encryption == SpotiFlacEncryption.deezerBlowfish
-        ? DeezerCrypto.decrypt(bytes, resolution.decryptionSeed ?? "")
-        : bytes;
-
-    final file = File(outputPath);
-    await file.writeAsBytes(finalBytes);
     onProgress?.call(0.95);
 
-    await _writeTags(track, outputPath, finalBytes.length);
+    await _writeTags(track, outputPath, await File(outputPath).length());
     onProgress?.call(1.0);
 
     return outputPath;
-  }
-
-  Future<Uint8List> _downloadBytes(
-    String url, {
-    CancelToken? cancelToken,
-    void Function(int received, int total)? onProgress,
-  }) async {
-    final response = await _dio.get<List<int>>(
-      url,
-      cancelToken: cancelToken,
-      onReceiveProgress: onProgress,
-      options: Options(responseType: ResponseType.bytes),
-    );
-    final data = response.data;
-    if (data == null || data.isEmpty) {
-      throw const SpotiFlacDownloadException("Empty download stream");
-    }
-    return Uint8List.fromList(data);
   }
 
   Future<void> _writeTags(

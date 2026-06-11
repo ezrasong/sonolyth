@@ -18,8 +18,22 @@ part 'audio_player_impl.dart';
 class SonolythMedia extends mk.Media {
   static int serverPort = 0;
 
+  /// Track id -> locally downloaded file path, mirrored from the downloaded
+  /// tracks registry. Lets the constructor (synchronous, riverpod-free)
+  /// prefer the on-disk file over the streaming server URL.
+  static Map<String, String> downloadedPaths = const {};
+
   static String get _host =>
       kIsWindows ? "localhost" : InternetAddress.anyIPv4.address;
+
+  static String _uriFor(SonolythTrackObject track) {
+    if (track is SonolythLocalTrackObject) return track.path;
+    final downloaded = downloadedPaths[track.id];
+    if (downloaded != null && File(downloaded).existsSync()) {
+      return downloaded;
+    }
+    return "http://$_host:$serverPort/stream/${track.id}";
+  }
 
   final SonolythTrackObject track;
   SonolythMedia(this.track)
@@ -27,11 +41,10 @@ class SonolythMedia extends mk.Media {
           track is SonolythLocalTrackObject || track is SonolythFullTrackObject,
           "Track must be a either a local track or a full track object with ISRC",
         ),
-        // If the track is a local track, use its path, otherwise use the server URL
+        // Local tracks and downloaded tracks play from disk; everything else
+        // goes through the in-app streaming server.
         super(
-          track is SonolythLocalTrackObject
-              ? track.path
-              : "http://$_host:$serverPort/stream/${track.id}",
+          _uriFor(track),
           extras: track.toJson(),
         );
 

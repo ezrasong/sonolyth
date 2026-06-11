@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/downloaded_tracks_provider.dart';
 import 'package:sonolyth/provider/spotiflac/download_settings.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 import 'package:sonolyth/provider/youtube_engine/youtube_engine.dart';
@@ -29,6 +30,10 @@ class DownloadTask {
   final DownloadStatus status;
   final CancelToken cancelToken;
   final int? totalSizeBytes;
+
+  /// Human-readable failure reason, set when [status] is
+  /// [DownloadStatus.failed] so the UI can say why instead of a bare icon.
+  final String? errorMessage;
   final StreamController<int> _downloadedBytesStreamController;
 
   Stream<int> get downloadedBytesStream =>
@@ -39,6 +44,7 @@ class DownloadTask {
     required this.status,
     required this.cancelToken,
     this.totalSizeBytes,
+    this.errorMessage,
     StreamController<int>? downloadedBytesStreamController,
   }) : _downloadedBytesStreamController =
             downloadedBytesStreamController ?? StreamController.broadcast();
@@ -48,6 +54,8 @@ class DownloadTask {
     DownloadStatus? status,
     CancelToken? cancelToken,
     int? totalSizeBytes,
+    String? errorMessage,
+    bool clearError = false,
     StreamController<int>? downloadedBytesStreamController,
   }) {
     return DownloadTask(
@@ -55,6 +63,7 @@ class DownloadTask {
       status: status ?? this.status,
       cancelToken: cancelToken ?? this.cancelToken,
       totalSizeBytes: totalSizeBytes ?? this.totalSizeBytes,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       downloadedBytesStreamController:
           downloadedBytesStreamController ?? _downloadedBytesStreamController,
     );
@@ -80,8 +89,17 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
     return state.firstWhereOrNull((element) => element.track.id == trackId);
   }
 
+  /// Tracks already on disk (from this or a previous session) are skipped so
+  /// re-downloading a playlist after stopping partway only fetches the rest.
+  bool _alreadyDownloaded(SonolythFullTrackObject track) {
+    return ref
+        .read(downloadedTracksProvider.notifier)
+        .isDownloaded(track.id);
+  }
+
   void addToQueue(SonolythFullTrackObject track) {
     if (state.any((element) => element.track.id == track.id)) return;
+    if (_alreadyDownloaded(track)) return;
     state = [
       ...state,
       DownloadTask(
@@ -100,8 +118,10 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
     String? collectionUrl,
   }) {
     final queuedTrackIds = state.map((task) => task.track.id).toSet();
-    final newTracks =
-        tracks.where((track) => !queuedTrackIds.contains(track.id)).toList();
+    final newTracks = tracks
+        .where((track) =>
+            !queuedTrackIds.contains(track.id) && !_alreadyDownloaded(track))
+        .toList();
     if (newTracks.isEmpty) return;
 
     state = [
@@ -144,15 +164,27 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
     state = [];
   }
 
-  void _setStatus(SonolythFullTrackObject track, DownloadStatus status) {
+  void _setStatus(
+    SonolythFullTrackObject track,
+    DownloadStatus status, {
+    String? error,
+  }) {
     state = state.map((e) {
       if (e.track.id == track.id) {
         // A re-queued task needs a fresh cancel token; the old one may have
         // been cancelled on a prior failed/cancelled attempt.
         if (status == DownloadStatus.queued && e.cancelToken.isCancelled) {
-          return e.copyWith(status: status, cancelToken: CancelToken());
+          return e.copyWith(
+            status: status,
+            cancelToken: CancelToken(),
+            clearError: true,
+          );
         }
-        return e.copyWith(status: status);
+        return e.copyWith(
+          status: status,
+          errorMessage: error,
+          clearError: error == null && status != DownloadStatus.failed,
+        );
       }
       return e;
     }).toList();
@@ -186,7 +218,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
       final downloadLocation =
           ref.read(userPreferencesProvider).downloadLocation;
 
-      await nativeFlacDownloader.download(
+      final filePath = await nativeFlacDownloader.download(
         track: task.track,
         providers: providers,
         downloadDirectory: downloadLocation,
@@ -195,17 +227,48 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
         onProgress: (progress) => _emitProgress(task.track, progress),
       );
 
+      ref.read(downloadedTracksProvider.notifier).add(task.track.id, filePath);
       _setStatus(task.track, DownloadStatus.completed);
     } catch (e, stack) {
       final wasCancelled = e is DioException && CancelToken.isCancel(e);
       _setStatus(
         task.track,
         wasCancelled ? DownloadStatus.canceled : DownloadStatus.failed,
+        error: wasCancelled ? null : _describeError(e),
       );
       if (!wasCancelled) {
         AppLogger.reportError(e, stack);
       }
     }
+  }
+
+  String _describeError(Object e) {
+    if (e is SpotiFlacDownloadException) return e.message;
+    if (e is DioException) {
+      final status = e.response?.statusCode;
+      if (status == 429) return "Rate limited by download server (429)";
+      if (status != null) return "Download failed (HTTP $status)";
+      return switch (e.type) {
+        DioExceptionType.connectionTimeout ||
+        DioExceptionType.receiveTimeout ||
+        DioExceptionType.sendTimeout =>
+          "Connection timed out",
+        DioExceptionType.connectionError => "No connection to download server",
+        _ => "Network error: ${e.message ?? e.type.name}",
+      };
+    }
+    return e.toString();
+  }
+
+  /// Re-queues every failed task (e.g. after a rate-limit wave passes).
+  void retryAllFailed() {
+    final failed =
+        state.where((e) => e.status == DownloadStatus.failed).toList();
+    if (failed.isEmpty) return;
+    for (final task in failed) {
+      _setStatus(task.track, DownloadStatus.queued);
+    }
+    _startDownloading(); // No await should be invoked to avoid stuck UI
   }
 
   Future<void> _startDownloading() async {
