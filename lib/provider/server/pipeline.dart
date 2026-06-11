@@ -3,9 +3,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shelf/shelf.dart';
 
 final pipelineProvider = Provider((ref) {
-  const pipeline = Pipeline();
+  var pipeline = const Pipeline();
   if (kDebugMode) {
-    pipeline.addMiddleware(logRequests());
+    // Pipeline is immutable — addMiddleware returns a new pipeline.
+    pipeline = pipeline.addMiddleware(logRequests());
   }
   return pipeline;
 });

@@ -549,7 +549,9 @@ class MetadataPluginNotifier extends AsyncNotifier<MetadataPluginState> {
     final pluginUpdatedConfig =
         await downloadAndCachePlugin(update.downloadUrl);
 
-    if (pluginUpdatedConfig.name != plugin.name &&
+    // Both name AND author must match the installed plugin; with && a repo
+    // could swap in a differently-named plugin during an update.
+    if (pluginUpdatedConfig.name != plugin.name ||
         pluginUpdatedConfig.author != plugin.author) {
       throw MetadataPluginException.invalidPluginConfiguration();
     }
