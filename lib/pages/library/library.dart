@@ -163,27 +163,46 @@ class _LibraryTopNavigationItem extends StatelessWidget {
           ),
         ),
         alignment: Alignment.center,
-        child: material.Badge(
-          isLabelVisible: badgeCount > 0,
-          label: Text(badgeCount.toString()),
-          backgroundColor: accent,
-          // Offset the badge clear of the text so a count doesn't sit on top
-          // of the last letters of a long label like "Downloads".
-          alignment: Alignment.topRight,
-          offset: const Offset(8, -4),
-          // Equal-width tabs leave a long label like "Downloads" + badge
-          // tight; shrink to fit rather than truncating to "Downloa…".
-          child: AutoSizeText(
-            label,
-            maxLines: 1,
-            minFontSize: 8,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: foreground,
-              fontSize: 11,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+        // Count sits inline beside the label (not overlaid) so it never lands
+        // on the last letters of a long word like "Downloads"; the label
+        // shrinks to fit the equal-width tab rather than truncating.
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: AutoSizeText(
+                label,
+                maxLines: 1,
+                minFontSize: 8,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: foreground,
+                  fontSize: 11,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                ),
+              ),
             ),
-          ),
+            if (badgeCount > 0) ...[
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                decoration: BoxDecoration(
+                  color: accent,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  badgeCount.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
