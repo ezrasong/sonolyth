@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:flutter/material.dart' show Badge;
@@ -26,12 +24,15 @@ class SonolythNavigationBar extends HookConsumerWidget {
   Widget build(BuildContext context, ref) {
     final mediaQuery = MediaQuery.of(context);
 
-    final downloadCount = ref
-        .watch(downloadManagerProvider)
-        .where((e) =>
-            e.status == DownloadStatus.downloading ||
-            e.status == DownloadStatus.queued)
-        .length;
+    final downloadCount = ref.watch(
+      downloadManagerProvider.select(
+        (tasks) => tasks
+            .where((e) =>
+                e.status == DownloadStatus.downloading ||
+                e.status == DownloadStatus.queued)
+            .length,
+      ),
+    );
     final layoutMode =
         ref.watch(userPreferencesProvider.select((s) => s.layoutMode));
 
@@ -43,11 +44,9 @@ class SonolythNavigationBar extends HookConsumerWidget {
     final panelHeight = ref.watch(navigationPanelHeight);
 
     final router = context.watchRouter;
-    final selectedIndex = max(
-      0,
-      navbarTileList.indexWhere(
-        (e) => router.currentPath.startsWith(e.pathPrefix),
-      ),
+    // -1 when no tile matches (e.g. Settings, Lyrics); no tile is selected.
+    final selectedIndex = navbarTileList.indexWhere(
+      (e) => router.currentPath.startsWith(e.pathPrefix),
     );
 
     if (layoutMode == LayoutMode.extended ||
@@ -68,7 +67,8 @@ class SonolythNavigationBar extends HookConsumerWidget {
               child: _SpotifyNavigationItem(
                 icon: tile.icon,
                 label: tile.title,
-                selected: navbarTileList[selectedIndex] == tile,
+                selected: selectedIndex != -1 &&
+                    navbarTileList[selectedIndex] == tile,
                 badgeCount: tile.id == "library" ? downloadCount : 0,
                 onPressed: () {
                   context.navigateTo(tile.route);

@@ -100,7 +100,12 @@ class ServerConnectRoutes {
           }
         }
 
-        ref.listen(
+        // Everything registered for this connection must be torn down when
+        // the client disconnects — otherwise position events keep hitting a
+        // closed sink several times a second and listeners pile up with
+        // every reconnect.
+        final connectionSubscriptions = <StreamSubscription>[];
+        final queueSubscription = ref.listen(
           audioPlayerProvider,
           (previous, next) {
             channel.sink.addEvent(WebSocketQueueEvent(next));
@@ -120,7 +125,7 @@ class ServerConnectRoutes {
         channel.sink.addEvent(WebSocketLoopEvent(audioPlayer.loopMode));
         channel.sink.addEvent(WebSocketVolumeEvent(audioPlayer.volume));
 
-        subscriptions.addAll([
+        connectionSubscriptions.addAll([
           audioPlayer.positionStream.listen(
             (position) {
               channel.sink.addEvent(WebSocketPositionEvent(position));
@@ -238,9 +243,16 @@ class ServerConnectRoutes {
             },
             onDone: () {
               AppLogger.log.i('Connection closed');
+              queueSubscription.close();
+              for (final subscription in connectionSubscriptions) {
+                subscription.cancel();
+              }
             },
           ),
         ]);
+        // Provider disposal still cancels subscriptions of connections that
+        // are open at shutdown (double-cancel is a no-op).
+        subscriptions.addAll(connectionSubscriptions);
       },
     )(req);
   }

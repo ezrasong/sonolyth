@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter_undraw/flutter_undraw.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
@@ -23,12 +24,10 @@ class UserDownloadsPage extends HookConsumerWidget {
         .where((t) => const [DownloadStatus.queued, DownloadStatus.downloading]
             .contains(t.status))
         .length;
-    final failed = downloadQueue
-        .where((t) => t.status == DownloadStatus.failed)
-        .length;
-    final completed = downloadQueue
-        .where((t) => t.status == DownloadStatus.completed)
-        .length;
+    final failed =
+        downloadQueue.where((t) => t.status == DownloadStatus.failed).length;
+    final completed =
+        downloadQueue.where((t) => t.status == DownloadStatus.completed).length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,7 +73,33 @@ class UserDownloadsPage extends HookConsumerWidget {
               Button.destructive(
                 onPressed: downloadQueue.isEmpty
                     ? null
-                    : downloadManagerNotifier.clearAll,
+                    : () async {
+                        final accepted = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text(context.l10n.cancel_all),
+                            content: Text(context.l10n.are_you_sure),
+                            actions: [
+                              Button.outline(
+                                onPressed: () {
+                                  Navigator.of(context).pop(false);
+                                },
+                                child: Text(context.l10n.decline),
+                              ),
+                              Button.destructive(
+                                onPressed: () {
+                                  Navigator.of(context).pop(true);
+                                },
+                                child: Text(context.l10n.accept),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (accepted != true) return;
+
+                        downloadManagerNotifier.clearAll();
+                      },
                 child: Text(context.l10n.cancel_all),
               ),
             ],
@@ -119,15 +144,31 @@ class UserDownloadsPage extends HookConsumerWidget {
           ),
         Expanded(
           child: SafeArea(
-            child: ListView.builder(
-              itemCount: downloadQueue.length,
-              padding: const EdgeInsets.only(bottom: 200),
-              itemBuilder: (context, index) {
-                return DownloadItem(
-                  task: downloadQueue.elementAt(index),
-                );
-              },
-            ),
+            child: downloadQueue.isEmpty
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Undraw(
+                        illustration: UndrawIllustration.empty,
+                        height: 200 * theme.scaling,
+                        color: theme.colorScheme.primary,
+                      ),
+                      const Gap(10),
+                      Text(
+                        context.l10n.nothing_found,
+                        textAlign: TextAlign.center,
+                      ).muted().small(),
+                    ],
+                  )
+                : ListView.builder(
+                    itemCount: downloadQueue.length,
+                    padding: const EdgeInsets.only(bottom: 200),
+                    itemBuilder: (context, index) {
+                      return DownloadItem(
+                        task: downloadQueue.elementAt(index),
+                      );
+                    },
+                  ),
           ),
         ),
       ],

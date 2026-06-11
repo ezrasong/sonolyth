@@ -257,7 +257,7 @@ class PlayerControls extends HookConsumerWidget {
                               ? context.l10n.loop_track
                               : loopMode == PlaylistMode.loop
                                   ? context.l10n.repeat_playlist
-                                  : "",
+                                  : context.l10n.no_loop,
                         ),
                       ).call,
                       child: IconButton(

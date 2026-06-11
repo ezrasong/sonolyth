@@ -58,7 +58,33 @@ class SettingsPage extends HookConsumerWidget {
                       const SettingsAboutSection(),
                       Center(
                         child: Button.destructive(
-                          onPressed: preferencesNotifier.reset,
+                          onPressed: () async {
+                            final accepted = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: Text(context.l10n.restore_defaults),
+                                content: Text(context.l10n.are_you_sure),
+                                actions: [
+                                  Button.outline(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(false);
+                                    },
+                                    child: Text(context.l10n.decline),
+                                  ),
+                                  Button.destructive(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(true);
+                                    },
+                                    child: Text(context.l10n.accept),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (accepted != true) return;
+
+                            await preferencesNotifier.reset();
+                          },
                           child: Text(context.l10n.restore_defaults),
                         ),
                       ),

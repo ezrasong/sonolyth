@@ -50,32 +50,38 @@ class TrackPresentationTopSection extends HookConsumerWidget {
         useActionCallbacks(ref);
     final playing =
         useStream(audioPlayer.playingStream).data ?? audioPlayer.isPlaying;
-    ref.watch(downloadManagerProvider);
-    final downloader = ref.read(downloadManagerProvider.notifier);
+    final isDownloadingAll = useState(false);
 
     Future<void> onDownloadAll() async {
-      final tracks = options.tracks.isEmpty
-          ? await options.pagination.onFetchAll()
-          : options.tracks;
-      final fullTracks = tracks.whereType<SonolythFullTrackObject>().toList();
-      if (fullTracks.isEmpty) return;
+      if (isDownloadingAll.value) return;
+      isDownloadingAll.value = true;
+      try {
+        final tracks = options.tracks.isEmpty
+            ? await options.pagination.onFetchAll()
+            : options.tracks;
+        final fullTracks = tracks.whereType<SonolythFullTrackObject>().toList();
+        if (fullTracks.isEmpty) return;
 
-      downloader.addAllToQueue(
-        fullTracks,
-        collectionUrl: options.shareUrl,
-        collectionName: options.title,
-      );
-      if (!context.mounted) return;
-      showToast(
-        context: context,
-        location: ToastLocation.topRight,
-        builder: (context, overlay) => SurfaceCard(
-          child: Basic(
-            leading: const Icon(SonolythIcons.download),
-            title: Text(context.l10n.download_count(fullTracks.length)),
+        final queuedCount =
+            ref.read(downloadManagerProvider.notifier).addAllToQueue(
+                  fullTracks,
+                  collectionUrl: options.shareUrl,
+                  collectionName: options.title,
+                );
+        if (!context.mounted) return;
+        showToast(
+          context: context,
+          location: ToastLocation.topRight,
+          builder: (context, overlay) => SurfaceCard(
+            child: Basic(
+              leading: const Icon(SonolythIcons.download),
+              title: Text(context.l10n.download_count(queuedCount)),
+            ),
           ),
-        ),
-      );
+        );
+      } finally {
+        isDownloadingAll.value = false;
+      }
     }
 
     // ---- Individual action buttons, composed differently per layout ----
@@ -87,7 +93,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
       child: IconButton.ghost(
         icon: const Icon(SonolythIcons.download),
         shape: ButtonShape.circle,
-        enabled: !options.pagination.isLoading,
+        enabled: !options.pagination.isLoading && !isDownloadingAll.value,
         onPressed: onDownloadAll,
       ),
     );

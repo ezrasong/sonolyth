@@ -37,7 +37,7 @@ class LikedPlaylistPage extends HookConsumerWidget {
           image: Assets.images.likedTracks.path,
           pagination: PaginationProps(
             hasNextPage: likedTracks.asData?.value.hasMore ?? false,
-            isLoading: likedTracks.isLoadingNextPage && !likedTracks.isLoading,
+            isLoading: likedTracks.isLoading || likedTracks.isLoadingNextPage,
             onFetchMore: () async {
               await likedTracksNotifier.fetchMore();
             },

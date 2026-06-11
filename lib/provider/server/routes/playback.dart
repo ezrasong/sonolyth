@@ -78,6 +78,81 @@ class ServerPlaybackRoutes {
     return sourcedTrack;
   }
 
+  /// Serves a local file (downloaded or cached) honoring single-range Range
+  /// requests, with correct content-length/content-range semantics. The
+  /// previous header math was off by one and ranges were advertised but
+  /// ignored, which could make mpv truncate or mis-seek.
+  Response _serveLocalFile(
+    Request request,
+    File file,
+    int length,
+    String contentType, {
+    required bool headOnly,
+  }) {
+    final rangeHeader = request.headers["range"];
+    final match = rangeHeader == null
+        ? null
+        : RegExp(r"^bytes=(\d*)-(\d*)$").firstMatch(rangeHeader.trim());
+
+    if (match != null &&
+        (match.group(1)!.isNotEmpty || match.group(2)!.isNotEmpty)) {
+      int start;
+      int end;
+      if (match.group(1)!.isEmpty) {
+        // Suffix range: the last N bytes.
+        final suffix = int.parse(match.group(2)!);
+        start = max(0, length - suffix);
+        end = length - 1;
+      } else {
+        start = int.parse(match.group(1)!);
+        end = match.group(2)!.isEmpty
+            ? length - 1
+            : min(int.parse(match.group(2)!), length - 1);
+      }
+      if (start <= end && start < length) {
+        final headers = {
+          "content-type": contentType,
+          "content-length": "${end - start + 1}",
+          "accept-ranges": "bytes",
+          "content-range": "bytes $start-$end/$length",
+        };
+        if (headOnly) return Response(206, headers: headers);
+        return Response(
+          206,
+          body: file.openRead(start, end + 1),
+          headers: headers,
+        );
+      }
+    }
+
+    final headers = {
+      "content-type": contentType,
+      "content-length": "$length",
+      "accept-ranges": "bytes",
+    };
+    if (headOnly) return Response(200, headers: headers);
+    return Response(200, body: file.openRead(), headers: headers);
+  }
+
+  /// Serves the music-cache file for [track] when caching is on and the file
+  /// is complete, or null to fall through to online streaming.
+  Future<Response?> _serveCachedFile(
+    Request request,
+    SourcedTrack track, {
+    required bool headOnly,
+  }) async {
+    if (!userPreferences.cacheMusic) return null;
+    final trackCacheFile = File(await _getTrackCacheFilePath(track));
+    if (!await trackCacheFile.exists()) return null;
+    return _serveLocalFile(
+      request,
+      trackCacheFile,
+      await trackCacheFile.length(),
+      "audio/${track.qualityPreset!.name}",
+      headOnly: headOnly,
+    );
+  }
+
   Future<dio_lib.Response> streamTrackInformation(
     Request request,
     SourcedTrack track,
@@ -86,23 +161,6 @@ class ServerPlaybackRoutes {
       "HEAD request for track: ${track.query.name}\n"
       "Headers: ${request.headers}",
     );
-
-    final trackCacheFile = File(await _getTrackCacheFilePath(track));
-
-    if (await trackCacheFile.exists() && userPreferences.cacheMusic) {
-      final fileLength = await trackCacheFile.length();
-
-      return dio_lib.Response(
-        statusCode: 200,
-        headers: Headers.fromMap({
-          "content-type": ["audio/${track.qualityPreset!.name}"],
-          "content-length": ["$fileLength"],
-          "accept-ranges": ["bytes"],
-          "content-range": ["bytes 0-$fileLength/$fileLength"],
-        }),
-        requestOptions: RequestOptions(path: request.requestedUri.toString()),
-      );
-    }
 
     String url = track.url ??
         await ref
@@ -136,26 +194,6 @@ class ServerPlaybackRoutes {
     );
 
     final trackCacheFile = File(await _getTrackCacheFilePath(track));
-
-    if (await trackCacheFile.exists() && userPreferences.cacheMusic) {
-      final bytes = await trackCacheFile.readAsBytes();
-      final cachedFileLength = bytes.length;
-
-      return dio_lib.Response<Uint8List>(
-        statusCode: 200,
-        headers: Headers.fromMap({
-          "content-type": ["audio/${track.qualityPreset!.name}"],
-          "content-length": ["${cachedFileLength - 1}"],
-          "accept-ranges": ["bytes"],
-          "content-range": [
-            "bytes 0-${cachedFileLength - 1}/$cachedFileLength"
-          ],
-          "connection": ["close"],
-        }),
-        requestOptions: RequestOptions(path: request.requestedUri.toString()),
-        data: bytes,
-      );
-    }
 
     String url = track.url ??
         await ref
@@ -276,6 +314,7 @@ class ServerPlaybackRoutes {
   /// (pointing at the server) before the download finished, so playback still
   /// uses the local file instead of an online stream.
   Future<Response?> _serveDownloadedFile(
+    Request request,
     String trackId, {
     required bool headOnly,
   }) async {
@@ -287,22 +326,20 @@ class ServerPlaybackRoutes {
     final length = await file.length();
     final extension =
         path.split('.').last.toLowerCase().replaceAll("m4a", "mp4");
-    final headers = {
-      "content-type": "audio/$extension",
-      "content-length": "$length",
-      "accept-ranges": "bytes",
-      "content-range": "bytes 0-$length/$length",
-    };
-
-    if (headOnly) return Response(200, headers: headers);
-    return Response(200, body: file.openRead(), headers: headers);
+    return _serveLocalFile(
+      request,
+      file,
+      length,
+      "audio/$extension",
+      headOnly: headOnly,
+    );
   }
 
   /// @head('/stream/<trackId>')
   Future<Response> headStreamTrackId(Request request, String trackId) async {
     try {
       final downloaded =
-          await _serveDownloadedFile(trackId, headOnly: true);
+          await _serveDownloadedFile(request, trackId, headOnly: true);
       if (downloaded != null) return downloaded;
 
       final sourcedTrack = await _getSourcedTrack(request, trackId);
@@ -310,6 +347,10 @@ class ServerPlaybackRoutes {
       if (sourcedTrack == null) {
         return Response.notFound("Track not found in the current queue");
       }
+
+      final cached =
+          await _serveCachedFile(request, sourcedTrack, headOnly: true);
+      if (cached != null) return cached;
 
       final res = await streamTrackInformation(
         request,
@@ -330,7 +371,7 @@ class ServerPlaybackRoutes {
   Future<Response> getStreamTrackId(Request request, String trackId) async {
     try {
       final downloaded =
-          await _serveDownloadedFile(trackId, headOnly: false);
+          await _serveDownloadedFile(request, trackId, headOnly: false);
       if (downloaded != null) return downloaded;
 
       final sourcedTrack = await _getSourcedTrack(request, trackId);
@@ -338,6 +379,10 @@ class ServerPlaybackRoutes {
       if (sourcedTrack == null) {
         return Response.notFound("Track not found in the current queue");
       }
+
+      final cached =
+          await _serveCachedFile(request, sourcedTrack, headOnly: false);
+      if (cached != null) return cached;
 
       final res = await streamTrack(
         request,

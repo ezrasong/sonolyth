@@ -40,7 +40,8 @@ class TrackPresentationModifiersSection extends HookConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Checkbox(
-                  state: state.selectedTracks.length == options.tracks.length
+                  state: options.tracks.isNotEmpty &&
+                          state.selectedTracks.length == options.tracks.length
                       ? CheckboxState.checked
                       : CheckboxState.unchecked,
                   onChanged: (value) {

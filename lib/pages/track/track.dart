@@ -6,6 +6,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:sonolyth/collections/fake.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/fallbacks/error_box.dart';
 import 'package:sonolyth/components/heart_button/heart_button.dart';
 import 'package:sonolyth/components/image/universal_image.dart';
 import 'package:sonolyth/components/links/artist_link.dart';
@@ -43,6 +44,28 @@ class TrackPage extends HookConsumerWidget {
     final isActive = playlist.activeTrack?.id == trackId;
 
     final trackQuery = ref.watch(metadataPluginTrackProvider(trackId));
+
+    // A failed fetch must not render FakeData as if it were the real track.
+    if (trackQuery.hasError && trackQuery.asData?.value == null) {
+      return SafeArea(
+        bottom: false,
+        child: Scaffold(
+          headers: const [
+            TitleBar(
+              backgroundColor: Colors.transparent,
+              surfaceBlur: 0,
+            )
+          ],
+          child: Center(
+            child: ErrorBox(
+              error: trackQuery.error!,
+              onRetry: () =>
+                  ref.invalidate(metadataPluginTrackProvider(trackId)),
+            ),
+          ),
+        ),
+      );
+    }
 
     final track = trackQuery.asData?.value ?? FakeData.track;
 

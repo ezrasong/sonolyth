@@ -301,7 +301,10 @@ class PlayerQueue extends HookConsumerWidget {
                               }
 
                               return AutoScrollTag(
-                                key: ValueKey<int>(i),
+                                // Track ids are unique in the queue (load()
+                                // dedupes media by uri), so they make stable
+                                // reorder identities — unlike list indices.
+                                key: ValueKey(track.id),
                                 controller: controller,
                                 index: i,
                                 child: TrackTile(
@@ -367,8 +370,14 @@ class PlayerQueue extends HookConsumerWidget {
           child: IconButton.secondary(
             icon: const Icon(SonolythIcons.angleDown),
             onPressed: () {
+              // Item indices refer to filteredTracks, so map the active
+              // track to its filtered position (it may be filtered out).
+              final activeIndex = filteredTracks.indexWhere(
+                (track) => track.id == playlist.activeTrack?.id,
+              );
+              if (activeIndex == -1) return;
               controller.scrollToIndex(
-                playlist.currentIndex,
+                activeIndex,
                 preferPosition: AutoScrollPosition.middle,
               );
             },

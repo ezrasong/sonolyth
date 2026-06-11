@@ -33,7 +33,7 @@ class LocalFolderCacheExportDialog extends HookConsumerWidget {
                     .contains(path.extension(event.path).replaceAll(".", "")),
           );
 
-      stream.listen(
+      final subscription = stream.listen(
         (event) {
           files.value = [...files.value, event as File];
         },
@@ -41,7 +41,7 @@ class LocalFolderCacheExportDialog extends HookConsumerWidget {
           AppLogger.reportError(e, stack);
         },
       );
-      return null;
+      return subscription.cancel;
     }, []);
 
     useEffect(() {
@@ -123,6 +123,7 @@ class LocalFolderCacheExportDialog extends HookConsumerWidget {
                         await destinationFile.delete();
                       }
                       await file.copy(destinationFile.path);
+                      if (!context.mounted) return;
                       filesExported.value++;
                     } catch (e, stack) {
                       AppLogger.reportError(e, stack);

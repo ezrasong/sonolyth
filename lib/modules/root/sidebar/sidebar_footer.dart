@@ -24,12 +24,15 @@ class SidebarFooter extends HookConsumerWidget implements NavigationBarItem {
     final theme = Theme.of(context);
     final router = AutoRouter.of(context, watch: true);
     final mediaQuery = MediaQuery.of(context);
-    final downloadCount = ref
-        .watch(downloadManagerProvider)
-        .where((e) =>
-            e.status == DownloadStatus.downloading ||
-            e.status == DownloadStatus.queued)
-        .length;
+    final downloadCount = ref.watch(
+      downloadManagerProvider.select(
+        (tasks) => tasks
+            .where((e) =>
+                e.status == DownloadStatus.downloading ||
+                e.status == DownloadStatus.queued)
+            .length,
+      ),
+    );
     final userSnapshot = ref.watch(metadataPluginUserProvider);
     final data = userSnapshot.asData?.value;
 
@@ -47,7 +50,7 @@ class SidebarFooter extends HookConsumerWidget implements NavigationBarItem {
         children: [
           Badge(
             isLabelVisible: downloadCount > 0,
-            label: Text(downloadCount.toString()),
+            label: Text(downloadCount > 99 ? "99+" : downloadCount.toString()),
             child: IconButton(
               variance: router.topRoute.name == UserDownloadsRoute.name
                   ? ButtonVariance.secondary
@@ -85,7 +88,9 @@ class SidebarFooter extends HookConsumerWidget implements NavigationBarItem {
               leading: const Icon(SonolythIcons.download),
               trailing: downloadCount > 0
                   ? PrimaryBadge(
-                      child: Text(downloadCount.toString()),
+                      child: Text(
+                        downloadCount > 99 ? "99+" : downloadCount.toString(),
+                      ),
                     )
                   : null,
               child: Text(context.l10n.downloads),

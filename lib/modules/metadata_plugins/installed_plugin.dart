@@ -1,3 +1,4 @@
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
@@ -9,6 +10,7 @@ import 'package:sonolyth/modules/metadata_plugins/plugin_update_available_dialog
 import 'package:sonolyth/provider/metadata_plugin/core/auth.dart';
 import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
 import 'package:sonolyth/provider/metadata_plugin/updater/update_checker.dart';
+import 'package:sonolyth/services/logger/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final validAbilities = {
@@ -40,6 +42,11 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
     };
 
     final pluginsNotifier = ref.watch(metadataPluginsProvider.notifier);
+
+    final logoFuture = useMemoized(
+      () => pluginsNotifier.getLogoPath(plugin),
+      [plugin.slug, plugin.version],
+    );
 
     final requiresAuth = (isDefaultMetadata || isDefaultAudioSource) &&
         plugin.abilities.contains(PluginAbilities.authentication);
@@ -73,7 +80,7 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
         spacing: 12,
         children: [
           FutureBuilder(
-            future: pluginsNotifier.getLogoPath(plugin),
+            future: logoFuture,
             builder: (context, snapshot) {
               final repoUrl = plugin.repository != null
                   ? Uri.tryParse(plugin.repository!)
@@ -174,13 +181,64 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                       )
                   ],
                 ),
-                trailing: IconButton.ghost(
-                  onPressed: () async {
-                    await pluginsNotifier.removePlugin(plugin);
-                  },
-                  icon: const Icon(
-                    SonolythIcons.trash,
-                    color: Colors.red,
+                trailing: Tooltip(
+                  tooltip: TooltipContainer(
+                    child: Text(context.l10n.delete),
+                  ).call,
+                  child: IconButton.ghost(
+                    onPressed: () async {
+                      final accepted = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text(context.l10n.are_you_sure),
+                          actions: [
+                            Button.outline(
+                              onPressed: () {
+                                Navigator.of(context).pop(false);
+                              },
+                              child: Text(context.l10n.decline),
+                            ),
+                            Button.destructive(
+                              onPressed: () {
+                                Navigator.of(context).pop(true);
+                              },
+                              child: Text(context.l10n.accept),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (accepted != true) return;
+
+                      try {
+                        await pluginsNotifier.removePlugin(plugin);
+                      } catch (e, stackTrace) {
+                        AppLogger.reportError(e, stackTrace);
+                        if (context.mounted) {
+                          showToast(
+                            showDuration: const Duration(seconds: 5),
+                            context: context,
+                            builder: (context, overlay) {
+                              return SurfaceCard(
+                                child: Basic(
+                                  leading: const Icon(
+                                    SonolythIcons.error,
+                                    color: Colors.red,
+                                  ),
+                                  title: Text(
+                                    context.l10n.error(e.toString()),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        }
+                      }
+                    },
+                    icon: const Icon(
+                      SonolythIcons.trash,
+                      color: Colors.red,
+                    ),
                   ),
                 ),
               );

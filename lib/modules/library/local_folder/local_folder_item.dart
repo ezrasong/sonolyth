@@ -31,7 +31,10 @@ class LocalFolderItem extends HookConsumerWidget {
 
     final downloadFolder =
         ref.watch(userPreferencesProvider.select((s) => s.downloadLocation));
-    final cacheFolder = useFuture(UserPreferencesNotifier.getMusicCacheDir());
+    final cacheFolder = useFuture(useMemoized(
+      () => UserPreferencesNotifier.getMusicCacheDir(),
+      const [],
+    ));
 
     final isDownloadFolder = folder == downloadFolder;
     final isCacheFolder = folder == cacheFolder.data;

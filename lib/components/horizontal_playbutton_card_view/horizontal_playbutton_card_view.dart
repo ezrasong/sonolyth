@@ -70,7 +70,9 @@ class HorizontalPlaybuttonCardView<T> extends HookWidget {
             error!
           else
             SizedBox(
-              height: isArtist ? 250 : 225,
+              // Card contents scale with theme.scaling; the rail must too or
+              // increased UI scale clips every carousel.
+              height: (isArtist ? 250 : 225) * scale,
               child: NotificationListener(
                 // disable multiple scrollbar to use this
                 onNotification: (notification) => true,
@@ -79,12 +81,19 @@ class HorizontalPlaybuttonCardView<T> extends HookWidget {
                     dragDevices: PointerDeviceKind.values.toSet(),
                   ),
                   child: items.isEmpty
-                      ? ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: 5,
-                          itemBuilder: (context, index) {
-                            return AlbumCard(FakeData.albumSimple);
-                          },
+                      // Placeholder cards must read as skeletons and never be
+                      // tappable — otherwise they navigate to FakeData routes.
+                      ? Skeletonizer(
+                          enabled: true,
+                          child: IgnorePointer(
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: 5,
+                              itemBuilder: (context, index) {
+                                return AlbumCard(FakeData.albumSimple);
+                              },
+                            ),
+                          ),
                         )
                       : InfiniteList(
                           scrollController: scrollController,

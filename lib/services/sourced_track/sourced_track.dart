@@ -71,6 +71,11 @@ class SourcedTrack extends BasicSourcedTrack {
         throw TrackNotFoundError(query);
       }
 
+      final manifest = await audioSource.audioSource.streams(siblings.first);
+
+      // Cache the match only after the stream fetch succeeds — caching first
+      // would poison the table with a match that can't actually stream, and
+      // every retry would then take the cached (sibling-less) path.
       await database.into(database.sourceMatchTable).insert(
             SourceMatchTableCompanion.insert(
               trackId: query.id,
@@ -78,8 +83,6 @@ class SourcedTrack extends BasicSourcedTrack {
               sourceType: audioSourceConfig.slug,
             ),
           );
-
-      final manifest = await audioSource.audioSource.streams(siblings.first);
 
       return SourcedTrack(
         ref: ref,
@@ -93,7 +96,21 @@ class SourcedTrack extends BasicSourcedTrack {
     final item = SonolythAudioSourceMatchObject.fromJson(
       jsonDecode(cachedSource.sourceInfo),
     );
-    final manifest = await audioSource.audioSource.streams(item);
+
+    final List<SonolythAudioSourceStreamObject> manifest;
+    try {
+      manifest = await audioSource.audioSource.streams(item);
+    } catch (_) {
+      // The cached match no longer streams (taken down, plugin change).
+      // Purge it and resolve fresh; otherwise the track stays permanently
+      // unplayable — the cached path has no siblings to fall back to.
+      await (database.delete(database.sourceMatchTable)
+            ..where((s) =>
+                s.trackId.equals(query.id) &
+                s.sourceType.equals(audioSourceConfig.slug)))
+          .go();
+      return fetchFromTrack(query: query, ref: ref);
+    }
 
     final sourcedTrack = SourcedTrack(
       ref: ref,
@@ -359,10 +376,17 @@ class SourcedTrack extends BasicSourcedTrack {
       return exactMatch;
     }
 
-    // Find the preset with closest quality to the supplied quality
-    return sources.where((source) {
+    // Find the preset with closest quality to the supplied quality. When the
+    // plugin offers no source in the preset's container at all, fall back to
+    // any source instead of throwing (a bare reduce() on an empty iterable
+    // would 500 the playback server and the track wouldn't play).
+    final sameContainer = sources.where((source) {
       return source.container == preset.name;
-    }).reduce((prev, curr) {
+    });
+    if (sameContainer.isEmpty) {
+      return sources.firstOrNull;
+    }
+    return sameContainer.reduce((prev, curr) {
       if (quality is SonolythAudioLosslessContainerQuality) {
         final prevDiff = ((prev.sampleRate ?? 0) - quality.sampleRate).abs() +
             ((prev.bitDepth ?? 0) - quality.bitDepth).abs();

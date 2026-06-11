@@ -9,6 +9,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/fallbacks/error_box.dart';
 import 'package:sonolyth/components/form/text_form_field.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
 import 'package:sonolyth/extensions/context.dart';
@@ -181,46 +182,89 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
                         ),
                       );
                     }),
-                    Tooltip(
-                      tooltip: TooltipContainer(
-                        child: Text(context.l10n.upload_plugin_from_file),
-                      ).call,
-                      child: IconButton.primary(
-                        icon: const Icon(SonolythIcons.upload),
-                        onPressed: () async {
-                          Uint8List bytes;
+                    HookBuilder(builder: (context) {
+                      final isLoading = useState(false);
 
-                          if (kIsFlatpak) {
-                            final result = await openFile(
-                              acceptedTypeGroups: [
-                                const XTypeGroup(
-                                  label: 'Sonolyth Metadata Plugin',
-                                  extensions: ['smplug'],
-                                ),
-                              ],
-                            );
-                            if (result == null) return;
-                            bytes = await result.readAsBytes();
-                          } else {
-                            final result = await FilePicker.platform.pickFiles(
-                              type: kIsAndroid ? FileType.any : FileType.custom,
-                              allowedExtensions: kIsAndroid ? [] : ["smplug"],
-                              withData: true,
-                            );
+                      return Tooltip(
+                        tooltip: TooltipContainer(
+                          child: Text(context.l10n.upload_plugin_from_file),
+                        ).call,
+                        child: IconButton.primary(
+                          icon: isLoading.value
+                              ? const SizedBox.square(
+                                  dimension: 22,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(SonolythIcons.upload),
+                          enabled: !isLoading.value,
+                          onPressed: () async {
+                            try {
+                              Uint8List bytes;
 
-                            if (result == null) return;
+                              if (kIsFlatpak) {
+                                final result = await openFile(
+                                  acceptedTypeGroups: [
+                                    const XTypeGroup(
+                                      label: 'Sonolyth Metadata Plugin',
+                                      extensions: ['smplug'],
+                                    ),
+                                  ],
+                                );
+                                if (result == null) return;
+                                bytes = await result.readAsBytes();
+                              } else {
+                                final result =
+                                    await FilePicker.platform.pickFiles(
+                                  type: kIsAndroid
+                                      ? FileType.any
+                                      : FileType.custom,
+                                  allowedExtensions:
+                                      kIsAndroid ? [] : ["smplug"],
+                                  withData: true,
+                                );
 
-                            final file = result.files.first;
-                            if (file.bytes == null) return;
-                            bytes = file.bytes!;
-                          }
+                                if (result == null) return;
 
-                          final pluginConfig =
-                              await pluginsNotifier.extractPluginArchive(bytes);
-                          await pluginsNotifier.addPlugin(pluginConfig);
-                        },
-                      ),
-                    ),
+                                final file = result.files.first;
+                                if (file.bytes == null) return;
+                                bytes = file.bytes!;
+                              }
+
+                              isLoading.value = true;
+                              final pluginConfig = await pluginsNotifier
+                                  .extractPluginArchive(bytes);
+                              await pluginsNotifier.addPlugin(pluginConfig);
+                            } catch (e, stackTrace) {
+                              AppLogger.reportError(e, stackTrace);
+                              if (context.mounted) {
+                                showToast(
+                                  showDuration: const Duration(seconds: 5),
+                                  context: context,
+                                  builder: (context, overlay) {
+                                    return SurfaceCard(
+                                      child: Basic(
+                                        leading: const Icon(
+                                          SonolythIcons.error,
+                                          color: Colors.red,
+                                        ),
+                                        title: Text(
+                                          context.l10n
+                                              .failed_to_add_plugin_error(
+                                                  e.toString()),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              }
+                            } finally {
+                              isLoading.value = false;
+                            }
+                          },
+                        ),
+                      );
+                    }),
                   ],
                 ),
               ),
@@ -283,36 +327,48 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
                 ),
               ),
               const SliverGap(12),
-              SliverInfiniteList(
-                isLoading: pluginReposSnapshot.isLoading &&
-                    !pluginReposSnapshot.isLoadingNextPage,
-                itemCount: pluginRepos.length,
-                onFetchData: pluginReposNotifier.fetchMore,
-                separatorBuilder: (context, index) {
-                  return const Gap(12);
-                },
-                loadingBuilder: (context) {
-                  return Skeletonizer(
-                    enabled: true,
-                    child: MetadataPluginRepositoryItem(
-                      pluginRepo: MetadataPluginRepository(
-                        name: "Loading...",
-                        description: "Loading...",
-                        repoUrl: "",
-                        owner: "",
-                        topics: [],
-                      ),
+              if (pluginReposSnapshot.hasError)
+                SliverToBoxAdapter(
+                  child: Center(
+                    child: ErrorBox(
+                      error: pluginReposSnapshot.error!,
+                      onRetry: () {
+                        ref.invalidate(metadataPluginRepositoriesProvider);
+                      },
                     ),
-                  );
-                },
-                itemBuilder: (context, index) {
-                  final pluginRepo = pluginRepos[index];
+                  ),
+                )
+              else
+                SliverInfiniteList(
+                  isLoading: pluginReposSnapshot.isLoading &&
+                      !pluginReposSnapshot.isLoadingNextPage,
+                  itemCount: pluginRepos.length,
+                  onFetchData: pluginReposNotifier.fetchMore,
+                  separatorBuilder: (context, index) {
+                    return const Gap(12);
+                  },
+                  loadingBuilder: (context) {
+                    return Skeletonizer(
+                      enabled: true,
+                      child: MetadataPluginRepositoryItem(
+                        pluginRepo: MetadataPluginRepository(
+                          name: "Loading...",
+                          description: "Loading...",
+                          repoUrl: "",
+                          owner: "",
+                          topics: [],
+                        ),
+                      ),
+                    );
+                  },
+                  itemBuilder: (context, index) {
+                    final pluginRepo = pluginRepos[index];
 
-                  return MetadataPluginRepositoryItem(
-                    pluginRepo: pluginRepo,
-                  );
-                },
-              ),
+                    return MetadataPluginRepositoryItem(
+                      pluginRepo: pluginRepo,
+                    );
+                  },
+                ),
               const SliverGap(20),
               SliverCrossAxisConstrained(
                 maxCrossAxisExtent: 720,

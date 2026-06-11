@@ -14,6 +14,7 @@ import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/connect/connect.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/metadata_plugin/artist/top_tracks.dart';
+import 'package:sonolyth/services/audio_player/audio_player.dart';
 
 class ArtistPageTopTracks extends HookConsumerWidget {
   final String artistId;
@@ -32,6 +33,8 @@ class ArtistPageTopTracks extends HookConsumerWidget {
     final isPlaylistPlaying = playlist.containsTracks(
       topTracksQuery.asData?.value.items ?? <SonolythTrackObject>[],
     );
+    final playing =
+        useStream(audioPlayer.playingStream).data ?? audioPlayer.isPlaying;
 
     if (topTracksQuery.hasError) {
       return SliverToBoxAdapter(
@@ -137,7 +140,7 @@ class ArtistPageTopTracks extends HookConsumerWidget {
               const SizedBox(width: 5),
               IconButton.primary(
                 shape: ButtonShape.circle,
-                enabled: !isPlaylistPlaying && !isLoading.value,
+                enabled: !isLoading.value,
                 icon: isLoading.value
                     ? CircularProgressIndicator(
                         size: 20 * context.theme.scaling,
@@ -145,12 +148,16 @@ class ArtistPageTopTracks extends HookConsumerWidget {
                       )
                     : Skeleton.keep(
                         child: Icon(
-                          isPlaylistPlaying
+                          isPlaylistPlaying && playing
                               ? SonolythIcons.pause
                               : SonolythIcons.play,
                         ),
                       ),
-                onPressed: () => playPlaylist(topTracks.toList()),
+                // When this collection is already playing, the button toggles
+                // pause/resume instead of being disabled.
+                onPressed: isPlaylistPlaying
+                    ? () => playing ? audioPlayer.pause() : audioPlayer.resume()
+                    : () => playPlaylist(topTracks.toList()),
               )
             ],
           ),

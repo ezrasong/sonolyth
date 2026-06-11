@@ -63,8 +63,7 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
   Widget build(BuildContext context, ref) {
     final options = TrackPresentationOptions.of(context);
 
-    ref.watch(downloadManagerProvider);
-    final downloader = ref.watch(downloadManagerProvider.notifier);
+    final downloader = ref.read(downloadManagerProvider.notifier);
     final playlistNotifier = ref.watch(audioPlayerProvider.notifier);
     final historyNotifier = ref.watch(playbackHistoryActionsProvider);
 
@@ -135,6 +134,9 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
                   },
                 );
 
+                // Always leave selection mode, even when the dialog was
+                // dismissed — matching the other action branches.
+                notifier.deselectAllTracks();
                 if (!context.mounted || worked != true) return;
                 showToastForAction(context, action, tracks.length);
               }
@@ -174,8 +176,6 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
             }
           default:
         }
-
-        if (!context.mounted) return;
       },
       icon: const Icon(SonolythIcons.moreVertical),
       variance: ButtonVariance.outline,

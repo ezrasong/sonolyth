@@ -156,10 +156,17 @@ final glanceProvider = Provider((ref) {
       await _saveWidgetData("isPlaying", playing);
       await _updateWidget();
     }),
-    audioPlayer.positionStream.listen((position) async {
-      await _saveWidgetData("position", position.inSeconds);
-      await _updateWidget();
-    }),
+    // Throttled to whole-second changes: positionStream fires several times
+    // per second and each update broadcasts a full RemoteViews re-render.
+    () {
+      var lastSentSecond = -1;
+      return audioPlayer.positionStream.listen((position) async {
+        if (position.inSeconds == lastSentSecond) return;
+        lastSentSecond = position.inSeconds;
+        await _saveWidgetData("position", position.inSeconds);
+        await _updateWidget();
+      });
+    }(),
     audioPlayer.durationStream.listen((duration) async {
       await _saveWidgetData("duration", duration.inSeconds);
       await _updateWidget();

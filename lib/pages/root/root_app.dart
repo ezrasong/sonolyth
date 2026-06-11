@@ -62,6 +62,12 @@ class RootAppPage extends HookConsumerWidget {
       void persistRoute() {
         final path = router.currentPath;
         if (path.isEmpty || path == "/") return;
+        // Don't persist transient player routes; restoring into them on a
+        // cold start would land on an empty player with no playback state.
+        // Keeping the last non-player path instead.
+        if (path.startsWith("/player") || path.startsWith("/mini-player")) {
+          return;
+        }
         KVStoreService.setLastRoutePath(path);
       }
 
@@ -83,8 +89,10 @@ class RootAppPage extends HookConsumerWidget {
           child: Sidebar(
             child: MediaQuery(
               data: MediaQuery.of(context).copyWith(
+                // Reserve room for the floating footer stack (navigation bar
+                // + mini-player) so scrollables aren't covered by it.
                 padding: MediaQuery.paddingOf(context)
-                    .copyWith(bottom: 100 * context.theme.scaling),
+                    .copyWith(bottom: 140 * context.theme.scaling),
               ),
               child: const AutoRouter(),
             ),

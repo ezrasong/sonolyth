@@ -5,6 +5,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:sonolyth/collections/fake.dart';
 import 'package:sonolyth/collections/formatters.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
+import 'package:sonolyth/components/fallbacks/error_box.dart';
 import 'package:sonolyth/modules/stats/summary/summary_card.dart';
 import 'package:sonolyth/extensions/constrains.dart';
 import 'package:sonolyth/extensions/context.dart';
@@ -16,6 +17,19 @@ class StatsPageSummarySection extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final summary = ref.watch(playbackHistorySummaryProvider);
+
+    // A failed load must not present FakeData numbers as real stats.
+    if (summary.hasError && summary.asData?.value == null) {
+      return SliverToBoxAdapter(
+        child: Center(
+          child: ErrorBox(
+            error: summary.error!,
+            onRetry: () => ref.invalidate(playbackHistorySummaryProvider),
+          ),
+        ),
+      );
+    }
+
     final summaryData = summary.asData?.value ?? FakeData.historySummary;
 
     return Skeletonizer.sliver(

@@ -36,7 +36,10 @@ class UserLocalLibraryPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final cacheDir = useFuture(UserPreferencesNotifier.getMusicCacheDir());
+    final cacheDir = useFuture(useMemoized(
+      () => UserPreferencesNotifier.getMusicCacheDir(),
+      const [],
+    ));
     final preferencesNotifier = ref.watch(userPreferencesProvider.notifier);
     final preferences = ref.watch(userPreferencesProvider);
     final controller = useScrollController();
@@ -44,12 +47,21 @@ class UserLocalLibraryPage extends HookConsumerWidget {
     final searchText = useState('');
 
     final addLocalLibraryLocation = useCallback(() async {
+      // The download folder and the music cache folder are managed by the
+      // app and already listed; adding them again would make the provider
+      // double-process them.
+      final reservedLocations = [
+        preferences.downloadLocation,
+        await UserPreferencesNotifier.getMusicCacheDir(),
+      ];
+
       if (kIsMobile || kIsMacOS) {
         final dirStr = await FilePicker.platform.getDirectoryPath(
           initialDirectory: preferences.downloadLocation,
         );
         if (dirStr == null) return;
         if (preferences.localLibraryLocation.contains(dirStr)) return;
+        if (reservedLocations.contains(dirStr)) return;
         preferencesNotifier.setLocalLibraryLocation(
             [...preferences.localLibraryLocation, dirStr]);
       } else {
@@ -58,10 +70,11 @@ class UserLocalLibraryPage extends HookConsumerWidget {
         );
         if (dirStr == null) return;
         if (preferences.localLibraryLocation.contains(dirStr)) return;
+        if (reservedLocations.contains(dirStr)) return;
         preferencesNotifier.setLocalLibraryLocation(
             [...preferences.localLibraryLocation, dirStr]);
       }
-    }, [preferences.localLibraryLocation]);
+    }, [preferences.localLibraryLocation, preferences.downloadLocation]);
 
     final tracksSnapshot = ref.watch(localTracksProvider);
 

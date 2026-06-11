@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
+import 'package:crypto/crypto.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/services/logger/logger.dart';
 import 'package:flutter/foundation.dart';
@@ -68,6 +71,9 @@ final localTracksProvider =
       userPreferencesProvider.select((s) => s.localLibraryLocation),
     );
 
+    // One platform-channel call for the whole scan, not one per file.
+    final tempDirPath = (await getTemporaryDirectory()).path;
+
     for (final location in [
       downloadLocation,
       cacheDir.path,
@@ -95,38 +101,62 @@ final localTracksProvider =
         }
       }
 
-      final List<MetadataFile> filesWithMetadata = await Future.wait(
-        entities.map((file) async {
-          try {
-            final metadata = await MetadataGod.readMetadata(file: file.path);
+      // Batched: an unbounded Future.wait over thousands of files would hold
+      // every cover-art buffer in memory at once and flood IO.
+      const batchSize = 16;
+      final List<MetadataFile> filesWithMetadata = [];
+      for (var i = 0; i < entities.length; i += batchSize) {
+        final batch = entities.sublist(i, min(i + batchSize, entities.length));
+        final results = await Future.wait(
+          batch.map((file) async {
+            try {
+              final metadata = await MetadataGod.readMetadata(file: file.path);
 
-            final imageFile = File(
-              join(
-                (await getTemporaryDirectory()).path,
-                "spotube",
-                ServiceUtils.sanitizeFilename(
-                        basenameWithoutExtension(file.path)) +
-                    imgMimeToExt[metadata.picture?.mimeType ?? "image/jpeg"]!,
-              ),
-            );
-            if (!await imageFile.exists() && metadata.picture != null) {
-              await imageFile.create(recursive: true);
-              await imageFile.writeAsBytes(
-                metadata.picture?.data ?? [],
-                mode: FileMode.writeOnly,
+              // Path hash keeps same-named files in different folders from
+              // sharing (and clobbering) one cached art file.
+              final pathHash = md5
+                  .convert(utf8.encode(file.path))
+                  .toString()
+                  .substring(0, 8);
+              final imageFile = File(
+                join(
+                  tempDirPath,
+                  "spotube",
+                  "${ServiceUtils.sanitizeFilename(basenameWithoutExtension(file.path))}-$pathHash"
+                      // Unknown art mime types fall back to .jpg instead of
+                      // crashing the scan and dropping the track entirely.
+                      "${imgMimeToExt[metadata.picture?.mimeType ?? "image/jpeg"] ?? ".jpg"}",
+                ),
               );
-            }
+              final hasEmbeddedArt = metadata.picture != null;
+              var artExists = await imageFile.exists();
+              if (!artExists && hasEmbeddedArt) {
+                await imageFile.create(recursive: true);
+                await imageFile.writeAsBytes(
+                  metadata.picture?.data ?? [],
+                  mode: FileMode.writeOnly,
+                );
+                artExists = true;
+              }
 
-            return (metadata: metadata, file: file, art: imageFile.path);
-          } catch (e, stack) {
-            if (e case FrbException() || TimeoutException()) {
-              return (file: file, metadata: null, art: null);
+              return (
+                metadata: metadata,
+                file: file,
+                // Tracks without art must get null (placeholder) rather than
+                // a path to a file that was never written.
+                art: artExists ? imageFile.path : null,
+              );
+            } catch (e, stack) {
+              if (e case FrbException() || TimeoutException()) {
+                return (file: file, metadata: null, art: null);
+              }
+              AppLogger.reportError(e, stack);
+              return null;
             }
-            AppLogger.reportError(e, stack);
-            return null;
-          }
-        }),
-      ).then((value) => value.nonNulls.toList());
+          }),
+        );
+        filesWithMetadata.addAll(results.nonNulls);
+      }
 
       final tracksFromMetadata = filesWithMetadata
           .map(

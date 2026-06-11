@@ -28,20 +28,21 @@ class BottomPlayer extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final playlist = ref.watch(audioPlayerProvider);
+    final activeTrack =
+        ref.watch(audioPlayerProvider.select((s) => s.activeTrack));
     final layoutMode =
         ref.watch(userPreferencesProvider.select((s) => s.layoutMode));
 
     final mediaQuery = MediaQuery.of(context);
 
     String albumArt = useMemoized(
-      () => playlist.activeTrack?.album.images.isNotEmpty == true
-          ? (playlist.activeTrack?.album.images).asUrlString(
-              index: (playlist.activeTrack?.album.images.length ?? 1) - 1,
+      () => activeTrack?.album.images.isNotEmpty == true
+          ? (activeTrack?.album.images).asUrlString(
+              index: (activeTrack?.album.images.length ?? 1) - 1,
               placeholder: ImagePlaceholder.albumArt,
             )
           : Assets.images.albumPlaceholder.path,
-      [playlist.activeTrack?.album.images],
+      [activeTrack?.album.images],
     );
 
     // returning an empty non spacious Container as the overlay will take
@@ -58,7 +59,7 @@ class BottomPlayer extends HookConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            child: PlayerTrackDetails(track: playlist.activeTrack),
+            child: PlayerTrackDetails(track: activeTrack),
           ),
           // controls
           const Flexible(
@@ -74,39 +75,40 @@ class BottomPlayer extends HookConsumerWidget {
             children: [
               PlayerActions(
                 extraActions: [
-                  Tooltip(
-                    tooltip:
-                        TooltipContainer(child: Text(context.l10n.mini_player))
-                            .call,
-                    child: IconButton(
-                      variance: ButtonVariance.ghost,
-                      icon: const Icon(SonolythIcons.miniPlayer),
-                      onPressed: () async {
-                        if (!kIsDesktop) return;
-
-                        final prevSize = await windowManager.getSize();
-                        await windowManager.setMinimumSize(
-                          const Size(300, 300),
-                        );
-                        await windowManager.setAlwaysOnTop(true);
-                        if (!kIsLinux) {
-                          await windowManager.setHasShadow(false);
-                        }
-                        await windowManager.setAlignment(Alignment.topRight);
-                        await windowManager.setSize(const Size(400, 500));
-                        await Future.delayed(
-                          const Duration(milliseconds: 100),
-                          () async {
-                            if (context.mounted) {
-                              context.navigateTo(
-                                MiniLyricsRoute(prevSize: prevSize),
-                              );
-                            }
-                          },
-                        );
-                      },
+                  // Mini-player relies on window_manager and only works on
+                  // desktop; hide it elsewhere instead of a silent no-op.
+                  if (kIsDesktop)
+                    Tooltip(
+                      tooltip: TooltipContainer(
+                              child: Text(context.l10n.mini_player))
+                          .call,
+                      child: IconButton(
+                        variance: ButtonVariance.ghost,
+                        icon: const Icon(SonolythIcons.miniPlayer),
+                        onPressed: () async {
+                          final prevSize = await windowManager.getSize();
+                          await windowManager.setMinimumSize(
+                            const Size(300, 300),
+                          );
+                          await windowManager.setAlwaysOnTop(true);
+                          if (!kIsLinux) {
+                            await windowManager.setHasShadow(false);
+                          }
+                          await windowManager.setAlignment(Alignment.topRight);
+                          await windowManager.setSize(const Size(400, 500));
+                          await Future.delayed(
+                            const Duration(milliseconds: 100),
+                            () async {
+                              if (context.mounted) {
+                                context.navigateTo(
+                                  MiniLyricsRoute(prevSize: prevSize),
+                                );
+                              }
+                            },
+                          );
+                        },
+                      ),
                     ),
-                  ),
                 ],
               ),
               Container(

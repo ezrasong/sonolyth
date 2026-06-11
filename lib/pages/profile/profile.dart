@@ -1,9 +1,12 @@
+import 'dart:math';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:sonolyth/collections/fake.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/fallbacks/error_box.dart';
 import 'package:sonolyth/components/image/universal_image.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
 import 'package:sonolyth/extensions/context.dart';
@@ -21,7 +24,30 @@ class ProfilePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final me = ref.watch(metadataPluginUserProvider);
+
+    // A failed fetch must not render the FakeData profile as if it were real
+    // (its Edit button would even open FakeData's external URL).
+    if (me.hasError && me.asData?.value == null) {
+      return SafeArea(
+        child: Scaffold(
+          headers: [
+            TitleBar(
+              title: Text(context.l10n.profile),
+            )
+          ],
+          child: Center(
+            child: ErrorBox(
+              error: me.error!,
+              onRetry: () => ref.invalidate(metadataPluginUserProvider),
+            ),
+          ),
+        ),
+      );
+    }
+
     final meData = me.asData?.value ?? FakeData.user;
+    // Fixed 300px overflows screens narrower than ~320dp.
+    final avatarSize = min(300.0, MediaQuery.sizeOf(context).width - 32);
 
     // final userProperties = useMemoized(
     //   () => {
@@ -59,8 +85,8 @@ class ProfilePage extends HookConsumerWidget {
                           index: 1,
                           placeholder: ImagePlaceholder.artist,
                         ),
-                        width: 300,
-                        height: 300,
+                        width: avatarSize,
+                        height: avatarSize,
                         fit: BoxFit.cover,
                       ),
                     ),
