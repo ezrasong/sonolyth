@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/audio_player/smart_shuffle.dart';
 import 'package:sonolyth/provider/audio_player/state.dart';
 import 'package:sonolyth/provider/discord_provider.dart';
 import 'package:sonolyth/provider/history/history.dart';
@@ -27,6 +28,17 @@ class AudioPlayerStreamListeners {
     AudioServices.create(ref, ref.read(audioPlayerProvider.notifier)).then(
       (value) => notificationService = value,
     );
+
+    // The shuffle->smart transition doesn't change the player's shuffle flag,
+    // so no audio_player stream fires — poke the notification directly to
+    // swap the shuffle button icon.
+    ref.listen(smartShuffleProvider, (previous, next) {
+      try {
+        notificationService.mobile?.refreshPlaybackState();
+      } catch (_) {
+        // notificationService may not be initialized yet.
+      }
+    });
 
     final subscriptions = [
       subscribeToPlaylist(),

@@ -520,6 +520,15 @@ public class AudioService extends MediaBrowserServiceCompat {
         listener.onCustomAction(name, new Bundle());
     }
 
+    // Sonolyth patch: in-process delivery for notification media buttons (see
+    // MediaButtonReceiver.onReceive). Dispatches the key event through the
+    // live session, so no foreground-service round trip is needed while the
+    // process is alive.
+    public void handleMediaButton(Intent intent) {
+        if (mediaSession == null) return;
+        MediaButtonReceiver.handleIntent(mediaSession, intent);
+    }
+
     void setState(List<MediaControl> controls, long actionBits, int[] compactActionIndices, AudioProcessingState processingState, boolean playing, long position, long bufferedPosition, float speed, long updateTime, Integer errorCode, String errorMessage, int repeatMode, int shuffleMode, boolean captioningEnabled, Long queueIndex) {
         boolean notificationChanged = false;
         if (!Arrays.equals(compactActionIndices, this.compactActionIndices)) {

@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/audio_player/smart_shuffle.dart';
 import 'package:sonolyth/provider/audio_player/state.dart';
 import 'package:sonolyth/services/audio_player/audio_player.dart';
 import 'package:media_kit/media_kit.dart' hide Track;
@@ -20,11 +22,12 @@ class MobileAudioService extends BaseAudioHandler {
 
   AudioSession? session;
   final AudioPlayerNotifier audioPlayerNotifier;
+  final Ref ref;
 
   // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
   AudioPlayerState get playlist => audioPlayerNotifier.state;
 
-  MobileAudioService(this.audioPlayerNotifier) {
+  MobileAudioService(this.audioPlayerNotifier, this.ref) {
     AudioSession.instance.then((s) {
       session = s;
       session?.configure(const AudioSessionConfiguration.music());
@@ -94,6 +97,13 @@ class MobileAudioService extends BaseAudioHandler {
     mediaItem.add(item);
   }
 
+  /// Re-broadcasts the playback state so the notification picks up changes
+  /// audio_player streams don't carry — currently the smart shuffle state,
+  /// whose shuffle->smart transition leaves the player's shuffle flag as-is.
+  Future<void> refreshPlaybackState() async {
+    playbackState.add(await _transformEvent());
+  }
+
   @override
   Future<void> play() => audioPlayer.resume();
 
@@ -138,7 +148,8 @@ class MobileAudioService extends BaseAudioHandler {
       [Map<String, dynamic>? extras]) async {
     switch (name) {
       case _actionShuffle:
-        await audioPlayer.setShuffle(audioPlayer.isShuffled != true);
+        // Same cycle as the in-app button: off -> shuffle -> smart -> off.
+        await ref.read(smartShuffleProvider.notifier).cycle();
       case _actionRepeat:
         await audioPlayer.setLoopMode(switch (audioPlayer.loopMode) {
           PlaylistMode.none => PlaylistMode.loop,
@@ -192,9 +203,11 @@ class MobileAudioService extends BaseAudioHandler {
         // (Bluetooth/headset) without hogging a button slot.
         controls: [
           MediaControl.custom(
-            androidIcon: audioPlayer.isShuffled == true
-                ? 'drawable/sonolyth_shuffle_on'
-                : 'drawable/sonolyth_shuffle',
+            androidIcon: ref.read(smartShuffleProvider)
+                ? 'drawable/sonolyth_shuffle_smart_on'
+                : audioPlayer.isShuffled == true
+                    ? 'drawable/sonolyth_shuffle_on'
+                    : 'drawable/sonolyth_shuffle',
             label: 'Shuffle',
             name: _actionShuffle,
           ),

@@ -28,6 +28,20 @@ public class MediaButtonReceiver extends androidx.media.session.MediaButtonRecei
                     intent.getStringExtra(EXTRA_CUSTOM_ACTION_NAME));
             return;
         }
+        // Sonolyth patch: while the service is alive, feed media-button
+        // presses straight into its session instead of letting androidx
+        // restart it via startForegroundService. After a pause the service is
+        // detached from the foreground, and that restart is exactly what OEM
+        // background-FGS restrictions (Vivo) reject — the press never reaches
+        // the session and the notification's play button does nothing. The
+        // super path stays for the cold-boot case (process death left a
+        // notification behind), where there is no session to dispatch into.
+        if (intent != null
+                && Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())
+                && AudioService.instance != null) {
+            AudioService.instance.handleMediaButton(intent);
+            return;
+        }
         super.onReceive(context, intent);
     }
 }

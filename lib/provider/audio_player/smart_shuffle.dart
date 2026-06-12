@@ -20,6 +20,7 @@ class SmartShuffleNotifier extends Notifier<bool> {
   Set<String> _suggestedEver = {};
 
   StreamSubscription? _subscription;
+  StreamSubscription? _shuffleSubscription;
   bool _fetching = false;
 
   /// Top up when fewer than this many tracks remain after the current one.
@@ -29,8 +30,16 @@ class SmartShuffleNotifier extends Notifier<bool> {
 
   @override
   bool build() {
+    // Shuffle can be switched off from places that don't know about smart
+    // shuffle (Bluetooth/Android Auto setShuffleMode, the tray menu, the
+    // collection page shuffle toggle). Smart shuffle without shuffle makes
+    // no sense, so follow the player out of it.
+    _shuffleSubscription = audioPlayer.shuffledStream.listen((shuffled) {
+      if (state && !shuffled) disable();
+    });
     ref.onDispose(() {
       _subscription?.cancel();
+      _shuffleSubscription?.cancel();
     });
     return false;
   }
@@ -46,10 +55,12 @@ class SmartShuffleNotifier extends Notifier<bool> {
     state = true;
     await audioPlayer.setShuffle(true);
 
-    await _topUp(_initialBatch);
-
     _subscription?.cancel();
     _subscription = audioPlayer.playlistStream.listen((_) => _maybeTopUp());
+
+    // Recommendations arrive in the background — the toggle (and the media
+    // notification button) must not hang on four top-tracks fetches.
+    unawaited(_topUp(_initialBatch));
   }
 
   Future<void> disable({bool keepShuffle = false}) async {
@@ -57,14 +68,37 @@ class SmartShuffleNotifier extends Notifier<bool> {
     _subscription?.cancel();
     _subscription = null;
     if (_injectedTrackIds.isNotEmpty) {
+      // Keep whatever is currently playing, even if it was one of ours —
+      // yanking the active track mid-listen is worse than leaving one
+      // recommendation behind (Spotify does the same).
+      final activeId = ref.read(audioPlayerProvider).activeTrack?.id;
       await ref
           .read(audioPlayerProvider.notifier)
-          .removeTracks(_injectedTrackIds);
+          .removeTracks(_injectedTrackIds.where((id) => id != activeId));
       _injectedTrackIds = {};
     }
     _suggestedEver = {};
     if (!keepShuffle) {
       await audioPlayer.setShuffle(false);
+    }
+  }
+
+  /// Cycles shuffle off -> shuffle -> smart shuffle -> off, mirroring
+  /// Spotify. Used by the in-app shuffle buttons and the media-notification
+  /// shuffle button.
+  Future<void> cycle() async {
+    final shuffled = ref.read(audioPlayerProvider).shuffled;
+
+    if (!shuffled && !state) {
+      await audioPlayer.setShuffle(true);
+    } else if (shuffled && !state) {
+      await enable();
+      // Smart shuffle can be unavailable (local-only queue, nothing playing).
+      // Without this the cycle would jam at "shuffle on" forever — complete
+      // it to "off" instead.
+      if (!state) await audioPlayer.setShuffle(false);
+    } else {
+      await disable();
     }
   }
 
@@ -92,6 +126,11 @@ class SmartShuffleNotifier extends Notifier<bool> {
       if (queueTracks.isEmpty) return;
 
       final existingIds = playerState.tracks.map((t) => t.id).toSet();
+      // The queue may have been replaced (a new playlist was loaded) since
+      // the last top-up; injected tracks that are gone must not be "removed"
+      // again on disable, where the id could now belong to a track the new
+      // queue legitimately contains.
+      _injectedTrackIds.removeWhere((id) => !existingIds.contains(id));
       final artistIds = queueTracks
           .expand((t) => t.artists.map((a) => a.id))
           .toSet()
@@ -136,16 +175,5 @@ final smartShuffleProvider = NotifierProvider<SmartShuffleNotifier, bool>(
 );
 
 /// Cycles shuffle off -> shuffle -> smart shuffle -> off, mirroring Spotify.
-Future<void> cycleShuffleMode(WidgetRef ref) async {
-  final shuffled = ref.read(audioPlayerProvider).shuffled;
-  final smart = ref.read(smartShuffleProvider);
-  final smartNotifier = ref.read(smartShuffleProvider.notifier);
-
-  if (!shuffled && !smart) {
-    await audioPlayer.setShuffle(true);
-  } else if (shuffled && !smart) {
-    await smartNotifier.enable();
-  } else {
-    await smartNotifier.disable();
-  }
-}
+Future<void> cycleShuffleMode(WidgetRef ref) =>
+    ref.read(smartShuffleProvider.notifier).cycle();

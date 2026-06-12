@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Transparent: the white mark floats with no backing plate. -->
-    <color name="ic_launcher_background">#00000000</color>
+    <!-- Brand dark plate behind the circled wave mark. (A transparent
+         background gets replaced by a launcher-picked color — Pixel renders
+         it as a Material You tint, which looks accidental.) -->
+    <color name="ic_launcher_background">#242832</color>
 </resources>

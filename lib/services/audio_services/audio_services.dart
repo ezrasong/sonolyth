@@ -23,7 +23,7 @@ class AudioServices with WidgetsBindingObserver {
   ) async {
     final mobile = kIsMobile || kIsMacOS || kIsLinux
         ? await AudioService.init(
-            builder: () => MobileAudioService(playback),
+            builder: () => MobileAudioService(playback, ref),
             config: AudioServiceConfig(
               androidNotificationChannelId: switch ((
                 kIsLinux,
