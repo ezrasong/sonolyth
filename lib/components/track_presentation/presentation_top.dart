@@ -56,6 +56,8 @@ class TrackPresentationTopSection extends HookConsumerWidget {
     ) = useActionCallbacks(ref);
     final playing =
         useStream(audioPlayer.playingStream).data ?? audioPlayer.isPlaying;
+    final isShuffled =
+        useStream(audioPlayer.shuffledStream).data ?? audioPlayer.isShuffled;
     final isDownloadingAll = useState(false);
 
     Future<void> onDownloadAll() async {
@@ -116,15 +118,24 @@ class TrackPresentationTopSection extends HookConsumerWidget {
           children: [
             Opacity(
               opacity: isShuffleLoading ? 0 : 1,
-              child: const Icon(SonolythIcons.shuffle),
+              child: Icon(
+                SonolythIcons.shuffle,
+                color:
+                    isShuffled ? context.theme.colorScheme.primary : null,
+              ),
             ),
             if (isShuffleLoading)
               const CircularProgressIndicator(onSurface: false, size: 16),
           ],
         ),
         shape: ButtonShape.circle,
-        enabled: !isLoading && !isActive,
-        onPressed: onShuffle,
+        enabled: !isLoading,
+        // When this collection is already playing, the button toggles the
+        // player's shuffle mode instead of being disabled (same pattern as
+        // the play button's pause/resume).
+        onPressed: isActive
+            ? () => audioPlayer.setShuffle(!isShuffled)
+            : onShuffle,
       ),
     );
 

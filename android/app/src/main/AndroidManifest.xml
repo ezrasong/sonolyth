@@ -85,6 +85,13 @@
       <intent-filter>
         <action android:name="es.antonborri.home_widget.action.LAUNCH" />
       </intent-filter>
+
+      <!-- Routes media-notification taps through the activity so Dart sees
+           AudioService.notificationClicked and can expand the player. -->
+      <intent-filter>
+        <action android:name="com.ryanheise.audioservice.NOTIFICATION_CLICK" />
+        <category android:name="android.intent.category.DEFAULT" />
+      </intent-filter>
     </activity>
 
     <!-- AudioService Config -->

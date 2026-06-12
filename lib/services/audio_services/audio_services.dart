@@ -35,7 +35,10 @@ class AudioServices with WidgetsBindingObserver {
               },
               androidNotificationChannelName: 'Sonolyth',
               androidNotificationOngoing: false,
-              androidStopForegroundOnPause: false,
+              // Leave the foreground state while paused so the notification
+              // can be swiped away (Spotify behaviour); the swipe then ends
+              // the session through AudioHandler.stop().
+              androidStopForegroundOnPause: true,
               androidNotificationChannelDescription: "Sonolyth Media Controls",
             ),
           )

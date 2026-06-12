@@ -1,3 +1,5 @@
+import 'package:audio_service/audio_service.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -28,6 +30,22 @@ class PlayerOverlay extends HookConsumerWidget {
     final screenSize = MediaQuery.sizeOf(context);
 
     final panelController = ref.watch(playerOverlayControllerProvider);
+
+    // Tapping the media notification expands the full player. The stream is a
+    // BehaviorSubject, so a cold start from the notification replays `true`
+    // once this overlay mounts; the post-frame hop waits for the panel to be
+    // attached before opening it.
+    useEffect(() {
+      final subscription = AudioService.notificationClicked.listen((clicked) {
+        if (!clicked) return;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (panelController.isAttached && !panelController.isPanelOpen) {
+            panelController.open();
+          }
+        });
+      });
+      return subscription.cancel;
+    }, [panelController]);
 
     return SlidingUpPanel(
       maxHeight: screenSize.height,
