@@ -1,11 +1,9 @@
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sonolyth/components/dialogs/select_device_dialog.dart';
-import 'package:sonolyth/components/track_presentation/presentation_actions.dart';
 import 'package:sonolyth/components/track_presentation/presentation_props.dart';
 
 import 'package:sonolyth/models/connect/connect.dart';
@@ -23,7 +21,6 @@ typedef UseActionCallbacks = ({
   bool isShuffleLoading,
   Future<void> Function() onShuffle,
   Future<void> Function() onPlay,
-  VoidCallback onAddToQueue,
 });
 
 UseActionCallbacks useActionCallbacks(WidgetRef ref) {
@@ -180,28 +177,6 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
     }
   }, [options, playlistNotifier, historyNotifier]);
 
-  final onAddToQueue = useCallback(() {
-    final tracks = options.tracks;
-    if (tracks.isEmpty) return;
-    if (ref.read(audioPlayerProvider).tracks.isEmpty) {
-      // Nothing to queue behind — start playing right away instead of
-      // appending tracks to a stopped player.
-      playlistNotifier.load(tracks, autoPlay: true);
-    } else {
-      playlistNotifier.addTracks(tracks);
-    }
-    playlistNotifier.addCollection(options.collectionId);
-    if (options.collection is SonolythSimpleAlbumObject) {
-      historyNotifier
-          .addAlbums([options.collection as SonolythSimpleAlbumObject]);
-    } else {
-      historyNotifier
-          .addPlaylists([options.collection as SonolythSimplePlaylistObject]);
-    }
-    if (!context.mounted) return;
-    showToastForAction(context, "add-to-queue", tracks.length);
-  }, [options, playlistNotifier, historyNotifier]);
-
   return (
     isActive: isActive,
     isLoading: isPlayLoading.value || isShuffleLoading.value,
@@ -209,6 +184,5 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
     isShuffleLoading: isShuffleLoading.value,
     onShuffle: onShuffle,
     onPlay: onPlay,
-    onAddToQueue: onAddToQueue,
   );
 }

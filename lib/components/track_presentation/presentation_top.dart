@@ -52,8 +52,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
       :isPlayLoading,
       :isShuffleLoading,
       :onPlay,
-      :onShuffle,
-      :onAddToQueue
+      :onShuffle
     ) = useActionCallbacks(ref);
     final playing =
         useStream(audioPlayer.playingStream).data ?? audioPlayer.isPlaying;
@@ -126,18 +125,6 @@ class TrackPresentationTopSection extends HookConsumerWidget {
         shape: ButtonShape.circle,
         enabled: !isLoading && !isActive,
         onPressed: onShuffle,
-      ),
-    );
-
-    final queueButton = Tooltip(
-      tooltip: TooltipContainer(
-        child: Text(context.l10n.add_to_queue),
-      ).call,
-      child: IconButton.ghost(
-        icon: const Icon(SonolythIcons.queueAdd),
-        shape: ButtonShape.circle,
-        enabled: !isLoading && !isActive,
-        onPressed: onAddToQueue,
       ),
     );
 
@@ -267,13 +254,14 @@ class TrackPresentationTopSection extends HookConsumerWidget {
             onPressed: options.onHeart,
           );
 
-    // Secondary (non-play) icons, shared across layouts.
+    // Secondary (non-play) icons, shared across layouts. Download goes last
+    // so it lands in the right-hand group on phones (mirroring the heart on
+    // the left), keeping the action bar symmetric around the Play button.
     final secondaryActions = <Widget>[
       if (heartButton != null) heartButton,
-      downloadButton,
       if (shareButton != null) shareButton,
       if (editButton != null) editButton,
-      queueButton,
+      downloadButton,
     ];
     // Split point used on phones to seat the Play button dead-centre, with the
     // secondary icons balanced to either side of it.
