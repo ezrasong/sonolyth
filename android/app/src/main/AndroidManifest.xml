@@ -20,6 +20,9 @@
     android:maxSdkVersion="32" />
   <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
   <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+  <!-- In-app updater: downloaded release APKs are handed to the system
+       package installer, which requires the install-packages permission. -->
+  <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
   <queries>
     <intent>
