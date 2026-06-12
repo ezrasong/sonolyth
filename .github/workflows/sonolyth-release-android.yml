@@ -83,7 +83,15 @@ jobs:
           EOF
 
       - name: Build android apk
-        run: dart cli/cli.dart build --arch=all android
+        # Published builds must always poll GitHub releases for updates, no
+        # matter what the dotenv secret says: strip any ENABLE_UPDATE_CHECK
+        # line it carries and pin the flag on before handing it to the CLI.
+        run: |
+          DOTENV="$(printf '%s\n' "$DOTENV" | grep -v '^ENABLE_UPDATE_CHECK=' || true)"
+          DOTENV="${DOTENV}
+          ENABLE_UPDATE_CHECK=1"
+          export DOTENV
+          dart cli/cli.dart build --arch=all android
         env:
           CHANNEL: ${{ inputs.channel }}
           DOTENV: ${{ secrets.DOTENV_RELEASE }}

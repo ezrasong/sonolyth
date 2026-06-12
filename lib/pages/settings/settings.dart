@@ -36,61 +36,58 @@ class SettingsPage extends HookConsumerWidget {
             title: Text(context.l10n.settings),
           )
         ],
-        child: Scrollbar(
-          controller: controller,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1366),
-              child: ScrollConfiguration(
-                behavior: const ScrollBehavior().copyWith(scrollbars: false),
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: ListView(
-                    controller: controller,
-                    children: [
-                      const SettingsAccountSection(),
-                      const SettingsLanguageRegionSection(),
-                      const SettingsAppearanceSection(),
-                      const SettingsPlaybackSection(),
-                      const SettingsDownloadsSection(),
-                      if (kIsDesktop) const SettingsDesktopSection(),
-                      if (!kIsWeb) const SettingsDevelopersSection(),
-                      const SettingsAboutSection(),
-                      Center(
-                        child: Button.destructive(
-                          onPressed: () async {
-                            final accepted = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: Text(context.l10n.restore_defaults),
-                                content: Text(context.l10n.are_you_sure),
-                                actions: [
-                                  Button.outline(
-                                    onPressed: () {
-                                      Navigator.of(context).pop(false);
-                                    },
-                                    child: Text(context.l10n.decline),
-                                  ),
-                                  Button.destructive(
-                                    onPressed: () {
-                                      Navigator.of(context).pop(true);
-                                    },
-                                    child: Text(context.l10n.accept),
-                                  ),
-                                ],
-                              ),
-                            );
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1366),
+            child: ScrollConfiguration(
+              behavior: const ScrollBehavior().copyWith(scrollbars: false),
+              child: Material(
+                type: MaterialType.transparency,
+                child: ListView(
+                  controller: controller,
+                  children: [
+                    const SettingsAccountSection(),
+                    const SettingsLanguageRegionSection(),
+                    const SettingsAppearanceSection(),
+                    const SettingsPlaybackSection(),
+                    const SettingsDownloadsSection(),
+                    if (kIsDesktop) const SettingsDesktopSection(),
+                    if (!kIsWeb) const SettingsDevelopersSection(),
+                    const SettingsAboutSection(),
+                    Center(
+                      child: Button.destructive(
+                        onPressed: () async {
+                          final accepted = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text(context.l10n.restore_defaults),
+                              content: Text(context.l10n.are_you_sure),
+                              actions: [
+                                Button.outline(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(false);
+                                  },
+                                  child: Text(context.l10n.decline),
+                                ),
+                                Button.destructive(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(true);
+                                  },
+                                  child: Text(context.l10n.accept),
+                                ),
+                              ],
+                            ),
+                          );
 
-                            if (accepted != true) return;
+                          if (accepted != true) return;
 
-                            await preferencesNotifier.reset();
-                          },
-                          child: Text(context.l10n.restore_defaults),
-                        ),
+                          await preferencesNotifier.reset();
+                        },
+                        child: Text(context.l10n.restore_defaults),
                       ),
-                      const SizedBox(height: 200),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 200),
+                  ],
                 ),
               ),
             ),

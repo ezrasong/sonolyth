@@ -39,158 +39,174 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 250),
       child: canShow && shouldShow.value
-          ? Padding(
-              padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-              child: material.Material(
-                color: context.theme.colorScheme.card,
-                borderRadius: BorderRadius.circular(8),
-                clipBehavior: Clip.antiAlias,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: context.theme.colorScheme.border,
+          ? GestureDetector(
+              // Flick down to stop playback and clear the queue; flick up
+              // still expands the full player like the panel drag would.
+              onVerticalDragEnd: (details) {
+                final velocity = details.primaryVelocity ?? 0;
+                if (velocity > 250) {
+                  ref.read(audioPlayerProvider.notifier).stop();
+                } else if (velocity < -250) {
+                  panelController.open();
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+                child: material.Material(
+                  color: context.theme.colorScheme.card,
+                  borderRadius: BorderRadius.circular(8),
+                  clipBehavior: Clip.antiAlias,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: context.theme.colorScheme.border,
+                      ),
                     ),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () {
-                                  panelController.open();
-                                },
-                                child: Container(
-                                  width: double.infinity,
-                                  color: Colors.transparent,
-                                  child: PlayerTrackDetails(
-                                    track: playlist.activeTrack,
-                                    color: context.theme.colorScheme.foreground,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    panelController.open();
+                                  },
+                                  child: Container(
+                                    width: double.infinity,
+                                    color: Colors.transparent,
+                                    child: PlayerTrackDetails(
+                                      track: playlist.activeTrack,
+                                      color:
+                                          context.theme.colorScheme.foreground,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            Row(
-                              children: [
-                                Consumer(
-                                  builder: (context, ref, _) {
-                                    final shuffled = ref.watch(
-                                      audioPlayerProvider
-                                          .select((s) => s.shuffled),
-                                    );
-                                    final smartShuffle =
-                                        ref.watch(smartShuffleProvider);
-                                    return IconButton.ghost(
-                                      icon: Stack(
-                                        clipBehavior: Clip.none,
-                                        children: [
-                                          Icon(
-                                            SonolythIcons.shuffle,
-                                            size: 18,
-                                            color: shuffled || smartShuffle
-                                                ? context
-                                                    .theme.colorScheme.primary
-                                                : context.theme.colorScheme
+                              Row(
+                                children: [
+                                  Consumer(
+                                    builder: (context, ref, _) {
+                                      final shuffled = ref.watch(
+                                        audioPlayerProvider
+                                            .select((s) => s.shuffled),
+                                      );
+                                      final smartShuffle =
+                                          ref.watch(smartShuffleProvider);
+                                      return IconButton.ghost(
+                                        icon: Stack(
+                                          clipBehavior: Clip.none,
+                                          children: [
+                                            Icon(
+                                              SonolythIcons.shuffle,
+                                              size: 18,
+                                              color: shuffled || smartShuffle
+                                                  ? context
+                                                      .theme.colorScheme.primary
+                                                  : context.theme.colorScheme
+                                                      .foreground,
+                                            ),
+                                            if (smartShuffle)
+                                              Positioned(
+                                                right: -5,
+                                                top: -5,
+                                                child: Icon(
+                                                  SonolythIcons.lightning,
+                                                  size: 10,
+                                                  color: context.theme
+                                                      .colorScheme.primary,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                        onPressed: () => cycleShuffleMode(ref),
+                                      );
+                                    },
+                                  ),
+                                  IconButton.ghost(
+                                    icon: Icon(
+                                      SonolythIcons.skipBack,
+                                      color:
+                                          context.theme.colorScheme.foreground,
+                                    ),
+                                    onPressed: audioPlayer.skipToPrevious,
+                                  ),
+                                  Consumer(
+                                    builder: (context, ref, _) {
+                                      return IconButton.ghost(
+                                        icon: isFetchingActiveTrack
+                                            ? const SizedBox(
+                                                height: 20,
+                                                width: 20,
+                                                child:
+                                                    CircularProgressIndicator(),
+                                              )
+                                            : Icon(
+                                                playing
+                                                    ? SonolythIcons.pause
+                                                    : SonolythIcons.play,
+                                                color: context.theme.colorScheme
                                                     .foreground,
-                                          ),
-                                          if (smartShuffle)
-                                            Positioned(
-                                              right: -5,
-                                              top: -5,
-                                              child: Icon(
-                                                SonolythIcons.lightning,
-                                                size: 10,
-                                                color: context
-                                                    .theme.colorScheme.primary,
                                               ),
-                                            ),
-                                        ],
-                                      ),
-                                      onPressed: () => cycleShuffleMode(ref),
-                                    );
-                                  },
-                                ),
-                                IconButton.ghost(
-                                  icon: Icon(
-                                    SonolythIcons.skipBack,
-                                    color: context.theme.colorScheme.foreground,
+                                        onPressed:
+                                            Actions.handler<PlayPauseIntent>(
+                                          context,
+                                          PlayPauseIntent(ref),
+                                        ),
+                                      );
+                                    },
                                   ),
-                                  onPressed: audioPlayer.skipToPrevious,
-                                ),
-                                Consumer(
-                                  builder: (context, ref, _) {
-                                    return IconButton.ghost(
-                                      icon: isFetchingActiveTrack
-                                          ? const SizedBox(
-                                              height: 20,
-                                              width: 20,
-                                              child:
-                                                  CircularProgressIndicator(),
-                                            )
-                                          : Icon(
-                                              playing
-                                                  ? SonolythIcons.pause
-                                                  : SonolythIcons.play,
-                                              color: context
+                                  IconButton.ghost(
+                                    icon: Icon(
+                                      SonolythIcons.skipForward,
+                                      color:
+                                          context.theme.colorScheme.foreground,
+                                    ),
+                                    onPressed: audioPlayer.skipToNext,
+                                  ),
+                                  Consumer(
+                                    builder: (context, ref, _) {
+                                      final loopMode = ref.watch(
+                                        audioPlayerProvider
+                                            .select((s) => s.loopMode),
+                                      );
+                                      return IconButton.ghost(
+                                        icon: Icon(
+                                          loopMode == PlaylistMode.single
+                                              ? SonolythIcons.repeatOne
+                                              : SonolythIcons.repeat,
+                                          size: 18,
+                                          color: loopMode != PlaylistMode.none
+                                              ? context
+                                                  .theme.colorScheme.primary
+                                              : context
                                                   .theme.colorScheme.foreground,
-                                            ),
-                                      onPressed:
-                                          Actions.handler<PlayPauseIntent>(
-                                        context,
-                                        PlayPauseIntent(ref),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                IconButton.ghost(
-                                  icon: Icon(
-                                    SonolythIcons.skipForward,
-                                    color: context.theme.colorScheme.foreground,
+                                        ),
+                                        onPressed: () =>
+                                            audioPlayer.setLoopMode(
+                                          switch (loopMode) {
+                                            PlaylistMode.loop =>
+                                              PlaylistMode.single,
+                                            PlaylistMode.single =>
+                                              PlaylistMode.none,
+                                            PlaylistMode.none =>
+                                              PlaylistMode.loop,
+                                          },
+                                        ),
+                                      );
+                                    },
                                   ),
-                                  onPressed: audioPlayer.skipToNext,
-                                ),
-                                Consumer(
-                                  builder: (context, ref, _) {
-                                    final loopMode = ref.watch(
-                                      audioPlayerProvider
-                                          .select((s) => s.loopMode),
-                                    );
-                                    return IconButton.ghost(
-                                      icon: Icon(
-                                        loopMode == PlaylistMode.single
-                                            ? SonolythIcons.repeatOne
-                                            : SonolythIcons.repeat,
-                                        size: 18,
-                                        color: loopMode != PlaylistMode.none
-                                            ? context
-                                                .theme.colorScheme.primary
-                                            : context
-                                                .theme.colorScheme.foreground,
-                                      ),
-                                      onPressed: () => audioPlayer.setLoopMode(
-                                                switch (loopMode) {
-                                                  PlaylistMode.loop =>
-                                                    PlaylistMode.single,
-                                                  PlaylistMode.single =>
-                                                    PlaylistMode.none,
-                                                  PlaylistMode.none =>
-                                                    PlaylistMode.loop,
-                                                },
-                                              ),
-                                    );
-                                  },
-                                ),
-                                const Gap(5),
-                              ],
-                            ),
-                          ],
+                                  const Gap(5),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

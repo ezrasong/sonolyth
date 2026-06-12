@@ -1,8 +1,9 @@
-import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:sonolyth/utils/platform.dart';
 
+/// Plain passthrough: the draggable semicircle scroll indicator this used to
+/// add on mobile was unwanted visual noise, so lists render bare now. Kept as
+/// a wrapper so call sites don't churn if an indicator ever returns.
 class InterScrollbar extends HookWidget {
   final Widget child;
   final ScrollController controller;
@@ -15,11 +16,6 @@ class InterScrollbar extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (kIsDesktop) return child;
-
-    return DraggableScrollbar.semicircle(
-      controller: controller,
-      child: child,
-    );
+    return child;
   }
 }

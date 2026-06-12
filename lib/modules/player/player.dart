@@ -22,6 +22,7 @@ import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/modules/root/sonolyth_navigation_bar.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/metadata_plugin/audio_source/quality_label.dart';
+import 'package:sonolyth/services/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/server/active_track_sources.dart';
 import 'package:sonolyth/provider/volume_provider.dart';
 
@@ -140,27 +141,39 @@ class PlayerView extends HookConsumerWidget {
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 children: [
-                  Container(
-                    margin: const EdgeInsets.all(8),
-                    constraints:
-                        const BoxConstraints(maxHeight: 300, maxWidth: 300),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(100),
-                          spreadRadius: 2,
-                          blurRadius: 10,
-                          offset: Offset.zero,
+                  GestureDetector(
+                    // Swiping across the cover changes tracks: left for the
+                    // next one, right for the previous one.
+                    onHorizontalDragEnd: (details) {
+                      final velocity = details.primaryVelocity ?? 0;
+                      if (velocity < -100) {
+                        audioPlayer.skipToNext();
+                      } else if (velocity > 100) {
+                        audioPlayer.skipToPrevious();
+                      }
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.all(8),
+                      constraints:
+                          const BoxConstraints(maxHeight: 300, maxWidth: 300),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(100),
+                            spreadRadius: 2,
+                            blurRadius: 10,
+                            offset: Offset.zero,
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: UniversalImage(
+                          path: albumArt,
+                          placeholder: Assets.images.albumPlaceholder.path,
+                          fit: BoxFit.cover,
                         ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: UniversalImage(
-                        path: albumArt,
-                        placeholder: Assets.images.albumPlaceholder.path,
-                        fit: BoxFit.cover,
                       ),
                     ),
                   ),
