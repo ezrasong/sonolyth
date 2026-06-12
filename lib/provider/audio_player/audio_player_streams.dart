@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:dio/dio.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
@@ -9,7 +10,9 @@ import 'package:sonolyth/provider/discord_provider.dart';
 import 'package:sonolyth/provider/history/history.dart';
 import 'package:sonolyth/provider/metadata_plugin/core/scrobble.dart';
 import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
+import 'package:sonolyth/provider/server/routes/playback.dart';
 import 'package:sonolyth/provider/server/sourced_track_provider.dart';
+import 'package:sonolyth/services/sourced_track/sourced_track.dart';
 import 'package:sonolyth/provider/skip_segments/skip_segments.dart';
 import 'package:sonolyth/provider/scrobbler/scrobbler.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
@@ -40,6 +43,8 @@ class AudioPlayerStreamListeners {
       }
     });
   }
+
+  final Dio _prefetchDio = Dio();
 
   ScrobblerNotifier get scrobbler => ref.read(scrobblerProvider.notifier);
   UserPreferences get preferences => ref.read(userPreferencesProvider);
@@ -205,10 +210,58 @@ class AudioPlayerStreamListeners {
             },
           ),
         );
+
+        // "Previous" gets no prefetch from mpv (prefetch-playlist only
+        // buffers the next entry), so pressing back pays the full stream
+        // open — and a stale URL adds a refresh round trip on top of it,
+        // interactively. Verify the previous track's stream still answers
+        // now and refresh it in the background if it doesn't.
+        final previousIndex = audioPlayerState.currentIndex - 1;
+        final previous = previousIndex < 0
+            ? null
+            : audioPlayerState.tracks.elementAtOrNull(previousIndex);
+        if (previous is SonolythFullTrackObject) {
+          try {
+            final sourced =
+                await ref.read(sourcedTrackProvider(previous).future);
+            await _ensureStreamAlive(previous, sourced);
+          } catch (e, stack) {
+            AppLogger.reportError(e, stack);
+          }
+        }
       } catch (e, stack) {
         AppLogger.reportError(e, stack);
       }
     });
+  }
+
+  /// Pokes [sourced]'s stream URL with a one-byte range request; when it no
+  /// longer answers (expired/revoked), refreshes the URL while the user is
+  /// still on the current track instead of when they press "previous".
+  Future<void> _ensureStreamAlive(
+    SonolythFullTrackObject track,
+    SourcedTrack sourced,
+  ) async {
+    final url = sourced.url;
+    if (url == null) return;
+    try {
+      await _prefetchDio.get(
+        url,
+        options: Options(
+          headers: {
+            "range": "bytes=0-0",
+            "user-agent": streamUserAgentFor(sourced),
+          },
+          responseType: ResponseType.bytes,
+          receiveTimeout: const Duration(seconds: 5),
+          validateStatus: (status) => status != null && status < 400,
+        ),
+      );
+    } catch (_) {
+      await ref
+          .read(sourcedTrackProvider(track).notifier)
+          .refreshStreamingUrl();
+    }
   }
 
   StreamSubscription subscribeToPlayerError() {

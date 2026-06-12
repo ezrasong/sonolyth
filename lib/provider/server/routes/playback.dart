@@ -32,10 +32,13 @@ final _deviceClients = Set.unmodifiable({
   YoutubeApiClient.safari,
 });
 
-String? get _randomUserAgent => _deviceClients
-    .elementAt(
-      Random().nextInt(_deviceClients.length),
-    )
+/// Stable per-track client user-agent. The stream URL was resolved for one
+/// client; rolling a fresh random UA on every request to the same URL invites
+/// 403s whose only recovery is a multi-second refreshStreamingUrl round trip
+/// — which is exactly the "previous track takes forever" stall, since only
+/// the next track's open is masked by mpv's prefetch.
+String? streamUserAgentFor(SourcedTrack track) => _deviceClients
+    .elementAt(track.info.id.hashCode.abs() % _deviceClients.length)
     .payload["context"]["client"]["userAgent"];
 
 class ServerPlaybackRoutes {
@@ -45,6 +48,10 @@ class ServerPlaybackRoutes {
   final Dio dio;
 
   ServerPlaybackRoutes(this.ref) : dio = Dio();
+
+  /// Cache files with a write already in progress (keyed by cache path) —
+  /// a second concurrent writer would interleave bytes and corrupt the file.
+  static final Set<String> _cacheWritesInFlight = {};
 
   Future<String> _getTrackCacheFilePath(SourcedTrack track) async {
     return join(
@@ -177,7 +184,7 @@ class ServerPlaybackRoutes {
 
     final options = Options(
       headers: {
-        "user-agent": _randomUserAgent,
+        "user-agent": streamUserAgentFor(track),
         "Cache-Control": "max-age=3600",
         "Connection": "keep-alive",
         "host": Uri.parse(url).host,
@@ -214,7 +221,7 @@ class ServerPlaybackRoutes {
         // leak whatever a LAN client sends (cookies, auth) to the upstream
         // content server.
         if (headers["range"] != null) "range": headers["range"],
-        "user-agent": _randomUserAgent,
+        "user-agent": streamUserAgentFor(track),
         "Cache-Control": "max-age=3600",
         "Connection": "keep-alive",
         "host": Uri.parse(url).host,
@@ -264,53 +271,81 @@ class ServerPlaybackRoutes {
       return res;
     }
 
+    // Cache only sound responses: a linear stream that starts at byte 0 with
+    // a known total, written by a single writer. The old code APPENDED every
+    // response to the .part file — an mpv tail probe or seek mid-download
+    // interleaved bytes at the wrong offsets, the completeness check then
+    // never passed, and the cache silently never finished. A track that
+    // never finishes caching is re-streamed from the network on every
+    // replay, which is why "previous" stalled while "next" (prefetched by
+    // mpv) felt instant.
+    final contentRangeValue = res.headers.value("content-range");
+    final contentRange = contentRangeValue != null
+        ? ContentRangeHeader.parse(contentRangeValue)
+        : null;
+    // A 200 (no range) carries the total in content-length instead.
+    final expectedTotal = contentRange?.total ??
+        int.tryParse(res.headers.value("content-length") ?? "") ??
+        0;
+    final cacheable = expectedTotal > 0 &&
+        (contentRange == null || contentRange.start == 0) &&
+        !_cacheWritesInFlight.contains(trackCacheFile.path);
+    if (!cacheable) {
+      return res;
+    }
+    _cacheWritesInFlight.add(trackCacheFile.path);
+
     final resStream = res.data!.stream.asBroadcastStream();
 
     final trackPartialCacheFile = File("${trackCacheFile.path}.part");
-    if (!await trackPartialCacheFile.exists()) {
-      await trackPartialCacheFile.create(recursive: true);
+    // A leftover partial from an aborted/older write would corrupt this
+    // linear write — start clean.
+    if (await trackPartialCacheFile.exists()) {
+      await trackPartialCacheFile.delete();
     }
+    await trackPartialCacheFile.create(recursive: true);
 
-    // Write the stream to the file based on the range
     final partialCacheFileSink =
         trackPartialCacheFile.openWrite(mode: FileMode.writeOnlyAppend);
-    final contentRange = res.headers.value("content-range") != null
-        ? ContentRangeHeader.parse(res.headers.value("content-range") ?? "")
-        : ContentRangeHeader(0, 0, 0);
 
     resStream.listen(
       (data) {
         partialCacheFileSink.add(data);
       },
       onError: (e, stack) {
+        _cacheWritesInFlight.remove(trackCacheFile.path);
         partialCacheFileSink.close();
       },
       onDone: () async {
-        await partialCacheFileSink.close();
+        try {
+          await partialCacheFileSink.close();
 
-        final fileLength = await trackPartialCacheFile.length();
-        if (fileLength != contentRange.total) return;
+          final fileLength = await trackPartialCacheFile.length();
+          if (fileLength != expectedTotal) return;
 
-        await trackPartialCacheFile.rename(trackCacheFile.path);
+          await trackPartialCacheFile.rename(trackCacheFile.path);
 
-        if (track.qualityPreset!.getFileExtension() == "weba") return;
+          if (track.qualityPreset!.getFileExtension() == "weba") return;
 
-        final imageBytes = await ServiceUtils.downloadImage(
-          track.query.album.images.asUrlString(
-            placeholder: ImagePlaceholder.albumArt,
-            index: 1,
-          ),
-        );
+          final imageBytes = await ServiceUtils.downloadImage(
+            track.query.album.images.asUrlString(
+              placeholder: ImagePlaceholder.albumArt,
+              index: 1,
+            ),
+          );
 
-        await MetadataGod.writeMetadata(
-          file: trackCacheFile.path,
-          metadata: track.query.toMetadata(
-            imageBytes: imageBytes,
-            fileLength: fileLength,
-          ),
-        ).catchError((e, stackTrace) {
-          AppLogger.reportError(e, stackTrace);
-        });
+          await MetadataGod.writeMetadata(
+            file: trackCacheFile.path,
+            metadata: track.query.toMetadata(
+              imageBytes: imageBytes,
+              fileLength: fileLength,
+            ),
+          ).catchError((e, stackTrace) {
+            AppLogger.reportError(e, stackTrace);
+          });
+        } finally {
+          _cacheWritesInFlight.remove(trackCacheFile.path);
+        }
       },
       cancelOnError: true,
     );
