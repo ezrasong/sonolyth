@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Status-bar / media-notification small icon: five rounded sound-wave bars.
-     Android renders small icons as a pure-white alpha mask, so this stays a
-     plain silhouette. Resolved by NAME via audio_service (getResourceId) -
-     it must be listed in res/raw/keep.xml or R8 strips it from releases. -->
+<!-- Status-bar / media-notification small icon: five rounded sound-wave bars
+     in an asymmetric waveform (matches the launcher mark). Android renders
+     small icons as a pure-white alpha mask, so this stays a plain silhouette.
+     Resolved by NAME via audio_service (getResourceId) - it must be listed
+     in res/raw/keep.xml or R8 strips it from releases. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
@@ -14,22 +15,22 @@
       android:strokeWidth="2.6"
       android:strokeLineCap="round" />
   <path
-      android:pathData="M7.5,6 L7.5,18"
+      android:pathData="M7.5,5.5 L7.5,18.5"
       android:strokeColor="#FFFFFFFF"
       android:strokeWidth="2.6"
       android:strokeLineCap="round" />
   <path
-      android:pathData="M12,3.5 L12,20.5"
+      android:pathData="M12,8 L12,16"
       android:strokeColor="#FFFFFFFF"
       android:strokeWidth="2.6"
       android:strokeLineCap="round" />
   <path
-      android:pathData="M16.5,7.5 L16.5,16.5"
+      android:pathData="M16.5,3.5 L16.5,20.5"
       android:strokeColor="#FFFFFFFF"
       android:strokeWidth="2.6"
       android:strokeLineCap="round" />
   <path
-      android:pathData="M21,10.5 L21,13.5"
+      android:pathData="M21,7 L21,17"
       android:strokeColor="#FFFFFFFF"
       android:strokeWidth="2.6"
       android:strokeLineCap="round" />
