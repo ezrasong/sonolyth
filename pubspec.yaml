@@ -3,7 +3,7 @@ description: Open source extensible music streaming platform and app, based on B
 
 publish_to: "none"
 
-version: 5.2.12+58
+version: 5.2.13+59
 
 homepage: https://github.com/ezrasong/sonolyth
 repository: https://github.com/ezrasong/sonolyth
@@ -174,6 +174,12 @@ dev_dependencies:
   auto_route_generator: ^9.0.0
 
 dependency_overrides:
+  # Vendored 0.18.18 with notification-action patches: custom controls
+  # (shuffle/repeat) attached as real notification buttons for OEM SystemUIs
+  # that render the notification instead of the session's PlaybackState
+  # (Vivo/Samsung lock screens), plus an explicitly lock-screen-public channel.
+  audio_service:
+    path: packages/audio_service
   bonsoir_android:
     git:
       url: https://github.com/KRTirtho/Bonsoir.git

@@ -6,4 +6,4 @@
      resource id to build a CustomAction", and release builds end up with no
      media notification at all. -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@drawable/sonolyth_shuffle,@drawable/sonolyth_shuffle_on,@drawable/sonolyth_repeat,@drawable/sonolyth_repeat_on,@drawable/sonolyth_repeat_one_on" />
+    tools:keep="@drawable/sonolyth_shuffle,@drawable/sonolyth_shuffle_on,@drawable/sonolyth_repeat,@drawable/sonolyth_repeat_on,@drawable/sonolyth_repeat_one_on,@drawable/sonolyth_notification_wave" />

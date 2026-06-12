@@ -34,6 +34,10 @@ class AudioServices with WidgetsBindingObserver {
                 (_, ReleaseChannel.nightly) => "com.ezrasong.sonolyth.nightly",
               },
               androidNotificationChannelName: 'Sonolyth',
+              // White sound-wave glyph for the status bar / lock screen
+              // instead of the launcher mark (which Android flattens into an
+              // unreadable alpha blob). Name-resolved: listed in keep.xml.
+              androidNotificationIcon: 'drawable/sonolyth_notification_wave',
               androidNotificationOngoing: false,
               // Leave the foreground state while paused so the notification
               // can be swiped away (Spotify behaviour); the swipe then ends
