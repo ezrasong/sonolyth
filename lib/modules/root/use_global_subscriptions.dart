@@ -62,6 +62,7 @@ void useGlobalSubscriptions(WidgetRef ref) {
 
     StreamSubscription? audioPlayerSubscription;
     bool pausedByStream = false;
+    ToastOverlay? connectivityToast;
 
     final subscriptions = [
       ConnectionCheckerService.instance.onConnectivityChanged
@@ -101,30 +102,47 @@ void useGlobalSubscriptions(WidgetRef ref) {
         // Show notification for connection related issues
         if (!context.mounted) return;
 
-        showToast(
+        // Replace any visible connectivity toast so "offline" clears the
+        // moment the connection returns instead of waiting out its timer,
+        // and flapping connections don't stack a backlog of banners.
+        connectivityToast?.close();
+        connectivityToast = showToast(
           context: context,
           location: ToastLocation.bottomCenter,
+          showDuration:
+              connected ? const Duration(seconds: 2) : const Duration(seconds: 4),
           builder: (context, overlay) {
             if (connected) {
-              return SurfaceCard(
-                child: Basic(
-                  leading: const Icon(SonolythIcons.wifi),
-                  title: Text(context.l10n.connection_restored),
+              return GestureDetector(
+                onTap: overlay.close,
+                child: SurfaceCard(
+                  child: Basic(
+                    leading: const Icon(SonolythIcons.wifi),
+                    title: Text(context.l10n.connection_restored),
+                  ),
                 ),
               );
             }
 
-            return SurfaceCard(
-              fillColor: theme.colorScheme.destructive,
-              filled: true,
-              child: Basic(
-                leading: Icon(
-                  SonolythIcons.noWifi,
-                  color: theme.colorScheme.destructiveForeground,
-                ),
-                trailing: Text(
-                  context.l10n.you_are_offline,
-                  style: TextStyle(
+            return GestureDetector(
+              onTap: overlay.close,
+              child: SurfaceCard(
+                fillColor: theme.colorScheme.destructive,
+                filled: true,
+                child: Basic(
+                  leading: Icon(
+                    SonolythIcons.noWifi,
+                    color: theme.colorScheme.destructiveForeground,
+                  ),
+                  title: Text(
+                    context.l10n.you_are_offline,
+                    style: TextStyle(
+                      color: theme.colorScheme.destructiveForeground,
+                    ),
+                  ),
+                  trailing: Icon(
+                    SonolythIcons.close,
+                    size: 16,
                     color: theme.colorScheme.destructiveForeground,
                   ),
                 ),

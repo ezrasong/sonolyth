@@ -110,9 +110,7 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
                                             ),
                                         ],
                                       ),
-                                      onPressed: isFetchingActiveTrack
-                                          ? null
-                                          : () => cycleShuffleMode(ref),
+                                      onPressed: () => cycleShuffleMode(ref),
                                     );
                                   },
                                 ),
@@ -121,9 +119,7 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
                                     SonolythIcons.skipBack,
                                     color: context.theme.colorScheme.foreground,
                                   ),
-                                  onPressed: isFetchingActiveTrack
-                                      ? null
-                                      : audioPlayer.skipToPrevious,
+                                  onPressed: audioPlayer.skipToPrevious,
                                 ),
                                 Consumer(
                                   builder: (context, ref, _) {
@@ -155,9 +151,7 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
                                     SonolythIcons.skipForward,
                                     color: context.theme.colorScheme.foreground,
                                   ),
-                                  onPressed: isFetchingActiveTrack
-                                      ? null
-                                      : audioPlayer.skipToNext,
+                                  onPressed: audioPlayer.skipToNext,
                                 ),
                                 Consumer(
                                   builder: (context, ref, _) {
@@ -177,9 +171,7 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
                                             : context
                                                 .theme.colorScheme.foreground,
                                       ),
-                                      onPressed: isFetchingActiveTrack
-                                          ? null
-                                          : () => audioPlayer.setLoopMode(
+                                      onPressed: () => audioPlayer.setLoopMode(
                                                 switch (loopMode) {
                                                   PlaylistMode.loop =>
                                                     PlaylistMode.single,

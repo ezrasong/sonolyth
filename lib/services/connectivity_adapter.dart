@@ -20,8 +20,11 @@ class ConnectionCheckerService with WidgetsBindingObserver {
     onConnectivityChanged.listen((connected) {
       try {
         if (!connected && timer == null) {
-          // check every 30 seconds if we are connected when we are not connected
-          timer = Timer.periodic(const Duration(seconds: 30), (timer) async {
+          // While offline, poll often — this drives how quickly the app
+          // notices the connection is back (resumes playback, clears the
+          // offline banner). OS connectivity events cover most reconnects;
+          // this catches upstream-only outages they don't report.
+          timer = Timer.periodic(const Duration(seconds: 10), (timer) async {
             if (WidgetsBinding.instance.lifecycleState ==
                 AppLifecycleState.paused) {
               return;

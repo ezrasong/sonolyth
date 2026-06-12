@@ -12,6 +12,7 @@ import 'package:sonolyth/provider/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/connect/connect.dart';
 import 'package:sonolyth/provider/history/history.dart';
 import 'package:sonolyth/provider/server/sourced_track_provider.dart';
+import 'package:sonolyth/services/audio_player/audio_player.dart';
 import 'package:sonolyth/services/logger/logger.dart';
 
 typedef UseActionCallbacks = ({
@@ -97,6 +98,10 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
           shuffledTracks,
           autoPlay: true,
         );
+        // Light the shuffle mode AFTER playback started on the deterministic
+        // first track, so the mode reads ON (and persists) without delaying
+        // the start. mpv reshuffling an already-shuffled list is harmless.
+        await audioPlayer.setShuffle(true);
         playlistNotifier.addCollection(options.collectionId);
         if (options.collection is SonolythSimpleAlbumObject) {
           historyNotifier

@@ -4,8 +4,11 @@ import 'package:flutter_undraw/flutter_undraw.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/metadata_plugin/core/auth.dart';
+import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
+import 'package:sonolyth/services/logger/logger.dart';
 
 import 'package:sonolyth/utils/platform.dart';
 
@@ -19,6 +22,11 @@ class AnonymousFallback extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final isLoggedIn = ref.watch(metadataPluginAuthenticatedProvider);
+    final pluginConfig = ref
+        .watch(metadataPluginsProvider)
+        .asData
+        ?.value
+        .defaultMetadataPluginConfig;
 
     if (isLoggedIn.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -39,9 +47,30 @@ class AnonymousFallback extends ConsumerWidget {
           ),
           Text(context.l10n.not_logged_in),
           Button.primary(
-            child: Text(context.l10n.login),
-            onPressed: () => context.navigateTo(const SettingsRoute()),
-          )
+            leading: const Icon(SonolythIcons.login),
+            child: Text(
+              pluginConfig != null
+                  ? context.l10n.sign_in_to_provider(pluginConfig.name)
+                  : context.l10n.login,
+            ),
+            // Launch the provider's sign-in flow right here instead of
+            // dropping the user on the settings page to find it themselves.
+            onPressed: () async {
+              try {
+                final plugin = await ref.read(metadataPluginProvider.future);
+                if (plugin == null) {
+                  // No provider installed — settings is genuinely the place.
+                  if (context.mounted) {
+                    context.navigateTo(const SettingsMetadataProviderRoute());
+                  }
+                  return;
+                }
+                await plugin.auth.authenticate();
+              } catch (e, stack) {
+                AppLogger.reportError(e, stack);
+              }
+            },
+          ),
         ],
       ),
     );

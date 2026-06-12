@@ -1618,6 +1618,19 @@ class AppLocalizationsKo extends AppLocalizations {
       'Install a provider to search, stream, and download music.';
 
   @override
+  String sign_in_to_provider(Object provider) {
+    return 'Sign in to $provider';
+  }
+
+  @override
+  String sign_in_to_provider_description(Object provider) {
+    return 'Connect your $provider account to access your playlists, albums, artists, and liked songs.';
+  }
+
+  @override
+  String get manage_providers => 'Manage providers';
+
+  @override
   String get plugin_update_available => 'Plugin update available';
 
   @override

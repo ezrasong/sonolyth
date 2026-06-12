@@ -190,9 +190,7 @@ class PlayerControls extends HookConsumerWidget {
                         variance: shuffled || smartShuffle
                             ? ButtonVariance.secondary
                             : ButtonVariance.ghost,
-                        onPressed: isFetchingActiveTrack
-                            ? null
-                            : () => cycleShuffleMode(ref),
+                        onPressed: () => cycleShuffleMode(ref),
                       ),
                     );
                   }),
@@ -202,7 +200,6 @@ class PlayerControls extends HookConsumerWidget {
                     ).call,
                     child: IconButton.ghost(
                       size: buttonSize,
-                      enabled: !isFetchingActiveTrack,
                       icon: const Icon(SonolythIcons.skipBack),
                       onPressed: audioPlayer.skipToPrevious,
                     ),
@@ -227,12 +224,10 @@ class PlayerControls extends HookConsumerWidget {
                           : Icon(
                               playing ? SonolythIcons.pause : SonolythIcons.play,
                             ),
-                      onPressed: isFetchingActiveTrack
-                          ? null
-                          : Actions.handler<PlayPauseIntent>(
-                              context,
-                              PlayPauseIntent(ref),
-                            ),
+                      onPressed: Actions.handler<PlayPauseIntent>(
+                        context,
+                        PlayPauseIntent(ref),
+                      ),
                     ),
                   ),
                   Tooltip(
@@ -242,8 +237,7 @@ class PlayerControls extends HookConsumerWidget {
                     child: IconButton.ghost(
                       size: buttonSize,
                       icon: const Icon(SonolythIcons.skipForward),
-                      onPressed:
-                          isFetchingActiveTrack ? null : audioPlayer.skipToNext,
+                      onPressed: audioPlayer.skipToNext,
                     ),
                   ),
                   Consumer(builder: (context, ref, _) {
@@ -274,9 +268,7 @@ class PlayerControls extends HookConsumerWidget {
                                 loopMode == PlaylistMode.loop
                             ? ButtonVariance.secondary
                             : ButtonVariance.ghost,
-                        onPressed: isFetchingActiveTrack
-                            ? null
-                            : () async {
+                        onPressed: () async {
                                 await audioPlayer.setLoopMode(
                                   switch (loopMode) {
                                     PlaylistMode.loop => PlaylistMode.single,

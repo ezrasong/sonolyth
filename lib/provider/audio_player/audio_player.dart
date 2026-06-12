@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:media_kit/media_kit.dart';
 import 'package:sonolyth/extensions/list.dart';
 import 'package:sonolyth/models/database/database.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
@@ -77,6 +76,11 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
       // server to be up before building them, or every restored track points
       // at port 0 and can never play.
       await ref.read(serverProvider.future);
+
+      // The user may have started playing something while we were waiting on
+      // the server; restoring now would rip their queue (and modes) out from
+      // under them.
+      if (state.tracks.isNotEmpty) return;
 
       state = state.copyWith(
         tracks: tracks,
@@ -175,7 +179,9 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
       }),
     ];
 
-    _syncSavedState();
+    _syncSavedState().catchError((e, stack) {
+      AppLogger.reportError(e, stack);
+    });
 
     ref.onDispose(() {
       for (final subscription in subscriptions) {
@@ -391,6 +397,12 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
 
     if (medias.isEmpty) return;
 
+    // Shuffle/repeat are sticky player modes (like Spotify): starting a new
+    // queue must not silently reset them, but mpv's open() does exactly that
+    // — so capture them here and re-apply after the playlist is opened.
+    final previousLoopMode = audioPlayer.loopMode;
+    final previousShuffle = audioPlayer.isShuffled;
+
     state = state.copyWith(
       // These are filtered tracks as well
       tracks: medias.map((media) => media.track).toList(),
@@ -403,6 +415,11 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
       initialIndex: initialIndex,
       autoPlay: autoPlay,
     );
+
+    await audioPlayer.setLoopMode(previousLoopMode);
+    if (previousShuffle) {
+      await audioPlayer.setShuffle(true);
+    }
 
     await _updatePlayerState(
       AudioPlayerStateTableCompanion(
@@ -420,6 +437,9 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
     final oldState = state;
     await audioPlayer.stop();
 
+    // load() re-applies the sticky shuffle/loop modes itself, but stop()
+    // resets them in mpv first — hand the pre-stop modes back explicitly.
+    await audioPlayer.setLoopMode(oldState.loopMode);
     await load(
       oldState.tracks,
       initialIndex: oldState.currentIndex,
@@ -427,11 +447,7 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
     );
     state = state.copyWith(
       collections: oldState.collections,
-      loopMode: oldState.loopMode,
-      playing: oldState.playing,
-      shuffled: false,
     );
-    await audioPlayer.setLoopMode(oldState.loopMode);
     await _updatePlayerState(
       AudioPlayerStateTableCompanion(
         tracks: Value(state.tracks),
@@ -464,23 +480,33 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
   }
 
   Future<void> stop() async {
+    // Shuffle/repeat are sticky preferences: stopping (including the media
+    // notification being dismissed) clears the queue, not the modes —
+    // otherwise every session starts with shuffle/repeat silently reset.
+    final loopMode = state.loopMode;
+    final shuffled = state.shuffled;
+
     state = state.copyWith(
       tracks: [],
       currentIndex: 0,
       collections: [],
-      loopMode: PlaylistMode.none,
       playing: false,
-      shuffled: false,
     );
     await audioPlayer.stop();
+
+    // mpv's stop resets its shuffle flag; re-arm the saved modes so the next
+    // load() picks them up again.
+    await audioPlayer.setLoopMode(loopMode);
+    if (shuffled) {
+      await audioPlayer.setShuffle(true);
+    }
+
     await _updatePlayerState(
       AudioPlayerStateTableCompanion(
         tracks: Value(state.tracks),
         currentIndex: const Value(0),
         collections: const Value(<String>[]),
-        loopMode: const Value(PlaylistMode.none),
         playing: const Value(false),
-        shuffled: const Value(false),
       ),
     );
     ref.read(discordProvider.notifier).clear();

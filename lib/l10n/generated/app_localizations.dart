@@ -3111,6 +3111,24 @@ abstract class AppLocalizations {
   /// **'Install a provider to search, stream, and download music.'**
   String get set_up_music_sources_description;
 
+  /// No description provided for @sign_in_to_provider.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to {provider}'**
+  String sign_in_to_provider(Object provider);
+
+  /// No description provided for @sign_in_to_provider_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect your {provider} account to access your playlists, albums, artists, and liked songs.'**
+  String sign_in_to_provider_description(Object provider);
+
+  /// No description provided for @manage_providers.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage providers'**
+  String get manage_providers;
+
   /// No description provided for @plugin_update_available.
   ///
   /// In en, this message translates to:
