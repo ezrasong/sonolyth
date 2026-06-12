@@ -125,6 +125,12 @@ class MobileAudioService extends BaseAudioHandler {
   @override
   Future<void> stop() async {
     await audioPlayerNotifier.stop();
+    // The queue is empty now, so this broadcasts idle. That transition is
+    // what makes the Android side deactivate the media session and tear the
+    // notification state down; skipping it leaves the service half-alive
+    // after a swipe-dismiss and the notification never reappears on the
+    // next play.
+    playbackState.add(await _transformEvent());
   }
 
   @override
@@ -207,9 +213,14 @@ class MobileAudioService extends BaseAudioHandler {
           PlaylistMode.single => AudioServiceRepeatMode.one,
           _ => AudioServiceRepeatMode.none,
         },
-        processingState: audioPlayer.isBuffering
-            ? AudioProcessingState.loading
-            : AudioProcessingState.ready,
+        // An empty queue means the session ended (stop, swipe-dismiss): idle
+        // tells the platform to release the media session/notification so a
+        // later play() can recreate them from scratch.
+        processingState: playlist.activeTrack == null
+            ? AudioProcessingState.idle
+            : audioPlayer.isBuffering
+                ? AudioProcessingState.loading
+                : AudioProcessingState.ready,
       );
     } catch (e, stack) {
       AppLogger.reportError(e, stack);

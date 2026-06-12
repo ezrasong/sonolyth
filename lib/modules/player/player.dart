@@ -48,6 +48,13 @@ class PlayerView extends HookConsumerWidget {
 
     final shouldHide = useState(true);
 
+    // Cover swipe state: the art follows the finger while dragging, springs
+    // back on release, and the track-change slide direction is remembered so
+    // the next cover enters from the side that was swiped toward.
+    final coverDragX = useState<double>(0);
+    final coverDragging = useState(false);
+    final coverSwipeDir = useRef<int>(0);
+
     ref.listen(navigationPanelHeight, (_, height) {
       shouldHide.value = height.ceil() == 50;
     });
@@ -143,36 +150,81 @@ class PlayerView extends HookConsumerWidget {
                 children: [
                   GestureDetector(
                     // Swiping across the cover changes tracks: left for the
-                    // next one, right for the previous one.
+                    // next one, right for the previous one. The art tracks
+                    // the finger, springs back on release, and the new cover
+                    // slides in from the swiped-toward side.
+                    onHorizontalDragStart: (_) => coverDragging.value = true,
+                    onHorizontalDragUpdate: (details) {
+                      coverDragX.value = (coverDragX.value + details.delta.dx)
+                          .clamp(-160.0, 160.0)
+                          .toDouble();
+                    },
+                    onHorizontalDragCancel: () {
+                      coverDragging.value = false;
+                      coverDragX.value = 0;
+                    },
                     onHorizontalDragEnd: (details) {
                       final velocity = details.primaryVelocity ?? 0;
-                      if (velocity < -100) {
+                      final offset = coverDragX.value;
+                      coverDragging.value = false;
+                      coverDragX.value = 0;
+                      if (offset < -60 || velocity < -300) {
+                        coverSwipeDir.value = 1;
                         audioPlayer.skipToNext();
-                      } else if (velocity > 100) {
+                      } else if (offset > 60 || velocity > 300) {
+                        coverSwipeDir.value = -1;
                         audioPlayer.skipToPrevious();
                       }
                     },
-                    child: Container(
-                      margin: const EdgeInsets.all(8),
-                      constraints:
-                          const BoxConstraints(maxHeight: 300, maxWidth: 300),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withAlpha(100),
-                            spreadRadius: 2,
-                            blurRadius: 10,
-                            offset: Offset.zero,
+                    child: AnimatedSlide(
+                      offset: Offset(coverDragX.value / 300, 0),
+                      duration: coverDragging.value
+                          ? Duration.zero
+                          : const Duration(milliseconds: 250),
+                      curve: Curves.easeOutCubic,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (child, animation) {
+                          final dir = coverSwipeDir.value.toDouble();
+                          // The entering cover slides in from the swiped
+                          // side, the leaving one exits the opposite way;
+                          // with no remembered direction it just crossfades.
+                          final incoming = child.key == ValueKey(albumArt);
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween(
+                                begin: Offset(incoming ? dir : -dir, 0),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: Container(
+                          key: ValueKey(albumArt),
+                          margin: const EdgeInsets.all(8),
+                          constraints: const BoxConstraints(
+                              maxHeight: 300, maxWidth: 300),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(100),
+                                spreadRadius: 2,
+                                blurRadius: 10,
+                                offset: Offset.zero,
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: UniversalImage(
-                          path: albumArt,
-                          placeholder: Assets.images.albumPlaceholder.path,
-                          fit: BoxFit.cover,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: UniversalImage(
+                              path: albumArt,
+                              placeholder: Assets.images.albumPlaceholder.path,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
                       ),
                     ),

@@ -194,20 +194,24 @@ class UserDownloadsPage extends HookConsumerWidget {
         Expanded(
           child: SafeArea(
             child: downloadQueue.isEmpty
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Undraw(
-                        illustration: UndrawIllustration.empty,
-                        height: 200 * theme.scaling,
-                        color: theme.colorScheme.primary,
-                      ),
-                      const Gap(10),
-                      Text(
-                        context.l10n.nothing_found,
-                        textAlign: TextAlign.center,
-                      ).muted().small(),
-                    ],
+                // Center: the page column is start-aligned, which otherwise
+                // pins this block (sized by the illustration) to the left.
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Undraw(
+                          illustration: UndrawIllustration.empty,
+                          height: 200 * theme.scaling,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const Gap(10),
+                        Text(
+                          context.l10n.nothing_found,
+                          textAlign: TextAlign.center,
+                        ).muted().small(),
+                      ],
+                    ),
                   )
                 : ListView.builder(
                     itemCount: downloadQueue.length,
