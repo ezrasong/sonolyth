@@ -179,22 +179,32 @@ class AudioPlayerStreamListeners {
         if (activeId == null || activeId == lastPrefetchedFor) return;
         lastPrefetchedFor = activeId;
 
-        // Brief head start for the active track's own sourcing; short enough
-        // that the warm window keeps pace with a user skipping repeatedly.
-        await Future.delayed(const Duration(milliseconds: 800));
+        // Tiny debounce so a skip burst coalesces on the landing track
+        // instead of kicking off a fetch per intermediate track.
+        await Future.delayed(const Duration(milliseconds: 200));
+        if (audioPlayerState.activeTrack?.id != activeId) return;
 
-        // Re-read the state — the user may have skipped again meanwhile.
-        // Three tracks deep keeps a skip burst inside the warmed window
-        // (resolutions are cached by track, so re-runs after another skip
-        // only pay for tracks not already resolved).
+        // Warm the window IN PARALLEL — sequential warming (one search +
+        // manifest at a time) can't keep pace with repeated skips, which is
+        // exactly when the window matters. Resolutions are cached per track,
+        // so overlapping runs only pay for tracks not already resolved, and
+        // one track failing must not sink the rest of the window.
         final upcoming = audioPlayerState.tracks
             .skip(audioPlayerState.currentIndex + 1)
             .whereType<SonolythFullTrackObject>()
-            .take(3);
+            .take(5);
 
-        for (final track in upcoming) {
-          await ref.read(sourcedTrackProvider(track).future);
-        }
+        await Future.wait(
+          upcoming.map(
+            (track) async {
+              try {
+                await ref.read(sourcedTrackProvider(track).future);
+              } catch (e, stack) {
+                AppLogger.reportError(e, stack);
+              }
+            },
+          ),
+        );
       } catch (e, stack) {
         AppLogger.reportError(e, stack);
       }
