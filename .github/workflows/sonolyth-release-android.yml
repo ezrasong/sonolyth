@@ -17,6 +17,11 @@ on:
 env:
   FLUTTER_VERSION: 3.35.2
   FLUTTER_CHANNEL: master
+  # Harden cargo's crates.io downloads against transient network failures
+  # (curl 56 "unexpected eof" killed builds mid-download); retry more and
+  # disable HTTP/2 multiplexing, which is where those resets surface.
+  CARGO_NET_RETRY: "10"
+  CARGO_HTTP_MULTIPLEXING: "false"
 
 permissions:
   contents: write
