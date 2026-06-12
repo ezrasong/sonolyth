@@ -18,7 +18,9 @@ import 'package:smtc_windows/smtc_windows.dart';
 import 'package:sonolyth/collections/env.dart';
 import 'package:sonolyth/collections/http-override.dart';
 import 'package:sonolyth/collections/intents.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:sonolyth/collections/routes.dart';
+import 'package:sonolyth/collections/routes.gr.dart';
 import 'package:sonolyth/hooks/configurators/use_close_behavior.dart';
 import 'package:sonolyth/hooks/configurators/use_deep_linking.dart';
 import 'package:sonolyth/hooks/configurators/use_disable_battery_optimizations.dart';
@@ -238,7 +240,17 @@ class SonolythApp extends HookConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      routerConfig: router.config(),
+      routerConfig: router.config(
+        // First run lands on the getting-started flow (ending in the
+        // provider sign-in) instead of an empty Home with no hint that a
+        // login is needed.
+        deepLinkBuilder: (deepLink) {
+          if (!KVStoreService.doneGettingStarted) {
+            return const DeepLink([GettingStartedRoute()]);
+          }
+          return deepLink;
+        },
+      ),
       debugShowCheckedModeBanner: false,
       title: 'Sonolyth',
       builder: (context, child) {

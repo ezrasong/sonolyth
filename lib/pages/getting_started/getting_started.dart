@@ -38,7 +38,7 @@ class GettingStartedPage extends HookConsumerWidget {
     final onSkip = useCallback(() async {
       await KVStoreService.setDoneGettingStarted(true);
       if (context.mounted) {
-        context.replaceRoute(const SettingsMetadataProviderRoute());
+        context.replaceRoute(const HomeRoute());
       }
     }, [context]);
 
