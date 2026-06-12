@@ -13,6 +13,11 @@ import 'package:sonolyth/services/logger/logger.dart';
 import 'package:sonolyth/utils/platform.dart';
 
 class MobileAudioService extends BaseAudioHandler {
+  /// Custom notification actions (Android renders these as buttons; the
+  /// standard setShuffleMode/setRepeatMode session actions get no button).
+  static const _actionShuffle = 'sonolythShuffle';
+  static const _actionRepeat = 'sonolythRepeat';
+
   AudioSession? session;
   final AudioPlayerNotifier audioPlayerNotifier;
 
@@ -74,6 +79,14 @@ class MobileAudioService extends BaseAudioHandler {
     audioPlayer.bufferedPositionStream.listen((pos) async {
       playbackState.add(await _transformEvent());
     });
+    // Keep the notification's shuffle/repeat button icons in sync when the
+    // modes are changed from inside the app.
+    audioPlayer.shuffledStream.listen((_) async {
+      playbackState.add(await _transformEvent());
+    });
+    audioPlayer.loopModeStream.listen((_) async {
+      playbackState.add(await _transformEvent());
+    });
   }
 
   void addItem(MediaItem item) {
@@ -115,6 +128,24 @@ class MobileAudioService extends BaseAudioHandler {
   }
 
   @override
+  Future<dynamic> customAction(String name,
+      [Map<String, dynamic>? extras]) async {
+    switch (name) {
+      case _actionShuffle:
+        await audioPlayer.setShuffle(audioPlayer.isShuffled != true);
+      case _actionRepeat:
+        await audioPlayer.setLoopMode(switch (audioPlayer.loopMode) {
+          PlaylistMode.none => PlaylistMode.loop,
+          PlaylistMode.loop => PlaylistMode.single,
+          PlaylistMode.single => PlaylistMode.none,
+        });
+      default:
+        return super.customAction(name, extras);
+    }
+    playbackState.add(await _transformEvent());
+  }
+
+  @override
   Future<void> skipToNext() async {
     await audioPlayer.skipToNext();
     await super.skipToNext();
@@ -135,19 +166,36 @@ class MobileAudioService extends BaseAudioHandler {
   Future<PlaybackState> _transformEvent() async {
     try {
       return PlaybackState(
-        // Android 13+ renders every control as a button, so a fourth "stop"
-        // action makes the row lopsided. Keep the standard centred trio;
-        // stop stays reachable as a system action (Bluetooth/headset).
+        // Android 13+ renders every control as a button (up to five). The
+        // transport trio sits centred, flanked by shuffle/repeat whose icons
+        // carry a dot when active. Stop stays reachable as a system action
+        // (Bluetooth/headset) without hogging a button slot.
         controls: [
+          MediaControl.custom(
+            androidIcon: audioPlayer.isShuffled == true
+                ? 'drawable/sonolyth_shuffle_on'
+                : 'drawable/sonolyth_shuffle',
+            label: 'Shuffle',
+            name: _actionShuffle,
+          ),
           MediaControl.skipToPrevious,
           audioPlayer.isPlaying ? MediaControl.pause : MediaControl.play,
           MediaControl.skipToNext,
+          MediaControl.custom(
+            androidIcon: switch (audioPlayer.loopMode) {
+              PlaylistMode.loop => 'drawable/sonolyth_repeat_on',
+              PlaylistMode.single => 'drawable/sonolyth_repeat_one_on',
+              PlaylistMode.none => 'drawable/sonolyth_repeat',
+            },
+            label: 'Repeat',
+            name: _actionRepeat,
+          ),
         ],
         systemActions: {
           MediaAction.seek,
           MediaAction.stop,
         },
-        androidCompactActionIndices: const [0, 1, 2],
+        androidCompactActionIndices: const [1, 2, 3],
         playing: audioPlayer.isPlaying,
         updatePosition: audioPlayer.position,
         bufferedPosition: audioPlayer.bufferedPosition,

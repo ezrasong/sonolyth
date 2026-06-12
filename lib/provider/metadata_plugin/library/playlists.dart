@@ -5,6 +5,8 @@ import 'package:sonolyth/provider/metadata_plugin/core/auth.dart';
 import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
 import 'package:sonolyth/provider/metadata_plugin/tracks/playlist.dart';
 import 'package:sonolyth/provider/metadata_plugin/utils/paginated.dart';
+import 'package:sonolyth/services/cache/saved_playlists_cache.dart';
+import 'package:sonolyth/services/logger/logger.dart';
 import 'package:sonolyth/services/metadata/errors/exceptions.dart';
 
 class MetadataPluginSavedPlaylistsNotifier
@@ -24,9 +26,42 @@ class MetadataPluginSavedPlaylistsNotifier
   build() async {
     await ref.watch(metadataPluginAuthenticatedProvider.future);
 
-    final playlists = await fetchWithRetry(0, 20);
+    // Persist every data update (initial load, pagination, saves/removes) so
+    // the next build can serve the library instantly from disk.
+    listenSelf((previous, next) {
+      final value = next.valueOrNull;
+      if (value != null && value.items.isNotEmpty) {
+        SavedPlaylistsCache.write(value);
+      }
+    });
 
-    return playlists;
+    final cached = await SavedPlaylistsCache.read();
+    if (cached != null) {
+      // Serve the cached library instantly and reconcile in the background —
+      // a failed refresh (rate limit, flaky network) keeps the stale list on
+      // screen instead of erroring out the whole tab.
+      Future(() async {
+        try {
+          final fresh = await fetchWithRetry(0, 20);
+          final unchanged = !cached.hasMore &&
+              fresh.total == cached.total &&
+              const ListEquality().equals(
+                fresh.items.map((e) => "${e.id}:${e.name}").toList(),
+                cached.items
+                    .take(fresh.items.length)
+                    .map((e) => "${e.id}:${e.name}")
+                    .toList(),
+              );
+          if (unchanged) return;
+          state = AsyncData(fresh);
+        } catch (e, stack) {
+          AppLogger.reportError(e, stack);
+        }
+      });
+      return cached;
+    }
+
+    return await fetchWithRetry(0, 20);
   }
 
   void updatePlaylist(SonolythSimplePlaylistObject playlist) {

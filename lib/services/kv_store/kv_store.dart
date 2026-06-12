@@ -93,6 +93,22 @@ abstract class KVStoreService {
     await sharedPreferences.setString('iv', iv.base64);
   }
 
+  /// Last successfully fetched metadata-provider user profile, kept so a
+  /// failed refresh (rate limit, flaky network) can fall back to it instead
+  /// of blanking everything that hangs off the profile.
+  static Map<String, dynamic>? get cachedUserProfile {
+    final raw = sharedPreferences.getString('cachedUserProfile');
+    if (raw == null) return null;
+    try {
+      return (jsonDecode(raw) as Map).cast<String, dynamic>();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<void> setCachedUserProfile(Map<String, dynamic> value) async =>
+      await sharedPreferences.setString('cachedUserProfile', jsonEncode(value));
+
   static double get volume => sharedPreferences.getDouble('volume') ?? 1.0;
   static Future<void> setVolume(double value) async =>
       await sharedPreferences.setDouble('volume', value);
