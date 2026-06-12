@@ -166,7 +166,21 @@ class MobileAudioService extends BaseAudioHandler {
   @override
   Future<void> onTaskRemoved() async {
     await audioPlayer.pause();
-    if (kIsAndroid) exit(0);
+    if (kIsAndroid) {
+      // While paused the notification is detached from the service
+      // (androidStopForegroundOnPause), so exiting now would strand it:
+      // pressing a button on that zombie notification boots a headless
+      // engine whose main() used to die before runApp, and the next launch
+      // attached to it as a permanently black screen. Broadcast idle —
+      // without touching the persisted queue — so the platform side cancels
+      // the notification, then give that round trip a beat before exiting.
+      playbackState.add(playbackState.value.copyWith(
+        processingState: AudioProcessingState.idle,
+        playing: false,
+      ));
+      await Future.delayed(const Duration(milliseconds: 300));
+      exit(0);
+    }
   }
 
   Future<PlaybackState> _transformEvent() async {

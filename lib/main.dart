@@ -21,6 +21,7 @@ import 'package:sonolyth/collections/intents.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:sonolyth/collections/routes.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
+import 'package:sonolyth/hooks/configurators/use_android_display_setup.dart';
 import 'package:sonolyth/hooks/configurators/use_close_behavior.dart';
 import 'package:sonolyth/hooks/configurators/use_deep_linking.dart';
 import 'package:sonolyth/hooks/configurators/use_disable_battery_optimizations.dart';
@@ -49,7 +50,6 @@ import 'package:sonolyth/services/logger/logger.dart';
 import 'package:sonolyth/services/wm_tools/wm_tools.dart';
 import 'package:sonolyth/utils/migrations/sandbox.dart';
 import 'package:sonolyth/utils/platform.dart';
-import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:window_manager/window_manager.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
@@ -79,15 +79,12 @@ Future<void> main(List<String> rawArgs) async {
 
     await migrateMacOsFromSandboxToNoSandbox();
 
-    // force High Refresh Rate on some Android devices (like One Plus)
-    if (kIsAndroid) {
-      await FlutterDisplayMode.setHighRefreshRate();
-      // Phone music app: portrait only. In landscape the width crosses the
-      // desktop breakpoint and the app flips into the sidebar layout mid-use.
-      await SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-      ]);
-    }
+    // High refresh rate + portrait lock moved to useAndroidDisplaySetup:
+    // both need an attached activity, and when AudioService boots this
+    // engine headlessly (media-button press after a process kill) they threw
+    // noActivity here — aborting main() before runApp and leaving a cached
+    // engine with no UI, which every later launch attached to as a
+    // permanently black screen.
     if (kIsAndroid || kIsDesktop) {
       await NewPipeExtractor.init();
     }
@@ -214,6 +211,7 @@ class SonolythApp extends HookConsumerWidget {
     ref.listen(metadataPluginUpdateCheckerProvider, (_, __) {});
     ref.listen(audioSourcePluginUpdateCheckerProvider, (_, __) {});
 
+    useAndroidDisplaySetup();
     useFixWindowStretching();
     useDeepLinking(ref, router);
     useCloseBehavior(ref);
