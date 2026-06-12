@@ -1,34 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Themed-icon (monochrome) layer: same sound-wave bars as the foreground;
-     the launcher tints it, only the alpha matters. -->
+<!-- Themed-icon (monochrome) layer: same monolith-and-waves mark as the
+     foreground; the launcher tints it, only the alpha matters. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
   <path
-      android:pathData="M32,47 L32,61"
+      android:fillColor="#FF000000"
+      android:pathData="M41,32 H45 C47.76,32 50,34.24 50,37 V71 C50,73.76 47.76,76 45,76 H41 C38.24,76 36,73.76 36,71 V37 C36,34.24 38.24,32 41,32 Z" />
+  <path
+      android:pathData="M59.66,47.57 A10,10 0 0 1 59.66,60.43"
       android:strokeColor="#FF000000"
-      android:strokeWidth="7"
+      android:strokeWidth="5.5"
       android:strokeLineCap="round" />
   <path
-      android:pathData="M43,36 L43,72"
+      android:pathData="M65.02,43.07 A17,17 0 0 1 65.02,64.93"
       android:strokeColor="#FF000000"
-      android:strokeWidth="7"
+      android:strokeWidth="5.5"
       android:strokeLineCap="round" />
   <path
-      android:pathData="M54,43 L54,65"
+      android:pathData="M70.38,38.57 A24,24 0 0 1 70.38,69.43"
       android:strokeColor="#FF000000"
-      android:strokeWidth="7"
-      android:strokeLineCap="round" />
-  <path
-      android:pathData="M65,30 L65,78"
-      android:strokeColor="#FF000000"
-      android:strokeWidth="7"
-      android:strokeLineCap="round" />
-  <path
-      android:pathData="M76,40 L76,68"
-      android:strokeColor="#FF000000"
-      android:strokeWidth="7"
+      android:strokeWidth="5.5"
       android:strokeLineCap="round" />
 </vector>

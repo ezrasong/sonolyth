@@ -1,35 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Adaptive-icon foreground: white sound-wave bars (the launcher supplies
-     the background from @color/ic_launcher_background). Geometry stays in
-     the 66dp safe zone of the 108dp viewport. -->
+<!-- Adaptive-icon foreground: the Sonolyth mark - a monolith (sono+lith,
+     "sound stone") radiating sound waves. White-only; the background layer
+     is transparent by design, so the glyph floats on whatever the launcher
+     masks it onto. Geometry stays in the 66dp safe zone of the 108dp
+     viewport. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+  <!-- monolith slab -->
   <path
-      android:pathData="M32,47 L32,61"
+      android:fillColor="#FFFFFFFF"
+      android:pathData="M41,32 H45 C47.76,32 50,34.24 50,37 V71 C50,73.76 47.76,76 45,76 H41 C38.24,76 36,73.76 36,71 V37 C36,34.24 38.24,32 41,32 Z" />
+  <!-- sound waves radiating right -->
+  <path
+      android:pathData="M59.66,47.57 A10,10 0 0 1 59.66,60.43"
       android:strokeColor="#FFFFFFFF"
-      android:strokeWidth="7"
+      android:strokeWidth="5.5"
       android:strokeLineCap="round" />
   <path
-      android:pathData="M43,36 L43,72"
+      android:pathData="M65.02,43.07 A17,17 0 0 1 65.02,64.93"
       android:strokeColor="#FFFFFFFF"
-      android:strokeWidth="7"
+      android:strokeWidth="5.5"
       android:strokeLineCap="round" />
   <path
-      android:pathData="M54,43 L54,65"
+      android:pathData="M70.38,38.57 A24,24 0 0 1 70.38,69.43"
       android:strokeColor="#FFFFFFFF"
-      android:strokeWidth="7"
-      android:strokeLineCap="round" />
-  <path
-      android:pathData="M65,30 L65,78"
-      android:strokeColor="#FFFFFFFF"
-      android:strokeWidth="7"
-      android:strokeLineCap="round" />
-  <path
-      android:pathData="M76,40 L76,68"
-      android:strokeColor="#FFFFFFFF"
-      android:strokeWidth="7"
+      android:strokeWidth="5.5"
       android:strokeLineCap="round" />
 </vector>
