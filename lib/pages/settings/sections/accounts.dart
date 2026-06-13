@@ -50,6 +50,7 @@ class SettingsAccountSection extends HookConsumerWidget {
                   title: context.l10n.disconnect_lastfm,
                   message: context.l10n.disconnect_lastfm_confirmation,
                   okText: context.l10n.disconnect,
+                  destructive: true,
                 );
                 if (!confirmed) return;
                 await ref.read(scrobblerProvider.notifier).logout();

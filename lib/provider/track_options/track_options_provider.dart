@@ -150,6 +150,7 @@ class TrackOptionsActions {
           title: context.l10n.delete,
           message: context.l10n.delete_track_file_confirmation(track.name),
           okText: context.l10n.delete,
+          destructive: true,
         );
         if (!deleteConfirmed) break;
         await File((track as SonolythLocalTrackObject).path).delete();

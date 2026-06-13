@@ -7,10 +7,13 @@ Future<bool> showPromptDialog({
   required String message,
   String okText = "Ok",
   String? cancelText = "Cancel",
+  // Styles the confirm button red for destructive actions (delete/remove).
+  bool destructive = false,
 }) async {
   return showDialog<bool>(
     context: context,
     builder: (context) {
+      final confirmChild = Text(okText == "Ok" ? context.l10n.ok : okText);
       return AlertDialog(
         title: Text(title),
         content: Text(message),
@@ -22,10 +25,16 @@ Future<bool> showPromptDialog({
                 cancelText == "Cancel" ? context.l10n.cancel : cancelText,
               ),
             ),
-          Button.primary(
-            child: Text(okText == "Ok" ? context.l10n.ok : okText),
-            onPressed: () => Navigator.of(context).pop(true),
-          ),
+          if (destructive)
+            Button.destructive(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: confirmChild,
+            )
+          else
+            Button.primary(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: confirmChild,
+            ),
         ],
       );
     },

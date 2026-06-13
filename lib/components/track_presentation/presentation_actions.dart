@@ -193,6 +193,7 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
                 title: context.l10n.remove_from_playlist,
                 message: context.l10n.are_you_sure,
                 okText: context.l10n.remove_from_playlist,
+                destructive: true,
               );
               if (!confirmed) {
                 notifier.deselectAllTracks();

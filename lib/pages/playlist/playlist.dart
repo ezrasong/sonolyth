@@ -91,6 +91,7 @@ class PlaylistPage extends HookConsumerWidget {
                           context: context,
                           title: context.l10n.delete_playlist,
                           message: context.l10n.delete_playlist_confirmation,
+                          destructive: true,
                         )
                       : true;
                   if (!confirmed) return null;

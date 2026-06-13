@@ -152,6 +152,7 @@ class PresentationListSection extends HookConsumerWidget {
             title: context.l10n.remove_from_playlist,
             message: track.name,
             okText: context.l10n.remove_from_playlist,
+            destructive: true,
           ),
           onDismissed: (_) {
             // Optimistic local drop keeps the list consistent for Dismissible;
