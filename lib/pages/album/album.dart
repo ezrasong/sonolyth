@@ -49,7 +49,12 @@ class AlbumPage extends HookConsumerWidget {
           ),
           title: album.name,
           description: [
-            "${context.l10n.released} • ${album.releaseDate}",
+            // Some providers hand back an empty or literal "null" date; don't
+            // render "Released • null".
+            if (album.releaseDate != null &&
+                album.releaseDate!.trim().isNotEmpty &&
+                album.releaseDate!.toLowerCase() != "null")
+              "${context.l10n.released} • ${album.releaseDate}",
             if (artistName != null) artistName,
           ].join(" • "),
           tracks: tracks.asData?.value.items ?? [],
