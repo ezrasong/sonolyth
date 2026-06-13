@@ -348,7 +348,23 @@ public class AudioService extends MediaBrowserServiceCompat {
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
-        MediaButtonReceiver.handleIntent(mediaSession, intent);
+        // Sonolyth patch: custom-action notification buttons start the
+        // service with this action (see buildCustomActionPendingIntent).
+        if (intent != null
+                && MediaButtonReceiver.ACTION_NOTIFICATION_CUSTOM_ACTION.equals(intent.getAction())) {
+            handleCustomAction(
+                    intent.getStringExtra(MediaButtonReceiver.EXTRA_CUSTOM_ACTION_NAME));
+            return START_NOT_STICKY;
+        }
+        // Sonolyth patch: feed the key event straight to the session callback
+        // instead of MediaButtonReceiver.handleIntent, whose
+        // dispatchMediaButtonEvent round-trips through the system
+        // MediaSessionService. Vivo intercepts KEYCODE_MUTE — audio_service's
+        // bypass keycode for PLAY — as an audio key there, so the
+        // notification's play button never came back to the session (pause =
+        // KEYCODE_MEDIA_RECORD passes through, hence "pause works, play
+        // doesn't").
+        handleMediaButton(intent);
         return START_NOT_STICKY;
     }
 
@@ -476,18 +492,26 @@ public class AudioService extends MediaBrowserServiceCompat {
         return null;
     }
 
+    // Sonolyth patch: notification buttons target the service, not the
+    // broadcast receiver. Android 14+ (and OEM power managers) DEFER
+    // broadcasts to cached processes — once pause detaches the service from
+    // the foreground the app goes cached, the play button's broadcast sits
+    // queued undelivered, and the button looks dead. Service starts are
+    // exempt from that deferral (SystemUI's PendingIntent also puts the app
+    // on the temporary allowlist); onStartCommand hands the key event to
+    // the session callback via handleMediaButton.
     PendingIntent buildMediaButtonPendingIntent(long action) {
         int keyCode = toKeyCode(action);
         if (keyCode == KeyEvent.KEYCODE_UNKNOWN)
             return null;
-        Intent intent = new Intent(this, MediaButtonReceiver.class);
+        Intent intent = new Intent(this, AudioService.class);
         intent.setAction(Intent.ACTION_MEDIA_BUTTON);
         intent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
         int flags = 0;
         if (Build.VERSION.SDK_INT >= 23) {
             flags |= PendingIntent.FLAG_IMMUTABLE;
         }
-        return PendingIntent.getBroadcast(this, keyCode, intent, flags);
+        return PendingIntent.getService(this, keyCode, intent, flags);
     }
 
     PendingIntent buildDeletePendingIntent() {
@@ -503,16 +527,18 @@ public class AudioService extends MediaBrowserServiceCompat {
     // Sonolyth patch: custom controls get real notification action buttons so
     // OEM SystemUIs that render the notification (instead of the session's
     // PlaybackState) still show them. The request code must be unique per
-    // action name or the extras of one button overwrite the other's.
+    // action name or the extras of one button overwrite the other's. Targets
+    // the service rather than a broadcast for the same cached-process
+    // deferral reason as buildMediaButtonPendingIntent above.
     PendingIntent buildCustomActionPendingIntent(String name) {
-        Intent intent = new Intent(this, MediaButtonReceiver.class);
+        Intent intent = new Intent(this, AudioService.class);
         intent.setAction(MediaButtonReceiver.ACTION_NOTIFICATION_CUSTOM_ACTION);
         intent.putExtra(MediaButtonReceiver.EXTRA_CUSTOM_ACTION_NAME, name);
         int flags = PendingIntent.FLAG_UPDATE_CURRENT;
         if (Build.VERSION.SDK_INT >= 23) {
             flags |= PendingIntent.FLAG_IMMUTABLE;
         }
-        return PendingIntent.getBroadcast(this, name.hashCode(), intent, flags);
+        return PendingIntent.getService(this, name.hashCode(), intent, flags);
     }
 
     public void handleCustomAction(String name) {
@@ -520,13 +546,19 @@ public class AudioService extends MediaBrowserServiceCompat {
         listener.onCustomAction(name, new Bundle());
     }
 
-    // Sonolyth patch: in-process delivery for notification media buttons (see
-    // MediaButtonReceiver.onReceive). Dispatches the key event through the
-    // live session, so no foreground-service round trip is needed while the
-    // process is alive.
+    // Sonolyth patch: in-process delivery for media-button intents (used by
+    // onStartCommand and MediaButtonReceiver.onReceive). Calls the session
+    // callback directly — no foreground-service requirement, no system
+    // MediaSessionService round trip (see onStartCommand for why that
+    // matters on Vivo).
     public void handleMediaButton(Intent intent) {
-        if (mediaSession == null) return;
-        MediaButtonReceiver.handleIntent(mediaSession, intent);
+        if (intent == null || mediaSessionCallback == null) return;
+        if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())
+                && intent.hasExtra(Intent.EXTRA_KEY_EVENT)) {
+            mediaSessionCallback.onMediaButtonEvent(intent);
+        } else if (mediaSession != null) {
+            MediaButtonReceiver.handleIntent(mediaSession, intent);
+        }
     }
 
     void setState(List<MediaControl> controls, long actionBits, int[] compactActionIndices, AudioProcessingState processingState, boolean playing, long position, long bufferedPosition, float speed, long updateTime, Integer errorCode, String errorMessage, int repeatMode, int shuffleMode, boolean captioningEnabled, Long queueIndex) {

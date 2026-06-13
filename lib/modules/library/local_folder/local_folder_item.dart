@@ -14,6 +14,7 @@ import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/extensions/string.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/services/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/local_tracks/local_tracks_provider.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 
@@ -53,7 +54,10 @@ class LocalFolderItem extends HookConsumerWidget {
 
     final playlist = ref.watch(audioPlayerProvider);
     final playlistNotifier = ref.read(audioPlayerProvider.notifier);
-    final isPlaying = tracks.isNotEmpty && playlist.containsTracks(tracks);
+    final isLoaded = tracks.isNotEmpty && playlist.containsTracks(tracks);
+    // "Loaded as the queue" isn't "audibly playing" — the button must show
+    // play (not pause) while this folder's queue sits paused.
+    final isPlaying = isLoaded && playlist.playing;
 
     final title = isDownloadFolder
         ? context.l10n.downloads
@@ -73,12 +77,14 @@ class LocalFolderItem extends HookConsumerWidget {
     }, [context, folder, isCacheFolder, isDownloadFolder]);
 
     final onPlaybuttonPressed = useCallback(() async {
-      if (tracks.isEmpty || isPlaying) return;
+      if (tracks.isEmpty) return;
+      if (isPlaying) return audioPlayer.pause();
+      if (isLoaded) return audioPlayer.resume();
       await playlistNotifier.load(tracks, initialIndex: 0, autoPlay: true);
-    }, [tracks, isPlaying, playlistNotifier]);
+    }, [tracks, isPlaying, isLoaded, playlistNotifier]);
 
     final onAddToQueuePressed = useCallback(() async {
-      if (tracks.isEmpty || isPlaying) return;
+      if (tracks.isEmpty || isLoaded) return;
       if (ref.read(audioPlayerProvider).tracks.isEmpty) {
         // Nothing to queue behind — start playing right away instead of
         // appending tracks to a stopped player.
@@ -88,7 +94,7 @@ class LocalFolderItem extends HookConsumerWidget {
       }
       if (!context.mounted) return;
       showToastForAction(context, "add-to-queue", tracks.length);
-    }, [tracks, isPlaying, playlistNotifier, ref, context]);
+    }, [tracks, isLoaded, playlistNotifier, ref, context]);
 
     final image = _FolderArtCollage(tracks: tracks);
 

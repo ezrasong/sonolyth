@@ -40,9 +40,14 @@ class AlbumCard extends HookConsumerWidget {
     final isFetchingActiveTrack = ref.watch(queryingTrackInfoProvider);
 
     // Only rebuild this card when *its* collection's playing status flips,
-    // not on every track change / play-pause across the whole queue.
+    // not on every track change across the whole queue.
     final isPlaylistPlaying = ref.watch(
       audioPlayerProvider.select((s) => s.containsCollection(album.id)),
+    );
+    // "Loaded as the queue" isn't "audibly playing" — the button must show
+    // play (not pause) while this collection's queue sits paused.
+    final isAudioPlaying = ref.watch(
+      audioPlayerProvider.select((s) => s.playing && s.tracks.isNotEmpty),
     );
 
     final updating = useState(false);
@@ -193,7 +198,7 @@ class AlbumCard extends HookConsumerWidget {
     if (_isTile) {
       return PlaybuttonTile(
         imageUrl: imageUrl,
-        isPlaying: isPlaylistPlaying,
+        isPlaying: isPlaylistPlaying && isAudioPlaying,
         isLoading: isLoading,
         title: album.name,
         description: description,
@@ -205,7 +210,7 @@ class AlbumCard extends HookConsumerWidget {
 
     return PlaybuttonCard(
       imageUrl: imageUrl,
-      isPlaying: isPlaylistPlaying,
+      isPlaying: isPlaylistPlaying && isAudioPlaying,
       isLoading: isLoading,
       title: album.name,
       description: description,
