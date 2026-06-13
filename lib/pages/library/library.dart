@@ -38,10 +38,18 @@ class LibraryPage extends HookConsumerWidget {
       ],
       [context.l10n],
     );
-    final index = sidebarLibraryTileList.indexWhere(
+    // The nested library router's path isn't always reflected in this
+    // (parent) router's currentPath, so path-matching alone left the indicator
+    // stuck on the first tab. Seed from the path when it does resolve, but let
+    // taps drive it so the highlighted tab always matches the shown content.
+    final pathIndex = sidebarLibraryTileList.indexWhere(
       (e) => router.currentPath.startsWith(e.pathPrefix),
     );
-    final selectedIndex = index < 0 ? 0 : index;
+    final selectedIndex = useState(pathIndex < 0 ? 0 : pathIndex);
+    useEffect(() {
+      if (pathIndex >= 0) selectedIndex.value = pathIndex;
+      return null;
+    }, [pathIndex]);
 
     return PopScope(
       canPop: false,
@@ -56,9 +64,10 @@ class LibraryPage extends HookConsumerWidget {
               if (constraints.smAndDown)
                 _LibraryTopNavigation(
                   tiles: sidebarLibraryTileList,
-                  selectedIndex: selectedIndex,
+                  selectedIndex: selectedIndex.value,
                   downloadingCount: downloadingCount,
                   onSelected: (index) {
+                    selectedIndex.value = index;
                     context.navigateTo(sidebarLibraryTileList[index].route);
                   },
                 )

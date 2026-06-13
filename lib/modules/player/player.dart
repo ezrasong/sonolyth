@@ -98,7 +98,10 @@ class PlayerView extends HookConsumerWidget {
       },
       child: SurfaceCard(
         borderWidth: 0,
-        surfaceOpacity: 0.9,
+        // Fully opaque: the app disables surface blur globally, so a <1 opacity
+        // here doesn't frost the backdrop — it just bleeds the screen behind
+        // the player through (e.g. Settings text showing under the title).
+        surfaceOpacity: 1,
         padding: EdgeInsets.zero,
         child: Scaffold(
           backgroundColor: Colors.transparent,
