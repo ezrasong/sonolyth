@@ -15,11 +15,16 @@ class TrackOptionsButton extends HookConsumerWidget {
   final SonolythTrackObject track;
   final bool userPlaylist;
   final String? playlistId;
+
+  /// Collection (playlist/album) this row belongs to, so a per-track download
+  /// folders into it. Null when the row isn't inside a collection view.
+  final String? collectionName;
   const TrackOptionsButton({
     super.key,
     required this.track,
     required this.userPlaylist,
     this.playlistId,
+    this.collectionName,
   });
 
   static OverlayCompleter<dynamic> showOptions(
@@ -28,6 +33,7 @@ class TrackOptionsButton extends HookConsumerWidget {
     SonolythTrackObject track, {
     bool userPlaylist = false,
     String? playlistId,
+    String? collectionName,
   }) {
     return showPopover(
       context: context,
@@ -42,6 +48,7 @@ class TrackOptionsButton extends HookConsumerWidget {
               track: track,
               playlistId: playlistId,
               userPlaylist: userPlaylist,
+              collectionName: collectionName,
               onTapItem: () {
                 closeOverlay(context);
               },
@@ -84,6 +91,7 @@ class TrackOptionsButton extends HookConsumerWidget {
             track,
             userPlaylist: userPlaylist,
             playlistId: playlistId,
+            collectionName: collectionName,
           );
         } else {
           openDrawer(
@@ -136,6 +144,7 @@ class TrackOptionsButton extends HookConsumerWidget {
                       track: track,
                       userPlaylist: userPlaylist,
                       playlistId: playlistId,
+                      collectionName: collectionName,
                       onTapItem: () {
                         closeDrawer(context);
                       },

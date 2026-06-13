@@ -14,6 +14,7 @@ import 'package:sonolyth/components/hover_builder.dart';
 import 'package:sonolyth/components/image/universal_image.dart';
 import 'package:sonolyth/components/links/artist_link.dart';
 import 'package:sonolyth/components/links/link_text.dart';
+import 'package:sonolyth/components/track_presentation/presentation_props.dart';
 import 'package:sonolyth/components/track_tile/track_options_button.dart';
 import 'package:sonolyth/components/ui/button_tile.dart';
 import 'package:sonolyth/extensions/constrains.dart';
@@ -72,6 +73,12 @@ class TrackTile extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final theme = Theme.of(context);
+
+    // When this row is rendered inside a playlist/album, downloads from it
+    // fold into that collection's subfolder. Captured here (under the
+    // presentation's Data scope); the options menu renders in a detached
+    // overlay where this lookup would miss, so it's threaded down explicitly.
+    final collectionName = TrackPresentationOptions.maybeOf(context)?.title;
 
     final isBlackListed = ref.watch(isBlacklistedProvider(track));
 
@@ -135,6 +142,7 @@ class TrackTile extends HookConsumerWidget {
             track,
             userPlaylist: userPlaylist,
             playlistId: playlistId,
+            collectionName: collectionName,
           );
         },
         child: HoverBuilder(
@@ -415,6 +423,7 @@ class TrackTile extends HookConsumerWidget {
                         } else {
                           downloadManager.addToQueue(
                             track as SonolythFullTrackObject,
+                            collectionName: collectionName,
                           );
                         }
                       },
@@ -432,6 +441,7 @@ class TrackTile extends HookConsumerWidget {
                       track: track,
                       userPlaylist: userPlaylist,
                       playlistId: playlistId,
+                      collectionName: collectionName,
                     );
                   },
                 ),

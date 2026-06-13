@@ -80,6 +80,12 @@ class TrackPresentationOptions {
     return Data.of<TrackPresentationOptions>(context);
   }
 
+  /// Null-safe lookup: track tiles also render outside a collection (search
+  /// results, the play queue), where no presentation is in scope.
+  static TrackPresentationOptions? maybeOf(BuildContext context) {
+    return Data.maybeOf<TrackPresentationOptions>(context);
+  }
+
   @override
   operator ==(Object other) {
     return other is TrackPresentationOptions &&

@@ -15,6 +15,10 @@ class TrackOptions extends HookConsumerWidget {
   final SonolythTrackObject track;
   final bool userPlaylist;
   final String? playlistId;
+
+  /// Name of the playlist/album this options sheet was opened from, if any, so
+  /// a per-track download lands in that collection's subfolder.
+  final String? collectionName;
   final Widget? icon;
   final VoidCallback? onTapItem;
 
@@ -23,6 +27,7 @@ class TrackOptions extends HookConsumerWidget {
     required this.track,
     this.userPlaylist = false,
     this.playlistId,
+    this.collectionName,
     this.icon,
     this.onTapItem,
   }) : assert(
@@ -205,6 +210,7 @@ class TrackOptions extends HookConsumerWidget {
                 rootNavigatorKey.currentContext!,
                 TrackOptionValue.download,
                 playlistId,
+                collectionName: collectionName,
               );
               onTapItem?.call();
             },

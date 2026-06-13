@@ -184,7 +184,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
         .isDownloaded(track.id);
   }
 
-  void addToQueue(SonolythFullTrackObject track) {
+  void addToQueue(SonolythFullTrackObject track, {String? collectionName}) {
     if (state.any((element) => element.track.id == track.id)) return;
     if (_alreadyDownloaded(track)) return;
     state = [
@@ -194,6 +194,10 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
         status: DownloadStatus.queued,
         cancelToken: CancelToken(),
         totalSizeBytes: _progressScale,
+        // When the track is downloaded from within a playlist/album view, drop
+        // it into that collection's subfolder — same grouping as "Download
+        // all". Standalone downloads (search, queue) pass null and stay in root.
+        subfolder: _subfolderFor(collectionName),
       ),
     ];
 

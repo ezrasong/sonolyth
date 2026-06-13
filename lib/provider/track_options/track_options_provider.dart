@@ -134,8 +134,9 @@ class TrackOptionsActions {
   Future<void> action(
     BuildContext context,
     TrackOptionValue value,
-    String? playlistId,
-  ) async {
+    String? playlistId, {
+    String? collectionName,
+  }) async {
     switch (value) {
       case TrackOptionValue.album:
         await context.navigateTo(
@@ -255,7 +256,10 @@ class TrackOptionsActions {
         break;
       case TrackOptionValue.download:
         if (track is SonolythLocalTrackObject) break;
-        downloadManager.addToQueue(track as SonolythFullTrackObject);
+        downloadManager.addToQueue(
+          track as SonolythFullTrackObject,
+          collectionName: collectionName,
+        );
         break;
       case TrackOptionValue.startRadio:
         actionStartRadio(context);
