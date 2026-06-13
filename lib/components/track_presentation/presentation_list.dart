@@ -6,6 +6,8 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:sonolyth/collections/fake.dart';
+import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/dialogs/prompt_dialog.dart';
 import 'package:sonolyth/components/fallbacks/error_box.dart';
 import 'package:sonolyth/components/track_presentation/presentation_props.dart';
 import 'package:sonolyth/components/track_presentation/presentation_state.dart';
@@ -14,6 +16,7 @@ import 'package:sonolyth/components/track_tile/track_tile.dart';
 import 'package:sonolyth/components/track_presentation/use_is_user_playlist.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/metadata_plugin/library/playlists.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
 
 class PresentationListSection extends HookConsumerWidget {
@@ -115,7 +118,7 @@ class PresentationListSection extends HookConsumerWidget {
           () => state.selectedTracks.any((e) => e.id == track.id),
           [track.id, state.selectedTracks],
         );
-        return TrackTile(
+        final tile = TrackTile(
           userPlaylist: isUserPlaylist,
           playlistId: options.collectionId,
           index: index,
@@ -136,6 +139,38 @@ class PresentationListSection extends HookConsumerWidget {
             notifier.selectTrack(track);
             HapticFeedback.selectionClick();
           },
+        );
+
+        // Only the user's own playlists allow removal. Swipe left to remove a
+        // track — far quicker than digging through the row's overflow menu.
+        if (!isUserPlaylist) return tile;
+        return Dismissible(
+          key: ValueKey('pl-remove-${track.id}'),
+          direction: DismissDirection.endToStart,
+          confirmDismiss: (_) => showPromptDialog(
+            context: context,
+            title: context.l10n.remove_from_playlist,
+            message: track.name,
+            okText: context.l10n.remove_from_playlist,
+          ),
+          onDismissed: (_) {
+            // Optimistic local drop keeps the list consistent for Dismissible;
+            // the backend removal then invalidates and reconciles the source.
+            notifier.removeTrack(track);
+            ref
+                .read(metadataPluginSavedPlaylistsProvider.notifier)
+                .removeTracks(options.collectionId, [track.id]);
+          },
+          background: Container(
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            color: context.theme.colorScheme.destructive,
+            child: const Icon(
+              SonolythIcons.trash,
+              color: Colors.white,
+            ),
+          ),
+          child: tile,
         );
       }),
     );

@@ -784,7 +784,12 @@ public class AudioService extends MediaBrowserServiceCompat {
             mediaSession.setActive(true);
 
         acquireWakeLock();
-        mediaSession.setSessionActivity(contentIntent);
+        // Sonolyth: on Android 11+/OEM shades, tapping the system media card
+        // launches the session activity (independent of the notification's
+        // content intent). Honour androidNotificationClickStartsActivity here
+        // too so the flag actually disables accidental app launches.
+        mediaSession.setSessionActivity(
+            config.androidNotificationClickStartsActivity ? contentIntent : null);
         internalStartForeground();
     }
 

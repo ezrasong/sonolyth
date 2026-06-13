@@ -140,6 +140,18 @@ class PresentationStateNotifier
     );
   }
 
+  /// Optimistically drop a track from the visible list (and any selection) so a
+  /// swipe-to-remove updates instantly; the backing playlist provider is
+  /// invalidated separately and reconciles this on its next emit.
+  void removeTrack(SonolythTrackObject track) {
+    state = state.copyWith(
+      presentationTracks:
+          state.presentationTracks.where((e) => e.id != track.id).toList(),
+      selectedTracks:
+          state.selectedTracks.where((e) => e.id != track.id).toList(),
+    );
+  }
+
   void filterTracks(String query) {
     if (query.isEmpty) {
       return;
