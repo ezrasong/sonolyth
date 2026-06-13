@@ -4,13 +4,16 @@ import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/adaptive/adaptive_pop_sheet_list.dart';
 import 'package:sonolyth/components/dialogs/playlist_add_track_dialog.dart';
+import 'package:sonolyth/components/dialogs/prompt_dialog.dart';
 import 'package:sonolyth/components/track_presentation/presentation_props.dart';
 import 'package:sonolyth/components/track_presentation/presentation_state.dart';
+import 'package:sonolyth/components/track_presentation/use_is_user_playlist.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/download_manager_provider.dart';
 import 'package:sonolyth/provider/history/history.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/metadata_plugin/library/playlists.dart';
 
 ToastOverlay showToastForAction(
   BuildContext context,
@@ -30,6 +33,10 @@ ToastOverlay showToastForAction(
     "play-next" => (
         context.l10n.play_count_next(count),
         SonolythIcons.lightning
+      ),
+    "remove-from-playlist" => (
+        context.l10n.remove_from_playlist,
+        SonolythIcons.trash
       ),
     _ => ("", SonolythIcons.error),
   };
@@ -71,6 +78,10 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
     final notifier =
         ref.watch(presentationStateProvider(options.collection).notifier);
     final selectedTracks = state.selectedTracks;
+
+    final isUserPlaylist = useIsUserPlaylist(ref, options.collectionId);
+    final favoritePlaylistsNotifier =
+        ref.read(metadataPluginSavedPlaylistsProvider.notifier);
 
     Future<void> actionDownloadTracks({
       required BuildContext context,
@@ -174,6 +185,32 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
               showToastForAction(context, action, tracks.length);
               break;
             }
+          case "remove-from-playlist":
+            {
+              final removed = [...tracks];
+              final confirmed = await showPromptDialog(
+                context: context,
+                title: context.l10n.remove_from_playlist,
+                message: context.l10n.are_you_sure,
+                okText: context.l10n.remove_from_playlist,
+              );
+              if (!confirmed) {
+                notifier.deselectAllTracks();
+                break;
+              }
+              // Optimistic local drop, then the backend removal + invalidation.
+              notifier.deselectAllTracks();
+              for (final track in removed) {
+                notifier.removeTrack(track);
+              }
+              await favoritePlaylistsNotifier.removeTracks(
+                options.collectionId,
+                removed.map((t) => t.id).toList(),
+              );
+              if (!context.mounted) return;
+              showToastForAction(context, action, removed.length);
+              break;
+            }
           default:
         }
       },
@@ -228,6 +265,14 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
                   context.l10n.play_count_next(selectedTracks.length),
                 ),
         ),
+        // Bulk removal for the user's own playlists — select tracks, then
+        // remove them all at once. Only meaningful with an active selection.
+        if (isUserPlaylist && selectedTracks.isNotEmpty)
+          AdaptiveMenuButton(
+            value: "remove-from-playlist",
+            leading: const Icon(SonolythIcons.trash),
+            child: Text(context.l10n.remove_from_playlist),
+          ),
       ],
     );
   }
