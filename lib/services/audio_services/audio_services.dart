@@ -42,12 +42,15 @@ class AudioServices with WidgetsBindingObserver {
               // small-icon chip in the shade with this; without it the chip
               // falls back to a default that renders black on most skins.
               notificationColor: const Color(0xFF6750A4),
-              // Tapping the notification / media card no longer opens the app:
-              // on OEM shades (Vivo) it was far too easy to launch the app by
-              // accident while reaching for a control. Gates both the legacy
-              // content intent and the MediaSession activity (patched in the
-              // vendored AudioService.java). Open the app via the launcher.
-              androidNotificationClickStartsActivity: false,
+              // Tapping the notification / system media card opens the app and
+              // expands the player (routed via the NOTIFICATION_CLICK intent
+              // filter in AndroidManifest). This same flag also wires the
+              // MediaSession's session activity (vendored AudioService.java
+              // honours it) — OEM shades (Vivo) need that to render the
+              // "now playing" card and keep its controls responsive. Disabling
+              // it (tried in v5.2.19) left the card dead/untappable, so it
+              // stays on; accidental launches are the lesser evil.
+              androidNotificationClickStartsActivity: true,
               androidNotificationOngoing: false,
               // Leave the foreground state while paused so the notification
               // can be swiped away (Spotify behaviour); the swipe then ends
