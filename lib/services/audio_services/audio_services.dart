@@ -38,6 +38,10 @@ class AudioServices with WidgetsBindingObserver {
               // instead of the launcher mark (which Android flattens into an
               // unreadable alpha blob). Name-resolved: listed in keep.xml.
               androidNotificationIcon: 'drawable/sonolyth_notification_wave',
+              // Brand accent for the notification. Android 12+ tints the
+              // small-icon chip in the shade with this; without it the chip
+              // falls back to a default that renders black on most skins.
+              notificationColor: const Color(0xFF6750A4),
               androidNotificationOngoing: false,
               // Leave the foreground state while paused so the notification
               // can be swiped away (Spotify behaviour); the swipe then ends
