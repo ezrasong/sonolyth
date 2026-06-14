@@ -84,10 +84,29 @@ class SettingsPlaybackSection extends HookConsumerWidget {
             },
           ),
         ),
+        // With Qobuz lossless playback on, the streaming format is FLAC for
+        // every track Qobuz carries — the preset selectors below only govern
+        // the YouTube fallback, so surface that instead of letting the page
+        // read "Streaming music format: mp4" (which looks like everything
+        // plays lossy).
+        if (qobuzPlaybackEnabled)
+          ListTile(
+            leading: const Icon(SonolythIcons.audioQuality),
+            title: Text(context.l10n.streaming_music_format),
+            subtitle: const Text(
+              "Lossless FLAC via Qobuz. The format/quality below only apply to "
+              "the YouTube fallback for tracks Qobuz doesn't carry.",
+            ),
+            trailing: const OutlineBadge(child: Text("FLAC · Lossless")),
+          ),
         if (sourcePresets.presets.isNotEmpty) ...[
           AdaptiveSelectTile(
             secondary: const Icon(SonolythIcons.plugin),
-            title: Text(context.l10n.streaming_music_format),
+            title: Text(
+              qobuzPlaybackEnabled
+                  ? "YouTube fallback format"
+                  : context.l10n.streaming_music_format,
+            ),
             value: sourcePresets.selectedStreamingContainerIndex,
             options: [
               for (final MapEntry(:key, value: preset)
@@ -101,7 +120,11 @@ class SettingsPlaybackSection extends HookConsumerWidget {
           ),
           AdaptiveSelectTile(
             secondary: const Icon(SonolythIcons.audioQuality),
-            title: Text(context.l10n.streaming_music_quality),
+            title: Text(
+              qobuzPlaybackEnabled
+                  ? "YouTube fallback quality"
+                  : context.l10n.streaming_music_quality,
+            ),
             value: sourcePresets.selectedStreamingQualityIndex,
             options: [
               for (final MapEntry(:key, value: quality) in sourcePresets

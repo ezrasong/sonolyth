@@ -34,6 +34,12 @@ final musicVideoRegex = RegExp(
 );
 
 class SourcedTrack extends BasicSourcedTrack {
+  /// How many Qobuz candidates a single playback resolve will try before
+  /// falling back to YouTube. Qobuz ISRC matches are the same recording across
+  /// releases, so grinding every one when the gateway is unhappy only stalls
+  /// the loading spinner — cap it low and fail over fast.
+  static const _maxQobuzPlaybackAttempts = 2;
+
   final Ref ref;
 
   SourcedTrack({
@@ -75,15 +81,22 @@ class SourcedTrack extends BasicSourcedTrack {
         throw TrackNotFoundError(query);
       }
 
-      // Resolve the first sibling that actually yields a playable stream. A
-      // Qobuz match that matched-by-ISRC but failed to resolve a URL then
-      // falls through to the next candidate (e.g. a YouTube sibling) instead
-      // of leaving the track silent.
+      // Qobuz (ISRC-exact, lossless) candidates first; the rest are the
+      // YouTube coverage fallback. Splitting them lets us cap Qobuz attempts
+      // and, crucially, tell apart "Qobuz doesn't carry this" from "Qobuz
+      // carries it but the gateway failed right now".
+      final qobuzCandidates =
+          siblings.where(QobuzAudioSource.ownsMatch).toList();
+      final pluginCandidates =
+          siblings.where((s) => !QobuzAudioSource.ownsMatch(s)).toList();
+
       SonolythAudioSourceMatchObject? chosen;
       List<SonolythAudioSourceStreamObject> manifest = const [];
-      for (final candidate in siblings) {
+      for (final candidate
+          in qobuzCandidates.take(_maxQobuzPlaybackAttempts)) {
         try {
-          final streams = await _resolveStreams(audioSource.audioSource, candidate);
+          final streams =
+              await _resolveStreams(audioSource.audioSource, candidate);
           if (streams.isNotEmpty) {
             chosen = candidate;
             manifest = streams;
@@ -98,11 +111,46 @@ class SourcedTrack extends BasicSourcedTrack {
             ref: ref,
             pluginAudioSource: audioSource.audioSource,
             slug: audioSourceConfig.slug,
+            candidates: pluginCandidates,
           );
         } catch (_) {
-          // Genuine failure for this candidate; try the next one.
+          // Genuine failure for this Qobuz candidate; try the next one.
         }
       }
+
+      // Qobuz carries this track (it returned candidates) but couldn't stream
+      // it right now — a gateway 500/timeout/network blip, not a real "Qobuz
+      // doesn't have it". Play via YouTube WITHOUT caching so the track
+      // upgrades back to lossless Qobuz on a later play, rather than being
+      // permanently pinned to a (often wrong) YouTube match.
+      if (chosen == null && qobuzCandidates.isNotEmpty) {
+        return _fetchViaPlugin(
+          query: query,
+          ref: ref,
+          pluginAudioSource: audioSource.audioSource,
+          slug: audioSourceConfig.slug,
+          candidates: pluginCandidates,
+        );
+      }
+
+      // Qobuz genuinely doesn't carry the track — resolve the best YouTube
+      // sibling and cache it as a stable fallback.
+      if (chosen == null) {
+        for (final candidate in pluginCandidates) {
+          try {
+            final streams =
+                await _resolveStreams(audioSource.audioSource, candidate);
+            if (streams.isNotEmpty) {
+              chosen = candidate;
+              manifest = streams;
+              break;
+            }
+          } catch (_) {
+            // Try the next candidate.
+          }
+        }
+      }
+
       if (chosen == null) {
         throw TrackNotFoundError(query);
       }
@@ -254,26 +302,38 @@ class SourcedTrack extends BasicSourcedTrack {
       throw MetadataPluginException.noDefaultAudioSourcePlugin();
     }
 
-    final pluginSiblings = rankResults(
-      await audioSource.audioSource.matches(query),
-      query,
-    );
-
-    // When the Qobuz playback source is enabled, prefer its ISRC-exact,
-    // lossless matches and keep the plugin (YouTube) results as the coverage
-    // fallback for tracks Qobuz doesn't carry.
+    // Resolve the Qobuz ISRC-exact matches first (best-effort) when the source
+    // is enabled. Doing Qobuz first means a YouTube matching hiccup can't sink
+    // a lossless Qobuz play.
+    var qobuzMatches = const <SonolythAudioSourceMatchObject>[];
     if (await ref.read(qobuzPlaybackEnabledProvider.future)) {
       try {
-        final qobuzMatches = await QobuzAudioSource().matches(query);
-        if (qobuzMatches.isNotEmpty) {
-          return <SonolythAudioSourceMatchObject>{
-            ...qobuzMatches,
-            ...pluginSiblings,
-          }.toList();
-        }
+        qobuzMatches = await QobuzAudioSource().matches(query);
       } catch (_) {
         // Qobuz lookup failed (rate limit/network) — fall back to the plugin.
       }
+    }
+
+    // YouTube/plugin siblings are the coverage fallback. When Qobuz already
+    // has candidates this call is best-effort: a plugin `matches` failure
+    // (e.g. a 400 from the YouTube source) must not block a Qobuz-served
+    // track, so the error is only surfaced when there's no Qobuz match to
+    // fall back on.
+    var pluginSiblings = const <SonolythAudioSourceMatchObject>[];
+    try {
+      pluginSiblings = rankResults(
+        await audioSource.audioSource.matches(query),
+        query,
+      );
+    } catch (_) {
+      if (qobuzMatches.isEmpty) rethrow;
+    }
+
+    if (qobuzMatches.isNotEmpty) {
+      return <SonolythAudioSourceMatchObject>{
+        ...qobuzMatches,
+        ...pluginSiblings,
+      }.toList();
     }
 
     return pluginSiblings.toSet().toList();
@@ -301,10 +361,14 @@ class SourcedTrack extends BasicSourcedTrack {
     required Ref ref,
     required MetadataPluginAudioSourceEndpoint pluginAudioSource,
     required String slug,
+    List<SonolythAudioSourceMatchObject>? candidates,
   }) async {
-    final ranked = rankResults(await pluginAudioSource.matches(query), query)
-        .toSet()
-        .toList();
+    // Reuse already-ranked siblings when the caller has them (the cold-resolve
+    // path), so we don't re-run a YouTube `matches` that may have just failed.
+    final ranked = candidates ??
+        rankResults(await pluginAudioSource.matches(query), query)
+            .toSet()
+            .toList();
     for (final candidate in ranked) {
       try {
         final streams = await pluginAudioSource.streams(candidate);
