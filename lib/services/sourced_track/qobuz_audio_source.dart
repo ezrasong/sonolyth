@@ -1,5 +1,6 @@
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/services/spotiflac/providers/qobuz_provider.dart';
+import 'package:sonolyth/services/spotiflac/track_matching.dart';
 import 'package:sonolyth/services/spotiflac/zarz_client.dart';
 
 /// Playback resolves must fail fast and fall back to YouTube rather than block
@@ -48,10 +49,28 @@ class QobuzAudioSource {
     SonolythFullTrackObject track,
   ) async {
     final results = await _provider.searchTracks(track);
-    return results
-        .map(_toMatch)
-        .whereType<SonolythAudioSourceMatchObject>()
-        .toList();
+
+    // Score every candidate against the query and drop weak matches. Qobuz's
+    // ISRC search is exact (scores ~1.0), but when it misses and falls back to
+    // a text search, a loose result could otherwise be played as the "wrong
+    // song" — the very thing Qobuz is here to avoid. Same 0.5 threshold the
+    // download path uses.
+    final scored = <(SonolythAudioSourceMatchObject, double)>[];
+    for (final candidate in results) {
+      final match = _toMatch(candidate);
+      if (match == null) continue;
+      final score = TrackMatching.score(
+        expectedTitle: track.name,
+        candidateTitle: match.title,
+        expectedArtists: track.artists.map((a) => a.name).toList(),
+        candidateArtists: match.artists,
+        expectedDurationMs: track.durationMs,
+        candidateDurationMs: match.duration.inMilliseconds,
+      );
+      if (score >= 0.5) scored.add((match, score));
+    }
+    scored.sort((a, b) => b.$2.compareTo(a.$2));
+    return scored.map((e) => e.$1).toList();
   }
 
   /// Direct lossless FLAC stream(s) for a previously matched Qobuz track.

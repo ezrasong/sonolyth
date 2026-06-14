@@ -1,5 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sonolyth/provider/database/database.dart';
+import 'package:sonolyth/provider/server/sourced_track_provider.dart';
 
 /// Opt-in toggle for resolving playback through the native Qobuz audio source
 /// (ISRC-exact, lossless) ahead of the YouTube plugin, which stays as the
@@ -21,6 +23,16 @@ class QobuzPlaybackEnabledNotifier extends AsyncNotifier<bool> {
     final preferences = await SharedPreferences.getInstance();
     await preferences.setBool(_prefsKey, enabled);
     state = AsyncData(enabled);
+
+    // Flipping the source preference has to take effect on already-played
+    // tracks, not just new ones. The source-match cache records which source
+    // each track resolved to; clear it and drop the in-memory resolutions so
+    // every track re-resolves under the new preference on its next play —
+    // migrating the library to Qobuz (or back to YouTube) instead of staying
+    // stuck on whatever was cached first.
+    final database = ref.read(databaseProvider);
+    await database.delete(database.sourceMatchTable).go();
+    ref.invalidate(sourcedTrackProvider);
   }
 }
 

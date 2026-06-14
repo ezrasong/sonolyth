@@ -89,8 +89,18 @@ class SourcedTrack extends BasicSourcedTrack {
             manifest = streams;
             break;
           }
+        } on ZarzRateLimitedException {
+          // Qobuz is rate-limited right now. Play via the YouTube plugin
+          // WITHOUT caching a match, so a transient 429 doesn't permanently
+          // downgrade this track — it retries Qobuz on its next play.
+          return _fetchViaPlugin(
+            query: query,
+            ref: ref,
+            pluginAudioSource: audioSource.audioSource,
+            slug: audioSourceConfig.slug,
+          );
         } catch (_) {
-          // Candidate failed to resolve; try the next one.
+          // Genuine failure for this candidate; try the next one.
         }
       }
       if (chosen == null) {
