@@ -14,6 +14,7 @@ import 'package:sonolyth/modules/settings/playback/edit_connect_port_dialog.dart
 import 'package:sonolyth/modules/settings/section_card_with_heading.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/modules/settings/youtube_engine_not_installed_dialog.dart';
+import 'package:sonolyth/provider/audio_player/qobuz_playback.dart';
 import 'package:sonolyth/provider/metadata_plugin/audio_source/quality_presets.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 import 'package:sonolyth/services/kv_store/kv_store.dart';
@@ -31,6 +32,8 @@ class SettingsPlaybackSection extends HookConsumerWidget {
     final sourcePresets = ref.watch(audioSourcePresetsProvider);
     final sourcePresetsNotifier =
         ref.watch(audioSourcePresetsProvider.notifier);
+    final qobuzPlaybackEnabled =
+        ref.watch(qobuzPlaybackEnabledProvider).value ?? false;
     final theme = Theme.of(context);
 
     return SectionCardWithHeading(
@@ -64,6 +67,22 @@ class SettingsPlaybackSection extends HookConsumerWidget {
             }
             preferencesNotifier.setYoutubeClientEngine(value);
           },
+        ),
+        ListTile(
+          leading: const Icon(SonolythIcons.audioQuality),
+          title: const Text("Qobuz lossless playback (experimental)"),
+          subtitle: const Text(
+            "Match tracks by ISRC and stream lossless FLAC from Qobuz, "
+            "falling back to YouTube when Qobuz doesn't carry the track.",
+          ),
+          trailing: Switch(
+            value: qobuzPlaybackEnabled,
+            onChanged: (value) {
+              ref
+                  .read(qobuzPlaybackEnabledProvider.notifier)
+                  .setEnabled(value);
+            },
+          ),
         ),
         if (sourcePresets.presets.isNotEmpty) ...[
           AdaptiveSelectTile(

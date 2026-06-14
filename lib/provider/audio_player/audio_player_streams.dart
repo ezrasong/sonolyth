@@ -68,9 +68,19 @@ class AudioPlayerStreamListeners {
   StreamSubscription subscribeToPlaylist() {
     return audioPlayer.playlistStream.listen((mpvPlaylist) {
       try {
-        if (audioPlayerState.activeTrack == null) return;
-        notificationService.addTrack(audioPlayerState.activeTrack!);
-        discord.updatePresence(audioPlayerState.activeTrack!);
+        // Derive the now-playing track from the emitted playlist itself rather
+        // than re-reading audioPlayerProvider.activeTrack. The provider's own
+        // playlistStream listener (which advances currentIndex) is a *separate*
+        // subscriber to this same broadcast stream, so for any given emission
+        // it may not have committed the new index yet. Reading shared state
+        // here would then push the previous track to the notification/Discord
+        // and leave the thumbnail + title stale after a skip.
+        final index = mpvPlaylist.index;
+        if (index < 0 || index >= mpvPlaylist.medias.length) return;
+        final activeTrack = SonolythMedia.media(mpvPlaylist.medias[index]).track;
+
+        notificationService.addTrack(activeTrack);
+        discord.updatePresence(activeTrack);
       } catch (e, stack) {
         AppLogger.reportError(e, stack);
       }

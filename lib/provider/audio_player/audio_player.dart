@@ -96,6 +96,16 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
       // shuffle/repeat survive an app restart.
       await audioPlayer.setLoopMode(playerState.loopMode);
       await audioPlayer.setShuffle(playerState.shuffled);
+
+      // Eagerly resolve the restored active track's stream, the same way load()
+      // boosts a freshly-opened queue. Without this, on a cold start the
+      // (kept-alive) sourcedTrackProvider isn't primed until a player widget
+      // first watches it — so the play button can sit on its loading spinner
+      // while nothing has actually started resolving the track.
+      final restoredActiveTrack = state.activeTrack;
+      if (restoredActiveTrack is SonolythFullTrackObject) {
+        ref.read(sourcedTrackProvider(restoredActiveTrack).future);
+      }
     }
 
     if (playerState.collections.isNotEmpty) {

@@ -22,7 +22,13 @@ class ZarzClient {
 
   /// 5 requests / 10s allowed; stay just under it.
   static const _minRequestGap = Duration(milliseconds: 2100);
-  static const _maxAttempts = 4;
+  static const _defaultMaxAttempts = 4;
+
+  /// How many times a 429 is retried before giving up. Bulk downloads want the
+  /// patient default; the interactive playback path overrides this to 1 so a
+  /// rate-limited gateway falls back to YouTube immediately instead of stalling
+  /// playback through the (up to ~35s) backoff chain.
+  final int _maxAttempts;
 
   final Dio _dio;
 
@@ -30,7 +36,9 @@ class ZarzClient {
   Future<void> _lastRequest = Future.value();
   DateTime _lastRequestTime = DateTime.fromMillisecondsSinceEpoch(0);
 
-  ZarzClient([Dio? dio]) : _dio = dio ?? Dio() {
+  ZarzClient({Dio? dio, int maxAttempts = _defaultMaxAttempts})
+      : _dio = dio ?? Dio(),
+        _maxAttempts = maxAttempts {
     _dio.options
       ..connectTimeout = const Duration(seconds: 15)
       ..receiveTimeout = const Duration(seconds: 20)

@@ -57,7 +57,7 @@ class ServerPlaybackRoutes {
     return join(
       await UserPreferencesNotifier.getMusicCacheDir(),
       ServiceUtils.sanitizeFilename(
-        '${track.query.name} - ${track.query.artists.map((d) => d.name).join(",")} (${track.info.id}).${track.qualityPreset!.getFileExtension()}',
+        '${track.query.name} - ${track.query.artists.map((d) => d.name).join(",")} (${track.info.id}).${track.playbackFileExtension}',
       ),
     );
   }
@@ -162,7 +162,7 @@ class ServerPlaybackRoutes {
       request,
       trackCacheFile,
       await trackCacheFile.length(),
-      "audio/${track.qualityPreset!.name}",
+      "audio/${track.playbackContainer}",
       headOnly: headOnly,
     );
   }
@@ -325,7 +325,7 @@ class ServerPlaybackRoutes {
 
           await trackPartialCacheFile.rename(trackCacheFile.path);
 
-          if (track.qualityPreset!.getFileExtension() == "weba") return;
+          if (track.playbackFileExtension == "weba") return;
 
           final imageBytes = await ServiceUtils.downloadImage(
             track.query.album.images.asUrlString(

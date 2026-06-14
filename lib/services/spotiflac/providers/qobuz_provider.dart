@@ -65,12 +65,22 @@ class QobuzProvider extends SpotiFlacProvider {
     final trackId = await _resolveTrackId(track);
     if (trackId == null) return null;
 
+    final url = await streamUrlForId(trackId, quality);
+    if (url == null) return null;
+
+    return SpotiFlacDownloadResolution(url: url, fileExtension: "flac");
+  }
+
+  /// Resolves a direct, unencrypted FLAC URL for a specific Qobuz track id,
+  /// walking the quality fallback chain. Shared by the download path
+  /// ([resolve]) and the Qobuz playback audio source.
+  Future<String?> streamUrlForId(String qobuzTrackId, String quality) async {
     for (final code in _fallbackChain(quality)) {
       try {
         final payload = await _client.postJson(_downloadUrl, {
           "quality": _mapDownloadQuality(code),
           "upload_to_r2": false,
-          "url": "https://open.qobuz.com/track/$trackId",
+          "url": "https://open.qobuz.com/track/$qobuzTrackId",
         }) as Map;
 
         if (payload["success"] == false) continue;
@@ -84,7 +94,7 @@ class QobuzProvider extends SpotiFlacProvider {
             ?.toString();
         if (url == null || url.isEmpty) continue;
 
-        return SpotiFlacDownloadResolution(url: url, fileExtension: "flac");
+        return url;
       } on ZarzRateLimitedException {
         // Lower tiers would hit the same limiter; let the caller report it.
         rethrow;
@@ -93,6 +103,19 @@ class QobuzProvider extends SpotiFlacProvider {
       }
     }
     return null;
+  }
+
+  /// Candidate Qobuz tracks for [track], ISRC-first then a text search.
+  /// Returns the raw Qobuz track maps so callers can build their own match
+  /// objects (the playback audio source needs multiple ranked candidates,
+  /// unlike the download path which only needs the single best id).
+  Future<List<Map>> searchTracks(SonolythFullTrackObject track) async {
+    if (track.isrc.isNotEmpty) {
+      final byIsrc = await _search(track.isrc, limit: 5);
+      if (byIsrc.isNotEmpty) return byIsrc;
+    }
+    final query = "${track.name} ${track.artists.map((a) => a.name).join(" ")}";
+    return _search(query, limit: 10);
   }
 
   Future<String?> _resolveTrackId(SonolythFullTrackObject track) async {
