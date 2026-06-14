@@ -76,103 +76,91 @@ class SourcedTrack extends BasicSourcedTrack {
         .then((s) => s.firstOrNull);
 
     if (cachedSource == null) {
-      final siblings = await fetchSiblings(ref: ref, query: query);
-      if (siblings.isEmpty) {
-        throw TrackNotFoundError(query);
-      }
+      // Qobuz (ISRC-exact, lossless) is the priority source. Resolve it on the
+      // hot path FIRST and — crucially — WITHOUT touching the YouTube plugin
+      // (Piped): a FLAC-served track must never pay a Piped search round trip,
+      // and prefetching upcoming tracks must stay cheap so skips don't lag.
+      // YouTube is fetched lazily only when Qobuz can't serve the track.
+      if (await ref.read(qobuzPlaybackEnabledProvider.future)) {
+        final qobuz = QobuzAudioSource();
 
-      // Qobuz (ISRC-exact, lossless) candidates first; the rest are the
-      // YouTube coverage fallback. Splitting them lets us cap Qobuz attempts
-      // and, crucially, tell apart "Qobuz doesn't carry this" from "Qobuz
-      // carries it but the gateway failed right now".
-      final qobuzCandidates =
-          siblings.where(QobuzAudioSource.ownsMatch).toList();
-      final pluginCandidates =
-          siblings.where((s) => !QobuzAudioSource.ownsMatch(s)).toList();
-
-      SonolythAudioSourceMatchObject? chosen;
-      List<SonolythAudioSourceStreamObject> manifest = const [];
-      for (final candidate
-          in qobuzCandidates.take(_maxQobuzPlaybackAttempts)) {
+        var qobuzCandidates = const <SonolythAudioSourceMatchObject>[];
         try {
-          final streams =
-              await _resolveStreams(audioSource.audioSource, candidate);
-          if (streams.isNotEmpty) {
-            chosen = candidate;
-            manifest = streams;
-            break;
-          }
-        } on ZarzRateLimitedException {
-          // Qobuz is rate-limited right now. Play via the YouTube plugin
-          // WITHOUT caching a match, so a transient 429 doesn't permanently
-          // downgrade this track — it retries Qobuz on its next play.
-          return _fetchViaPlugin(
-            query: query,
-            ref: ref,
-            pluginAudioSource: audioSource.audioSource,
-            slug: audioSourceConfig.slug,
-            candidates: pluginCandidates,
-          );
+          qobuzCandidates = await qobuz.matches(query);
         } catch (_) {
-          // Genuine failure for this Qobuz candidate; try the next one.
+          // Qobuz lookup failed (network) — fall through to YouTube below.
         }
-      }
 
-      // Qobuz carries this track (it returned candidates) but couldn't stream
-      // it right now — a gateway 500/timeout/network blip, not a real "Qobuz
-      // doesn't have it". Play via YouTube WITHOUT caching so the track
-      // upgrades back to lossless Qobuz on a later play, rather than being
-      // permanently pinned to a (often wrong) YouTube match.
-      if (chosen == null && qobuzCandidates.isNotEmpty) {
-        return _fetchViaPlugin(
-          query: query,
-          ref: ref,
-          pluginAudioSource: audioSource.audioSource,
-          slug: audioSourceConfig.slug,
-          candidates: pluginCandidates,
-        );
-      }
-
-      // Qobuz genuinely doesn't carry the track — resolve the best YouTube
-      // sibling and cache it as a stable fallback.
-      if (chosen == null) {
-        for (final candidate in pluginCandidates) {
+        SonolythAudioSourceMatchObject? chosen;
+        List<SonolythAudioSourceStreamObject> manifest = const [];
+        var rateLimited = false;
+        for (final candidate
+            in qobuzCandidates.take(_maxQobuzPlaybackAttempts)) {
           try {
-            final streams =
-                await _resolveStreams(audioSource.audioSource, candidate);
+            final streams = await qobuz.streams(candidate);
             if (streams.isNotEmpty) {
               chosen = candidate;
               manifest = streams;
               break;
             }
+          } on ZarzRateLimitedException {
+            rateLimited = true;
+            break;
           } catch (_) {
-            // Try the next candidate.
+            // Genuine failure for this Qobuz candidate; try the next one.
           }
         }
-      }
 
-      if (chosen == null) {
-        throw TrackNotFoundError(query);
-      }
+        if (chosen != null) {
+          // Cache the match only after the stream resolves — caching first
+          // would poison the table with a match that can't actually stream.
+          // Siblings (YouTube alternatives) are fetched lazily by the sibling
+          // sheet, exactly like the cached path, so this stays Piped-free.
+          await database.into(database.sourceMatchTable).insert(
+                SourceMatchTableCompanion.insert(
+                  trackId: query.id,
+                  sourceInfo: Value(jsonEncode(chosen)),
+                  sourceType: audioSourceConfig.slug,
+                ),
+              );
 
-      // Cache the match only after the stream fetch succeeds — caching first
-      // would poison the table with a match that can't actually stream, and
-      // every retry would then take the cached (sibling-less) path.
-      await database.into(database.sourceMatchTable).insert(
-            SourceMatchTableCompanion.insert(
-              trackId: query.id,
-              sourceInfo: Value(jsonEncode(chosen)),
-              sourceType: audioSourceConfig.slug,
-            ),
+          return SourcedTrack(
+            ref: ref,
+            siblings: const [],
+            info: chosen,
+            source: audioSourceConfig.slug,
+            sources: manifest,
+            query: query,
           );
+        }
 
-      return SourcedTrack(
-        ref: ref,
-        siblings: siblings.where((s) => s.id != chosen!.id).toList(),
-        info: chosen,
-        source: audioSourceConfig.slug,
-        sources: manifest,
+        // Qobuz is rate-limited, or carries the track (it returned candidates)
+        // but couldn't stream it right now — a gateway 500/timeout/network
+        // blip, not a real "Qobuz doesn't have it". Play via YouTube WITHOUT
+        // caching so the track upgrades back to lossless on a later play,
+        // rather than being permanently pinned to a (often wrong) YouTube
+        // match.
+        if (rateLimited || qobuzCandidates.isNotEmpty) {
+          return _fetchViaPlugin(
+            query: query,
+            ref: ref,
+            pluginAudioSource: audioSource.audioSource,
+            slug: audioSourceConfig.slug,
+          );
+        }
+        // Qobuz genuinely doesn't carry the track (no candidates) — fall
+        // through to the cached YouTube path below.
+      }
+
+      // YouTube path: Qobuz disabled, or it genuinely doesn't carry this
+      // track. Resolve the best YouTube sibling and cache it as a stable
+      // fallback.
+      return _fetchViaPlugin(
         query: query,
+        ref: ref,
+        pluginAudioSource: audioSource.audioSource,
+        slug: audioSourceConfig.slug,
+        cache: true,
       );
     }
     final item = SonolythAudioSourceMatchObject.fromJson(
@@ -352,19 +340,23 @@ class SourcedTrack extends BasicSourcedTrack {
     return pluginAudioSource.streams(match);
   }
 
-  /// Resolves [query] through the plugin (YouTube) source only, without
-  /// touching the source-match cache. Used as the live fallback when a cached
-  /// Qobuz match is temporarily rate-limited: the user keeps playing while the
-  /// cached Qobuz match stays intact for when the limit clears.
+  /// Resolves [query] through the plugin (YouTube) source only.
+  ///
+  /// With [cache] false (the default) the source-match cache is left untouched
+  /// — the live fallback when Qobuz is momentarily unavailable but DOES carry
+  /// the track, so it upgrades back to lossless on a later play. With [cache]
+  /// true the chosen match is persisted, used when Qobuz genuinely lacks the
+  /// track (or is disabled) so it doesn't re-search every play.
   static Future<SourcedTrack> _fetchViaPlugin({
     required SonolythFullTrackObject query,
     required Ref ref,
     required MetadataPluginAudioSourceEndpoint pluginAudioSource,
     required String slug,
     List<SonolythAudioSourceMatchObject>? candidates,
+    bool cache = false,
   }) async {
-    // Reuse already-ranked siblings when the caller has them (the cold-resolve
-    // path), so we don't re-run a YouTube `matches` that may have just failed.
+    // Reuse already-ranked siblings when the caller has them, so we don't
+    // re-run a YouTube `matches` that may have just failed.
     final ranked = candidates ??
         rankResults(await pluginAudioSource.matches(query), query)
             .toSet()
@@ -373,6 +365,16 @@ class SourcedTrack extends BasicSourcedTrack {
       try {
         final streams = await pluginAudioSource.streams(candidate);
         if (streams.isNotEmpty) {
+          if (cache) {
+            final database = ref.read(databaseProvider);
+            await database.into(database.sourceMatchTable).insert(
+                  SourceMatchTableCompanion.insert(
+                    trackId: query.id,
+                    sourceInfo: Value(jsonEncode(candidate)),
+                    sourceType: slug,
+                  ),
+                );
+          }
           return SourcedTrack(
             ref: ref,
             info: candidate,

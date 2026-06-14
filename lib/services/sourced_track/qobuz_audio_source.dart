@@ -3,11 +3,19 @@ import 'package:sonolyth/services/spotiflac/providers/qobuz_provider.dart';
 import 'package:sonolyth/services/spotiflac/track_matching.dart';
 import 'package:sonolyth/services/spotiflac/zarz_client.dart';
 
-/// Playback resolves must fail fast and fall back to YouTube rather than block
-/// on the gateway's patient, download-oriented retry/backoff (up to ~35s). A
-/// dedicated fail-fast client (no 429 retries) also gives playback its own
-/// pacing lane, so a resolve isn't queued behind a bulk download.
-final _playbackZarzClient = ZarzClient(maxAttempts: 1);
+/// Playback gets its own gateway lane, tuned for interactivity rather than the
+/// download client's patient, serialized pacing:
+/// - **Concurrent + gap-free** (`maxConcurrent`, no 2.1s throttle) so warming
+///   the next few tracks resolves in parallel — that overlap is what keeps
+///   FLAC skip-forward/back from lagging. The gateway tolerates these bursts.
+/// - **One quick 429 retry** (`maxAttempts: 2`, short capped backoff) so a
+///   momentary rate-limit is absorbed instead of instantly abandoning lossless
+///   for YouTube, without stalling on the (up to ~35s) download backoff chain.
+final _playbackZarzClient = ZarzClient(
+  maxAttempts: 2,
+  maxConcurrent: 4,
+  maxRetryBackoff: const Duration(seconds: 2),
+);
 
 /// A native (non-plugin) playback audio source backed by Qobuz via the zarz
 /// gateway.
