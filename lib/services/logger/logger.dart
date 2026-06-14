@@ -28,6 +28,17 @@ class AppLogger {
   static late final Logger log;
   static late final File logFile;
 
+  /// Gates [diag] file writes. A deliberate dev instrument: source/playback
+  /// resolution is otherwise silent (`catch (_)`), so failures and timings
+  /// never reach `.spotube_logs`. Leave on while tuning the Qobuz/skip path;
+  /// flip off (or gate on verbose) before a distribution release to avoid
+  /// unbounded log growth.
+  static bool diagnostics = true;
+
+  /// Serializes diag appends so parallel prefetch resolves don't interleave
+  /// half-lines in the file.
+  static Future<void> _diagTail = Future.value();
+
   static initialize(bool verbose) {
     log = Logger(
       level: kDebugMode || (verbose && kReleaseMode) ? Level.all : Level.info,
@@ -109,6 +120,25 @@ class AppLogger {
       await file.create(recursive: true);
     }
     return file;
+  }
+
+  /// Low-volume, non-blocking diagnostic line (timings, source decisions).
+  /// Prints to the console (visible under `flutter run`) and, when
+  /// [diagnostics] is on, appends to `.spotube_logs` so a release build on a
+  /// device still surfaces what the resolve path decided. Fire-and-forget:
+  /// never awaits the file I/O, so it can't slow a resolve.
+  static void diag(String message) {
+    log.i(message);
+    if (!diagnostics) return;
+    final line = "[${DateTime.now()}] $message\n";
+    _diagTail = _diagTail.then((_) async {
+      try {
+        await logFile.writeAsString(line, mode: FileMode.writeOnlyAppend);
+      } catch (_) {
+        // logFile may not be initialized yet, or the write may fail — a
+        // diagnostic line is never worth surfacing an error for.
+      }
+    });
   }
 
   static Future<void> reportError(

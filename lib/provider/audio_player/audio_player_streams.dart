@@ -219,8 +219,14 @@ class AudioPlayerStreamListeners {
         final upcoming = audioPlayerState.tracks
             .skip(audioPlayerState.currentIndex + 1)
             .whereType<SonolythFullTrackObject>()
-            .take(5);
+            .take(5)
+            .toList();
 
+        final warmSw = Stopwatch()..start();
+        AppLogger.diag(
+          "[prefetch] warming ${upcoming.length} upcoming "
+          "after '${audioPlayerState.activeTrack?.name}'",
+        );
         await Future.wait(
           upcoming.map(
             (track) async {
@@ -231,6 +237,9 @@ class AudioPlayerStreamListeners {
               }
             },
           ),
+        );
+        AppLogger.diag(
+          "[prefetch] window ready in ${warmSw.elapsedMilliseconds}ms",
         );
 
         // "Previous" gets no prefetch from mpv (prefetch-playlist only

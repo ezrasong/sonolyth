@@ -62,6 +62,7 @@ class SourcedTrack extends BasicSourcedTrack {
       throw MetadataPluginException.noDefaultAudioSourcePlugin();
     }
 
+    final sw = Stopwatch()..start();
     final database = ref.read(databaseProvider);
     final cachedSource = await (database.select(database.sourceMatchTable)
           ..where((s) =>
@@ -76,19 +77,29 @@ class SourcedTrack extends BasicSourcedTrack {
         .then((s) => s.firstOrNull);
 
     if (cachedSource == null) {
+      final qobuzEnabled =
+          await ref.read(qobuzPlaybackEnabledProvider.future);
+      AppLogger.diag(
+        "[resolve] '${query.name}' cold (qobuz=${qobuzEnabled ? "on" : "off"})",
+      );
+
       // Qobuz (ISRC-exact, lossless) is the priority source. Resolve it on the
       // hot path FIRST and — crucially — WITHOUT touching the YouTube plugin
       // (Piped): a FLAC-served track must never pay a Piped search round trip,
       // and prefetching upcoming tracks must stay cheap so skips don't lag.
       // YouTube is fetched lazily only when Qobuz can't serve the track.
-      if (await ref.read(qobuzPlaybackEnabledProvider.future)) {
+      if (qobuzEnabled) {
         final qobuz = QobuzAudioSource();
 
         var qobuzCandidates = const <SonolythAudioSourceMatchObject>[];
         try {
           qobuzCandidates = await qobuz.matches(query);
-        } catch (_) {
-          // Qobuz lookup failed (network) — fall through to YouTube below.
+          AppLogger.diag(
+            "[resolve] '${query.name}' qobuz matches=${qobuzCandidates.length} "
+            "(+${sw.elapsedMilliseconds}ms)",
+          );
+        } catch (e) {
+          AppLogger.diag("[resolve] '${query.name}' qobuz match ERROR: $e");
         }
 
         SonolythAudioSourceMatchObject? chosen;
@@ -96,18 +107,30 @@ class SourcedTrack extends BasicSourcedTrack {
         var rateLimited = false;
         for (final candidate
             in qobuzCandidates.take(_maxQobuzPlaybackAttempts)) {
+          final attemptAt = sw.elapsedMilliseconds;
           try {
             final streams = await qobuz.streams(candidate);
             if (streams.isNotEmpty) {
               chosen = candidate;
               manifest = streams;
+              AppLogger.diag(
+                "[resolve] '${query.name}' qobuz stream OK id=${candidate.id} "
+                "(${sw.elapsedMilliseconds - attemptAt}ms)",
+              );
               break;
             }
+            AppLogger.diag(
+              "[resolve] '${query.name}' qobuz stream empty id=${candidate.id} "
+              "(${sw.elapsedMilliseconds - attemptAt}ms)",
+            );
           } on ZarzRateLimitedException {
             rateLimited = true;
+            AppLogger.diag("[resolve] '${query.name}' qobuz 429 rate-limited");
             break;
-          } catch (_) {
-            // Genuine failure for this Qobuz candidate; try the next one.
+          } catch (e) {
+            AppLogger.diag(
+              "[resolve] '${query.name}' qobuz stream ERROR id=${candidate.id}: $e",
+            );
           }
         }
 
@@ -124,6 +147,9 @@ class SourcedTrack extends BasicSourcedTrack {
                 ),
               );
 
+          AppLogger.diag(
+            "[resolve] '${query.name}' -> QOBUZ flac (total ${sw.elapsedMilliseconds}ms)",
+          );
           return SourcedTrack(
             ref: ref,
             siblings: const [],
@@ -141,6 +167,11 @@ class SourcedTrack extends BasicSourcedTrack {
         // rather than being permanently pinned to a (often wrong) YouTube
         // match.
         if (rateLimited || qobuzCandidates.isNotEmpty) {
+          AppLogger.diag(
+            "[resolve] '${query.name}' -> youtube (qobuz "
+            "${rateLimited ? "rate-limited" : "carried but unplayable"}, "
+            "NOT cached, +${sw.elapsedMilliseconds}ms)",
+          );
           return _fetchViaPlugin(
             query: query,
             ref: ref,
@@ -150,21 +181,32 @@ class SourcedTrack extends BasicSourcedTrack {
         }
         // Qobuz genuinely doesn't carry the track (no candidates) — fall
         // through to the cached YouTube path below.
+        AppLogger.diag(
+          "[resolve] '${query.name}' qobuz has no candidates -> youtube (cached)",
+        );
       }
 
       // YouTube path: Qobuz disabled, or it genuinely doesn't carry this
       // track. Resolve the best YouTube sibling and cache it as a stable
       // fallback.
-      return _fetchViaPlugin(
+      final youtube = await _fetchViaPlugin(
         query: query,
         ref: ref,
         pluginAudioSource: audioSource.audioSource,
         slug: audioSourceConfig.slug,
         cache: true,
       );
+      AppLogger.diag(
+        "[resolve] '${query.name}' -> youtube cached (total ${sw.elapsedMilliseconds}ms)",
+      );
+      return youtube;
     }
     final item = SonolythAudioSourceMatchObject.fromJson(
       jsonDecode(cachedSource.sourceInfo),
+    );
+    final cachedIsQobuz = QobuzAudioSource.ownsMatch(item);
+    AppLogger.diag(
+      "[resolve] '${query.name}' cached (${cachedIsQobuz ? "qobuz" : "youtube"} id=${item.id})",
     );
 
     List<SonolythAudioSourceStreamObject> manifest;
@@ -174,13 +216,18 @@ class SourcedTrack extends BasicSourcedTrack {
       // Qobuz's gateway is rate-limiting. Don't purge the (good) cached match —
       // it resumes once the limit clears. Play via the YouTube plugin right now
       // so the block is never felt, without rewriting the cache.
+      AppLogger.diag(
+        "[resolve] '${query.name}' cached qobuz 429 -> youtube live "
+        "(+${sw.elapsedMilliseconds}ms)",
+      );
       return _fetchViaPlugin(
         query: query,
         ref: ref,
         pluginAudioSource: audioSource.audioSource,
         slug: audioSourceConfig.slug,
       );
-    } catch (_) {
+    } catch (e) {
+      AppLogger.diag("[resolve] '${query.name}' cached resolve ERROR: $e");
       manifest = const [];
     }
     if (manifest.isEmpty) {
@@ -188,6 +235,9 @@ class SourcedTrack extends BasicSourcedTrack {
       // Qobuz URL that won't resolve). Purge it and resolve fresh; otherwise
       // the track stays permanently unplayable — the cached path has no
       // siblings to fall back to.
+      AppLogger.diag(
+        "[resolve] '${query.name}' cached match dead, purge + re-resolve",
+      );
       await (database.delete(database.sourceMatchTable)
             ..where((s) =>
                 s.trackId.equals(query.id) &
@@ -205,7 +255,10 @@ class SourcedTrack extends BasicSourcedTrack {
       source: audioSourceConfig.slug,
     );
 
-    AppLogger.log.i("${query.name}: ${sourcedTrack.url}");
+    AppLogger.diag(
+      "[resolve] '${query.name}' -> cached ${cachedIsQobuz ? "qobuz" : "youtube"} ok "
+      "(total ${sw.elapsedMilliseconds}ms)",
+    );
 
     return sourcedTrack;
   }
