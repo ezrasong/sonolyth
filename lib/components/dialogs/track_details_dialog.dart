@@ -21,7 +21,10 @@ class TrackDetailsDialog extends HookConsumerWidget {
   Widget build(BuildContext context, ref) {
     final theme = Theme.of(context);
     final mediaQuery = MediaQuery.of(context);
-    final sourcedTrack = ref.read(sourcedTrackProvider(track));
+    // watch (not read): the card must update when the track finishes resolving
+    // or its stream URL is refreshed, so the Source/URL rows reflect what's
+    // actually playing instead of a stale/empty snapshot from when it opened.
+    final sourcedTrack = ref.watch(sourcedTrackProvider(track));
 
     final detailsMap = {
       context.l10n.title: track.name,
