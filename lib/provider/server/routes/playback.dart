@@ -192,7 +192,20 @@ class ServerPlaybackRoutes {
       validateStatus: (status) => status! < 400,
     );
 
-    final res = await dio.head(url, options: options);
+    dio_lib.Response res;
+    try {
+      res = await dio.head(url, options: options);
+    } catch (e, stack) {
+      // Stale/expired URL (e.g. a lapsed Qobuz signature): re-mint and retry,
+      // mirroring the GET path, instead of 500ing the HEAD.
+      AppLogger.reportError(e, stack);
+      final sourcedTrack = await ref
+          .read(sourcedTrackProvider(track.query).notifier)
+          .refreshStreamingUrl();
+      url = sourcedTrack.url!;
+      options.headers!["host"] = Uri.parse(url).host;
+      res = await dio.head(url, options: options);
+    }
 
     return res;
   }
@@ -243,6 +256,10 @@ class ServerPlaybackRoutes {
           .refreshStreamingUrl();
 
       url = sourcedTrack.url!;
+      // The refreshed URL may be a different host (a Qobuz re-sign, or a
+      // YouTube fallback if Qobuz is down) — update the Host header so the
+      // retry isn't sent with the previous origin's host.
+      options.headers!["host"] = Uri.parse(url).host;
       res = await dio.get<ResponseBody>(url, options: options);
     }
 

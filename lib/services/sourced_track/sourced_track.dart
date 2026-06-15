@@ -54,6 +54,10 @@ class SourcedTrack extends BasicSourcedTrack {
   static Future<SourcedTrack> fetchFromTrack({
     required SonolythFullTrackObject query,
     required Ref ref,
+    // Set on the single self-retry after purging a dead cached match, so a
+    // match that keeps resolving empty (or a concurrent re-insert of a dead
+    // row) can't drive unbounded recursion.
+    bool retriedAfterPurge = false,
   }) async {
     final audioSource = await ref.read(audioSourcePluginProvider.future);
     final audioSourceConfig = await ref.read(metadataPluginsProvider
@@ -139,13 +143,7 @@ class SourcedTrack extends BasicSourcedTrack {
           // would poison the table with a match that can't actually stream.
           // Siblings (YouTube alternatives) are fetched lazily by the sibling
           // sheet, exactly like the cached path, so this stays Piped-free.
-          await database.into(database.sourceMatchTable).insert(
-                SourceMatchTableCompanion.insert(
-                  trackId: query.id,
-                  sourceInfo: Value(jsonEncode(chosen)),
-                  sourceType: audioSourceConfig.slug,
-                ),
-              );
+          await _cacheMatch(ref, query.id, audioSourceConfig.slug, chosen);
 
           AppLogger.diag(
             "[resolve] '${query.name}' -> QOBUZ flac (total ${sw.elapsedMilliseconds}ms)",
@@ -236,14 +234,30 @@ class SourcedTrack extends BasicSourcedTrack {
       // the track stays permanently unplayable — the cached path has no
       // siblings to fall back to.
       AppLogger.diag(
-        "[resolve] '${query.name}' cached match dead, purge + re-resolve",
+        "[resolve] '${query.name}' cached match dead, purge + re-resolve"
+        "${retriedAfterPurge ? " (already retried -> youtube)" : ""}",
       );
       await (database.delete(database.sourceMatchTable)
             ..where((s) =>
                 s.trackId.equals(query.id) &
                 s.sourceType.equals(audioSourceConfig.slug)))
           .go();
-      return fetchFromTrack(query: query, ref: ref);
+      // Already purged + retried once this call: don't recurse again (guards
+      // against a match that perpetually resolves empty). Resolve via YouTube.
+      if (retriedAfterPurge) {
+        return _fetchViaPlugin(
+          query: query,
+          ref: ref,
+          pluginAudioSource: audioSource.audioSource,
+          slug: audioSourceConfig.slug,
+          cache: true,
+        );
+      }
+      return fetchFromTrack(
+        query: query,
+        ref: ref,
+        retriedAfterPurge: true,
+      );
     }
 
     final sourcedTrack = SourcedTrack(
@@ -380,6 +394,31 @@ class SourcedTrack extends BasicSourcedTrack {
     return pluginSiblings.toSet().toList();
   }
 
+  /// Persists [match] as the cached source for ([trackId], [slug]), replacing
+  /// any existing rows first. `sourceMatchTable` has no unique constraint on
+  /// (trackId, sourceType), so a plain insert would append; concurrent cold
+  /// resolves (e.g. prefetch + the server reading a non-identical track key)
+  /// or repeated purge/re-resolve cycles would then grow the table unboundedly.
+  /// Replacing keeps it at one row per (track, source).
+  static Future<void> _cacheMatch(
+    Ref ref,
+    String trackId,
+    String slug,
+    SonolythAudioSourceMatchObject match,
+  ) async {
+    final database = ref.read(databaseProvider);
+    await (database.delete(database.sourceMatchTable)
+          ..where((s) => s.trackId.equals(trackId) & s.sourceType.equals(slug)))
+        .go();
+    await database.into(database.sourceMatchTable).insert(
+          SourceMatchTableCompanion.insert(
+            trackId: trackId,
+            sourceInfo: Value(jsonEncode(match)),
+            sourceType: slug,
+          ),
+        );
+  }
+
   /// Routes stream resolution for [match] to the source that produced it: the
   /// native Qobuz source for Qobuz-owned matches, otherwise the active plugin
   /// audio source (YouTube).
@@ -419,14 +458,7 @@ class SourcedTrack extends BasicSourcedTrack {
         final streams = await pluginAudioSource.streams(candidate);
         if (streams.isNotEmpty) {
           if (cache) {
-            final database = ref.read(databaseProvider);
-            await database.into(database.sourceMatchTable).insert(
-                  SourceMatchTableCompanion.insert(
-                    trackId: query.id,
-                    sourceInfo: Value(jsonEncode(candidate)),
-                    sourceType: slug,
-                  ),
-                );
+            await _cacheMatch(ref, query.id, slug, candidate);
           }
           return SourcedTrack(
             ref: ref,
@@ -551,7 +583,27 @@ class SourcedTrack extends BasicSourcedTrack {
     AppLogger.log.d(stringBuffer.toString());
 
     if (validStreams.isEmpty) {
-      validStreams = await _resolveStreams(audioSource.audioSource, info);
+      // Re-mint the stream. For a Qobuz match this re-signs a fresh FLAC URL;
+      // but if the gateway is down/rate-limited it can throw or yield nothing.
+      // Degrade to the YouTube plugin in that case instead of returning an
+      // empty manifest — an empty manifest makes `url` null and 500s the proxy
+      // stream request (no siblings to fall back on for a Qobuz hit).
+      try {
+        validStreams = await _resolveStreams(audioSource.audioSource, info);
+      } catch (_) {
+        validStreams = const [];
+      }
+      if (validStreams.isEmpty) {
+        AppLogger.diag(
+          "[resolve] '${query.name}' refresh failed (${QobuzAudioSource.ownsMatch(info) ? "qobuz" : "plugin"}) -> youtube",
+        );
+        return _fetchViaPlugin(
+          query: query,
+          ref: ref,
+          pluginAudioSource: audioSource.audioSource,
+          slug: audioSourceConfig.slug,
+        );
+      }
     }
 
     final sourcedTrack = SourcedTrack(

@@ -15,8 +15,11 @@ class ZarzRateLimitedException implements Exception {
 ///
 /// Bulk playlist downloads burn 2-3 gateway calls per track; without pacing,
 /// long runs (hundreds of tracks) trip the limiter and every subsequent track
-/// fails. All requests are therefore serialized with a minimum gap, and 429
-/// responses are retried with backoff (honoring `Retry-After` when present).
+/// fails. The default (download) lane therefore serializes requests with a
+/// minimum gap. The interactive playback lane instead caps concurrency
+/// ([_maxConcurrent] > 1) with no forced gap, so prefetching several upcoming
+/// tracks overlaps. Both lanes retry 429s with backoff (honoring `Retry-After`
+/// when present; the playback lane caps its own backoff via [_maxRetryBackoff]).
 class ZarzClient {
   static const userAgent = "SpotiFLAC-Mobile/4.5.6";
 
@@ -104,17 +107,28 @@ class ZarzClient {
   }
 
   Future<void> _acquire() async {
-    while (_inFlight >= _maxConcurrent) {
-      final completer = Completer<void>();
-      _waiters.add(completer);
-      await completer.future;
+    if (_inFlight < _maxConcurrent) {
+      _inFlight++;
+      return;
     }
-    _inFlight++;
+    // Lane is full: queue and wait. Being woken means the permit has been
+    // handed directly to us (see _release) — no re-check, so a newly arriving
+    // caller can't barge ahead of an already-queued waiter (which would let
+    // speculative prefetch starve the audible active-track resolve). FIFO.
+    final completer = Completer<void>();
+    _waiters.add(completer);
+    await completer.future;
   }
 
   void _release() {
-    _inFlight--;
-    if (_waiters.isNotEmpty) _waiters.removeAt(0).complete();
+    // Hand the permit straight to the next waiter (keeping _inFlight unchanged)
+    // rather than decrementing and racing it: that transfer is atomic w.r.t.
+    // other _acquire calls, so no permit is lost and no waiter is stranded.
+    if (_waiters.isNotEmpty) {
+      _waiters.removeAt(0).complete();
+    } else {
+      _inFlight--;
+    }
   }
 
   Future<T> _withRetry<T>(Future<T> Function() request) async {
