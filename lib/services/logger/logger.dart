@@ -28,12 +28,12 @@ class AppLogger {
   static late final Logger log;
   static late final File logFile;
 
-  /// Gates [diag] file writes. A deliberate dev instrument: source/playback
+  /// Gates [diag] writes. A deliberate dev instrument: source/playback
   /// resolution is otherwise silent (`catch (_)`), so failures and timings
-  /// never reach `.spotube_logs`. Leave on while tuning the Qobuz/skip path;
-  /// flip off (or gate on verbose) before a distribution release to avoid
-  /// unbounded log growth.
-  static bool diagnostics = true;
+  /// never reach `.spotube_logs`. OFF for distribution builds (avoids log
+  /// growth + the per-line overhead); flip to `true` and rebuild to re-enable
+  /// the `[resolve]`/`[prefetch]` tracing when tuning the Qobuz/skip path.
+  static bool diagnostics = false;
 
   /// Serializes diag appends so parallel prefetch resolves don't interleave
   /// half-lines in the file.
