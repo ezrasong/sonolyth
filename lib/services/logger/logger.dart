@@ -42,6 +42,12 @@ class AppLogger {
   static initialize(bool verbose) {
     log = Logger(
       level: kDebugMode || (verbose && kReleaseMode) ? Level.all : Level.info,
+      // methodCount: 0 — don't walk/format a stack trace on every info/debug
+      // line. The default PrettyPrinter captures 2 stack frames per call, which
+      // is a real main-isolate jank source when logging frequently (the
+      // per-track resolve/prefetch and per-stream-request lines). Errors still
+      // keep a stack (errorMethodCount default).
+      printer: PrettyPrinter(methodCount: 0),
     );
   }
 
@@ -128,8 +134,12 @@ class AppLogger {
   /// device still surfaces what the resolve path decided. Fire-and-forget:
   /// never awaits the file I/O, so it can't slow a resolve.
   static void diag(String message) {
-    log.i(message);
     if (!diagnostics) return;
+    // Deliberately NOT routed through `log` (PrettyPrinter) — that would add
+    // synchronous main-isolate formatting on the hot resolve/prefetch path.
+    // Console only in debug (cheap); the file append is async, off the UI
+    // thread, and is what we read back via the logs page / adb.
+    if (kDebugMode) debugPrint("[diag] $message");
     final line = "[${DateTime.now()}] $message\n";
     _diagTail = _diagTail.then((_) async {
       try {

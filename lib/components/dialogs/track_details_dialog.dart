@@ -8,6 +8,7 @@ import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/extensions/duration.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/server/sourced_track_provider.dart';
+import 'package:sonolyth/services/sourced_track/qobuz_audio_source.dart';
 
 class TrackDetailsDialog extends HookConsumerWidget {
   final SonolythFullTrackObject track;
@@ -44,21 +45,42 @@ class TrackDetailsDialog extends HookConsumerWidget {
     };
 
     final sourceInfo = sourcedTrack.asData?.value.info;
+    final streamUrl = sourcedTrack.asData?.value.url;
+    final isQobuz =
+        sourceInfo != null && QobuzAudioSource.ownsMatch(sourceInfo);
 
     final ytTracksDetailsMap = sourceInfo == null
         ? {}
         : {
-            context.l10n.youtube: Hyperlink(
-              "https://piped.video/watch?v=${sourceInfo.id}",
-              "https://piped.video/watch?v=${sourceInfo.id}",
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            // Show the REAL source. A Qobuz-served track plays lossless FLAC
+            // even though SourcedTrack.source carries the plugin slug for cache
+            // namespacing — so derive the label from the match, not the slug.
+            "Source": Text(
+              isQobuz ? "Qobuz · FLAC Lossless" : "YouTube",
+              style: theme.typography.normal,
             ),
+            // Only YouTube/plugin tracks are actually on Piped; a Qobuz track
+            // links to its Qobuz page instead of a bogus piped.video URL built
+            // from a numeric Qobuz id.
+            if (isQobuz)
+              "Qobuz": Hyperlink(
+                sourceInfo.externalUri,
+                sourceInfo.externalUri,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              )
+            else
+              context.l10n.youtube: Hyperlink(
+                "https://piped.video/watch?v=${sourceInfo.id}",
+                "https://piped.video/watch?v=${sourceInfo.id}",
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             context.l10n.channel: Text(sourceInfo.artists.join(", ")),
-            if (sourcedTrack.asData?.value.url != null)
+            if (streamUrl != null)
               context.l10n.streamUrl: Hyperlink(
-                sourcedTrack.asData!.value.url ?? "",
-                sourcedTrack.asData!.value.url ?? "",
+                streamUrl,
+                streamUrl,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
