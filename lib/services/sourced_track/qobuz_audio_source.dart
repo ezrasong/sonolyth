@@ -58,15 +58,30 @@ class QobuzAudioSource {
   ) async {
     final results = await _provider.searchTracks(track);
 
-    // Score every candidate against the query and drop weak matches. Qobuz's
-    // ISRC search is exact (scores ~1.0), but when it misses and falls back to
-    // a text search, a loose result could otherwise be played as the "wrong
-    // song" — the very thing Qobuz is here to avoid. Same 0.5 threshold the
-    // download path uses.
+    // ISRC is an authoritative recording identifier. If Qobuz tags a candidate
+    // with the EXACT ISRC we asked for, it is the same recording — accept it
+    // with top priority even when the title/artist text differs (romanized
+    // titles, "Various Artists"/composer tagging, remaster suffixes). This is
+    // what unlocks lossless for tracks the fuzzy score would otherwise drop.
+    //
+    // Everything else came from the text-search fallback (ISRC missed); there a
+    // loose result could be the "wrong song" — the very thing Qobuz is here to
+    // avoid — so it still has to clear the 0.5 score threshold the download
+    // path uses.
+    final expectedIsrc = track.isrc.trim().toUpperCase();
     final scored = <(SonolythAudioSourceMatchObject, double)>[];
     for (final candidate in results) {
       final match = _toMatch(candidate);
       if (match == null) continue;
+
+      final candidateIsrc =
+          candidate["isrc"]?.toString().trim().toUpperCase() ?? "";
+      if (expectedIsrc.isNotEmpty && candidateIsrc == expectedIsrc) {
+        // Score 2.0 sorts it ahead of any fuzzy match (max ~1.05).
+        scored.add((match, 2.0));
+        continue;
+      }
+
       final score = TrackMatching.score(
         expectedTitle: track.name,
         candidateTitle: match.title,
