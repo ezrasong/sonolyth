@@ -14,16 +14,25 @@ class DeezerProvider extends SpotiFlacProvider {
   final ZarzClient _client;
   final Dio _deezerDio;
 
+  // Shared across all DeezerProvider instances: the download manager can
+  // rebuild the provider list per task, and a fresh Dio per instance would leak
+  // its connection pool (HttpClient) for the app's lifetime. `static final` is
+  // lazily initialized, so it costs nothing until Deezer is actually used.
+  static final Dio _sharedDeezerDio = Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      headers: {
+        "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+      },
+    ),
+  );
+
   DeezerProvider({ZarzClient? client, Dio? deezerDio})
       : _client = client ?? zarzClient,
-        _deezerDio = deezerDio ?? Dio() {
-    _deezerDio.options
-      ..connectTimeout = const Duration(seconds: 15)
-      ..receiveTimeout = const Duration(seconds: 15)
-      ..headers["User-Agent"] =
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-              "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
-  }
+        _deezerDio = deezerDio ?? _sharedDeezerDio;
 
   @override
   String get id => "deezer";

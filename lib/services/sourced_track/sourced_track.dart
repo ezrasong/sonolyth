@@ -407,16 +407,21 @@ class SourcedTrack extends BasicSourcedTrack {
     SonolythAudioSourceMatchObject match,
   ) async {
     final database = ref.read(databaseProvider);
-    await (database.delete(database.sourceMatchTable)
-          ..where((s) => s.trackId.equals(trackId) & s.sourceType.equals(slug)))
-        .go();
-    await database.into(database.sourceMatchTable).insert(
-          SourceMatchTableCompanion.insert(
-            trackId: trackId,
-            sourceInfo: Value(jsonEncode(match)),
-            sourceType: slug,
-          ),
-        );
+    // One transaction so concurrent cold resolves for the same (track, source)
+    // can't interleave their delete+insert into duplicate rows.
+    await database.transaction(() async {
+      await (database.delete(database.sourceMatchTable)
+            ..where(
+                (s) => s.trackId.equals(trackId) & s.sourceType.equals(slug)))
+          .go();
+      await database.into(database.sourceMatchTable).insert(
+            SourceMatchTableCompanion.insert(
+              trackId: trackId,
+              sourceInfo: Value(jsonEncode(match)),
+              sourceType: slug,
+            ),
+          );
+    });
   }
 
   /// Routes stream resolution for [match] to the source that produced it: the
@@ -518,26 +523,39 @@ class SourcedTrack extends BasicSourcedTrack {
 
     final manifest = await _resolveStreams(audioSource.audioSource, newSourceInfo);
 
+    // A sibling that resolves to no playable streams (gateway blip, expired or
+    // rate-limited source) must NOT overwrite the cached match — doing so would
+    // pin an unplayable entry. Abort the swap and keep the current source.
+    if (manifest.isEmpty) {
+      return null;
+    }
+
     final database = ref.read(databaseProvider);
 
-    // Delete the old Entry
-    await (database.sourceMatchTable.delete()
-          ..where(
-            (table) =>
-                table.trackId.equals(query.id) &
-                table.sourceType.equals(audioSourceConfig.slug),
-          ))
-        .go();
+    // Delete-then-insert in a single transaction so a concurrent resolve for
+    // the same (track, source) can't interleave and leave duplicate rows
+    // (sourceMatchTable has no unique constraint — see _cacheMatch).
+    await database.transaction(() async {
+      await (database.sourceMatchTable.delete()
+            ..where(
+              (table) =>
+                  table.trackId.equals(query.id) &
+                  table.sourceType.equals(audioSourceConfig.slug),
+            ))
+          .go();
 
-    await database.into(database.sourceMatchTable).insert(
-          SourceMatchTableCompanion.insert(
-            trackId: query.id,
-            sourceInfo: Value(jsonEncode(sibling)),
-            sourceType: audioSourceConfig.slug,
-            createdAt: Value(DateTime.now()),
-          ),
-          mode: InsertMode.replace,
-        );
+      await database.into(database.sourceMatchTable).insert(
+            SourceMatchTableCompanion.insert(
+              trackId: query.id,
+              // Cache the source actually played (newSourceInfo), not the raw
+              // argument — for a known sibling these can be distinct objects.
+              sourceInfo: Value(jsonEncode(newSourceInfo)),
+              sourceType: audioSourceConfig.slug,
+              createdAt: Value(DateTime.now()),
+            ),
+            mode: InsertMode.replace,
+          );
+    });
 
     return SourcedTrack(
       ref: ref,
@@ -550,7 +568,9 @@ class SourcedTrack extends BasicSourcedTrack {
   }
 
   Future<SourcedTrack?> swapWithSiblingOfIndex(int index) {
-    return swapWithSibling(siblings[index]);
+    final sibling = siblings.elementAtOrNull(index);
+    if (sibling == null) return Future.value(null);
+    return swapWithSibling(sibling);
   }
 
   Future<SourcedTrack> refreshStream() async {
@@ -567,8 +587,13 @@ class SourcedTrack extends BasicSourcedTrack {
     for (final source in sources) {
       final res = await globalDio.head(
         source.url,
-        options:
-            Options(validateStatus: (status) => status != null && status < 500),
+        options: Options(
+          // Bound the probe: a dead/hung URL must degrade to YouTube quickly,
+          // not block the (awaited) refresh for the full default timeout.
+          sendTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 5),
+          validateStatus: (status) => status != null && status < 500,
+        ),
       );
 
       stringBuffer.writeln(

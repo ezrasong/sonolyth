@@ -52,13 +52,26 @@ class RootAppUpdateDialog extends HookWidget {
           if (await apkFile.exists()) {
             await apkFile.delete();
           }
+          var expectedBytes = 0;
           await globalDio.download(
             apkUrl,
             apkPath,
             onReceiveProgress: (received, total) {
-              if (total > 0) progress.value = received / total;
+              if (total > 0) {
+                expectedBytes = total;
+                progress.value = received / total;
+              }
             },
           );
+          // Don't hand a truncated APK to the installer (and don't cache it for
+          // reuse on the next tap): a short read here means an interrupted or
+          // proxy-mangled download. Require the full advertised length.
+          final downloadedBytes = await apkFile.length();
+          if (downloadedBytes == 0 ||
+              (expectedBytes > 0 && downloadedBytes < expectedBytes)) {
+            await apkFile.delete().catchError((_) => apkFile);
+            throw const FormatException("Incomplete APK download");
+          }
           downloadedPath.value = apkPath;
           progress.value = null;
         }

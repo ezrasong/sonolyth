@@ -82,13 +82,17 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
       // under them.
       if (state.tracks.isNotEmpty) return;
 
+      // A corrupt/legacy row could carry an index past the restored queue;
+      // openPlaylist asserts initialIndex <= length-1, so clamp it.
+      final safeIndex = currentIndex.clamp(0, tracks.length - 1);
+
       state = state.copyWith(
         tracks: tracks,
-        currentIndex: currentIndex,
+        currentIndex: safeIndex,
       );
       await audioPlayer.openPlaylist(
         tracks.asMediaList(),
-        initialIndex: currentIndex,
+        initialIndex: safeIndex,
         autoPlay: false,
       );
 

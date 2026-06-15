@@ -133,6 +133,17 @@ class NativeFlacDownloader {
       );
     }
 
+    if (resolution.encryption == SpotiFlacEncryption.deezerBlowfish &&
+        (resolution.decryptionSeed == null ||
+            resolution.decryptionSeed!.isEmpty)) {
+      // Without the seed we'd "decrypt" every third chunk with a key derived
+      // from md5("") and silently write a corrupt file. Fail loudly instead.
+      throw const SpotiFlacDownloadException(
+        "Encrypted Deezer source is missing its decryption seed",
+        DownloadErrorCode.noSource,
+      );
+    }
+
     final directory = Directory(downloadDirectory);
     if (!await directory.exists()) {
       await directory.create(recursive: true);
@@ -157,14 +168,16 @@ class NativeFlacDownloader {
     try {
       // Stream straight to disk; buffering whole FLACs in memory adds up
       // fast on mobile during long playlist runs.
+      var expectedBytes = 0;
       await _dio.download(
         resolution.url,
         partPath,
         cancelToken: cancelToken,
         onReceiveProgress: (received, total) {
-          if (total > 0 && onProgress != null) {
+          if (total > 0) {
+            expectedBytes = total;
             // Reserve the last 10% for decrypt + tagging.
-            onProgress((received / total) * 0.9);
+            onProgress?.call((received / total) * 0.9);
           }
         },
       );
@@ -174,6 +187,14 @@ class NativeFlacDownloader {
       if (fileLength == 0) {
         throw const SpotiFlacDownloadException(
           "Empty download stream",
+          DownloadErrorCode.emptyStream,
+        );
+      }
+      // A CDN that closes early with a 2xx leaves a truncated file that would
+      // otherwise be decrypted/tagged and registered as a complete download.
+      if (expectedBytes > 0 && fileLength < expectedBytes) {
+        throw const SpotiFlacDownloadException(
+          "Incomplete download stream",
           DownloadErrorCode.emptyStream,
         );
       }
@@ -192,6 +213,13 @@ class NativeFlacDownloader {
           await File(outputPath).delete();
         }
         await partFile.rename(outputPath);
+      }
+
+      // Lossless output must start with the FLAC stream marker. A missing
+      // marker means we wrote ciphertext (mislabeled encryption) or a non-audio
+      // error body — fail so it isn't registered as a complete download.
+      if (resolution.fileExtension.toLowerCase() == "flac") {
+        await _verifyFlacMagic(outputPath);
       }
     } catch (_) {
       // Never leave half-written files behind — neither the .part download
@@ -214,6 +242,29 @@ class NativeFlacDownloader {
     onProgress?.call(1.0);
 
     return outputPath;
+  }
+
+  /// Confirms [filePath] begins with the `fLaC` stream marker. Catches the
+  /// "corrupt file silently marked complete" class: ciphertext written as a
+  /// .flac (mislabeled encryption) or an HTML/JSON error body saved as audio.
+  Future<void> _verifyFlacMagic(String filePath) async {
+    final raf = await File(filePath).open();
+    try {
+      final header = await raf.read(4);
+      final isFlac = header.length == 4 &&
+          header[0] == 0x66 && // 'f'
+          header[1] == 0x4C && // 'L'
+          header[2] == 0x61 && // 'a'
+          header[3] == 0x43; // 'C'
+      if (!isFlac) {
+        throw const SpotiFlacDownloadException(
+          "Decrypted output is not a valid FLAC file",
+          DownloadErrorCode.unknown,
+        );
+      }
+    } finally {
+      await raf.close();
+    }
   }
 
   Future<void> _writeTags(

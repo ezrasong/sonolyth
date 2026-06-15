@@ -23,10 +23,23 @@ import 'package:sonolyth/services/logger/logger.dart';
 
 class AudioPlayerStreamListeners {
   final Ref ref;
-  late final AudioServices notificationService;
+  // Nullable + assigned asynchronously: AudioServices.create() resolves after
+  // the constructor returns, so a stream emission that lands in that gap must
+  // null-check rather than touch an uninitialized `late final` (which throws).
+  AudioServices? notificationService;
   AudioPlayerStreamListeners(this.ref) {
     AudioServices.create(ref, ref.read(audioPlayerProvider.notifier)).then(
-      (value) => notificationService = value,
+      (value) {
+        notificationService = value;
+        // A playlist emission may have arrived before creation finished; push
+        // the current track now so the notification isn't left blank.
+        final active = ref.read(audioPlayerProvider).activeTrack;
+        if (active != null) {
+          try {
+            value.addTrack(active);
+          } catch (_) {}
+        }
+      },
     );
 
     // The shuffle->smart transition doesn't change the player's shuffle flag,
@@ -34,7 +47,7 @@ class AudioPlayerStreamListeners {
     // swap the shuffle button icon.
     ref.listen(smartShuffleProvider, (previous, next) {
       try {
-        notificationService.mobile?.refreshPlaybackState();
+        notificationService?.mobile?.refreshPlaybackState();
       } catch (_) {
         // notificationService may not be initialized yet.
       }
@@ -79,7 +92,7 @@ class AudioPlayerStreamListeners {
         if (index < 0 || index >= mpvPlaylist.medias.length) return;
         final activeTrack = SonolythMedia.media(mpvPlaylist.medias[index]).track;
 
-        notificationService.addTrack(activeTrack);
+        notificationService?.addTrack(activeTrack);
         discord.updatePresence(activeTrack);
       } catch (e, stack) {
         AppLogger.reportError(e, stack);
@@ -296,7 +309,11 @@ class AudioPlayerStreamListeners {
   }
 
   StreamSubscription subscribeToPlayerError() {
-    return audioPlayer.errorStream.listen((event) {});
+    return audioPlayer.errorStream.listen((event) {
+      // Don't silently drop playback errors (stream-open / codec failures);
+      // surface them to the logs for diagnosis.
+      AppLogger.log.e("Audio player error: $event");
+    });
   }
 }
 

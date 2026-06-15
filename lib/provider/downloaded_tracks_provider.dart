@@ -94,16 +94,16 @@ class DownloadedTracksNotifier extends Notifier<Map<String, String>> {
     _persist();
   }
 
-  /// Path of the downloaded file for [trackId], or null when not downloaded
-  /// (or the file has been deleted since, in which case the stale entry is
-  /// dropped).
+  /// Path of the downloaded file for [trackId], or null when not downloaded —
+  /// or when the file isn't present right now. A missing file does NOT drop the
+  /// registry entry: removable/scoped storage can be transiently unavailable,
+  /// and silently forgetting a valid download (then re-streaming it forever) is
+  /// worse than briefly returning null. Media construction re-checks existence
+  /// before using the path, so a stale entry can't cause broken local playback.
   String? pathFor(String? trackId) {
     final filePath = state[trackId];
     if (filePath == null) return null;
-    if (!File(filePath).existsSync()) {
-      remove(trackId!);
-      return null;
-    }
+    if (!File(filePath).existsSync()) return null;
     return filePath;
   }
 

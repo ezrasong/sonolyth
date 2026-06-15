@@ -278,10 +278,14 @@ class ServerPlaybackRoutes {
       );
     }
 
+    // Don't dump the full upstream header map — it can carry Set-Cookie / CDN
+    // auth tokens and correlates with signed stream URLs, and release logs
+    // persist to .spotube_logs. A redacted summary is enough to debug.
     AppLogger.log.i(
       "Response for track: ${track.query.name}\n"
       "Status Code: ${res.statusCode}\n"
-      "Headers: ${res.headers.map}",
+      "Content-Type: ${res.headers.value("content-type")}\n"
+      "Content-Length: ${res.headers.value("content-length")}",
     );
 
     if (!userPreferences.cacheMusic) {

@@ -251,9 +251,12 @@ abstract class ServiceUtils {
         ),
       );
 
-      final buildNum = value.data["workflow_runs"][0]["run_number"] as int;
+      final runs = value.data["workflow_runs"] as List?;
+      if (runs == null || runs.isEmpty) return;
+      final buildNum = runs[0]["run_number"] as int;
 
-      if (buildNum <= int.parse(packageInfo.buildNumber) || !context.mounted) {
+      if (buildNum <= (int.tryParse(packageInfo.buildNumber) ?? 0) ||
+          !context.mounted) {
         return;
       }
 
@@ -271,7 +274,10 @@ abstract class ServiceUtils {
           "https://api.github.com/repos/ezrasong/sonolyth/releases/latest",
         ),
       );
-      final tagName = (value.data["tag_name"] as String).replaceAll("v", "");
+      // Strip only a leading "v" (v5.2.36 -> 5.2.36); replaceAll("v", "")
+      // would mangle any tag with an embedded "v".
+      final rawTag = value.data["tag_name"] as String;
+      final tagName = rawTag.startsWith("v") ? rawTag.substring(1) : rawTag;
       final currentVersion = packageInfo.version == "Unknown"
           ? null
           : Version.parse(packageInfo.version);

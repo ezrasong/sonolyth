@@ -23,7 +23,6 @@ import 'package:sonolyth/modules/root/sonolyth_navigation_bar.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/metadata_plugin/audio_source/quality_label.dart';
 import 'package:sonolyth/services/audio_player/audio_player.dart';
-import 'package:sonolyth/provider/server/active_track_sources.dart';
 import 'package:sonolyth/provider/volume_provider.dart';
 
 class PlayerView extends HookConsumerWidget {
@@ -38,10 +37,8 @@ class PlayerView extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final theme = Theme.of(context);
-    final sourcedCurrentTrack = ref.watch(activeTrackSourcesProvider);
     final currentActiveTrack =
         ref.watch(audioPlayerProvider.select((s) => s.activeTrack));
-    final currentActiveTrackSource = sourcedCurrentTrack.asData?.value?.source;
     final isLocalTrack = currentActiveTrack is SonolythLocalTrackObject;
     final mediaQuery = MediaQuery.sizeOf(context);
     final qualityLabel = ref.watch(audioSourceQualityLabelProvider);
@@ -58,10 +55,6 @@ class PlayerView extends HookConsumerWidget {
     ref.listen(navigationPanelHeight, (_, height) {
       shouldHide.value = height.ceil() == 50;
     });
-
-    if (shouldHide.value) {
-      return const SizedBox();
-    }
 
     useEffect(() {
       if (mediaQuery.lgAndUp) {
@@ -90,6 +83,12 @@ class PlayerView extends HookConsumerWidget {
         }
       };
     }, [panelController.isAttached && panelController.isPanelOpen]);
+
+    // All hooks above must run unconditionally on every build; only after them
+    // is it safe to short-circuit the widget tree (Rules of Hooks).
+    if (shouldHide.value) {
+      return const SizedBox();
+    }
 
     return AppPopScope(
       canPop: false,
@@ -127,18 +126,22 @@ class PlayerView extends HookConsumerWidget {
                       child: IconButton.ghost(
                         size: const ButtonSize(1.2),
                         icon: const Icon(SonolythIcons.info),
-                        onPressed: currentActiveTrackSource == null
-                            ? null
-                            : () {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return TrackDetailsDialog(
-                                        track: currentActiveTrack
-                                            as SonolythFullTrackObject,
-                                      );
-                                    });
-                              },
+                        // Gate AND build from the same value: a fast skip can
+                        // leave the async source resolved for the previous
+                        // track while activeTrack has already advanced (or gone
+                        // null), which made the old `as` cast crash on tap.
+                        onPressed:
+                            currentActiveTrack is SonolythFullTrackObject
+                                ? () {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return TrackDetailsDialog(
+                                            track: currentActiveTrack,
+                                          );
+                                        });
+                                  }
+                                : null,
                       ),
                     )
                 ],
@@ -261,11 +264,13 @@ class PlayerView extends HookConsumerWidget {
                               panelController.close();
                               context.router.navigateNamed(route);
                             },
-                            onOverflowArtistClick: () => context.navigateTo(
-                              TrackRoute(
-                                trackId: currentActiveTrack!.id,
-                              ),
-                            ),
+                            onOverflowArtistClick: () {
+                              final track = currentActiveTrack;
+                              if (track == null) return;
+                              context.navigateTo(
+                                TrackRoute(trackId: track.id),
+                              );
+                            },
                           ),
                       ],
                     ),

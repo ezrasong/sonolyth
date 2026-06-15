@@ -46,7 +46,16 @@ class ServerConnectRoutes {
   Stream<String> get connectClientStream =>
       _connectClientStreamController.stream;
 
+  // Hosts (IP only — NOT host:port, whose port changes on every TCP
+  // connection) that the user accepted via the Connect prompt. Reused by the
+  // server pipeline to authorize each client's /stream and /playback requests.
   final List<String> _allowedConnections = [];
+
+  /// Whether [host] has completed the interactive Connect handshake. The
+  /// server's auth middleware additionally allows loopback (the app's own
+  /// player); this covers accepted LAN clients.
+  bool isHostAllowed(String? host) =>
+      host != null && _allowedConnections.contains(host);
 
   FutureOr<Response> websocket(Request req) {
     return webSocketHandler(
@@ -56,41 +65,52 @@ class ServerConnectRoutes {
       ) async {
         final context =
             (req.context["shelf.io.connection_info"] as HttpConnectionInfo?);
-        final origin = "${context?.remoteAddress.host}:${context?.remotePort}";
-        _connectClientStreamController.add(origin);
+        final remoteAddress = context?.remoteAddress;
+        final host = remoteAddress?.host ?? "";
+        final isLoopback = remoteAddress?.isLoopback ?? false;
+        _connectClientStreamController.add(host);
 
-        // Confirm whether user allows to connect
-        if (rootNavigatorKey.currentContext?.mounted == true &&
-            _allowedConnections.contains(origin) == false) {
-          final confirmed = await showDialog<bool>(
-                context: rootNavigatorKey.currentContext!,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text(context.l10n.connect),
-                    content: Text(
-                      context.l10n.connect_request(origin),
-                    ),
-                    actions: [
-                      Button.secondary(
-                        onPressed: () {
-                          Navigator.of(context).pop(false);
-                        },
-                        child: Text(context.l10n.decline),
-                      ),
-                      Button.primary(
-                        onPressed: () {
-                          Navigator.of(context).pop(true);
-                        },
-                        child: Text(context.l10n.accept),
-                      ),
-                    ],
-                  );
-                },
-              ) ??
-              false;
+        // Loopback is the app talking to its own playback server — never gate
+        // it. Every other (LAN) client must be explicitly accepted, and the
+        // accepted host is remembered so its subsequent /stream and /playback
+        // HTTP requests (gated by the same allow-list in the server pipeline)
+        // are authorized too.
+        if (!isLoopback && !_allowedConnections.contains(host)) {
+          // Fail CLOSED when there's no UI to prompt (app backgrounded or a
+          // headless audio-service boot): an un-promptable connection must be
+          // denied, not silently accepted.
+          final canPrompt = rootNavigatorKey.currentContext?.mounted == true;
+          final confirmed = canPrompt
+              ? await showDialog<bool>(
+                    context: rootNavigatorKey.currentContext!,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text(context.l10n.connect),
+                        content: Text(
+                          context.l10n.connect_request(host),
+                        ),
+                        actions: [
+                          Button.secondary(
+                            onPressed: () {
+                              Navigator.of(context).pop(false);
+                            },
+                            child: Text(context.l10n.decline),
+                          ),
+                          Button.primary(
+                            onPressed: () {
+                              Navigator.of(context).pop(true);
+                            },
+                            child: Text(context.l10n.accept),
+                          ),
+                        ],
+                      );
+                    },
+                  ) ??
+                  false
+              : false;
 
           if (confirmed) {
-            _allowedConnections.add(origin);
+            _allowedConnections.add(host);
           } else {
             channel.sink.addEvent(
               WebSocketErrorEvent("Connection denied"),
