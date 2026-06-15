@@ -216,10 +216,20 @@ class PlayerControls extends HookConsumerWidget {
                       size: buttonSize,
                       shape: ButtonShape.circle,
                       icon: isFetchingActiveTrack
-                          ? const SizedBox(
+                          ? SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(),
+                              child: CircularProgressIndicator(
+                                // Match the play/pause icon's on-primary color.
+                                // The default (theme primary) draws the spinner
+                                // primary-on-primary = invisible, so the button
+                                // looks like an empty colored circle while a
+                                // track resolves (the user's "just the color,
+                                // no play/pause").
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primaryForeground,
+                              ),
                             )
                           : Icon(
                               playing ? SonolythIcons.pause : SonolythIcons.play,

@@ -183,11 +183,15 @@ class PlayerOverlayCollapsedSection extends HookConsumerWidget {
                                           builder: (context, ref, _) {
                                             return IconButton.ghost(
                                               icon: isFetchingActiveTrack
-                                                  ? const SizedBox(
+                                                  ? SizedBox(
                                                       height: 20,
                                                       width: 20,
                                                       child:
-                                                          CircularProgressIndicator(),
+                                                          CircularProgressIndicator(
+                                                        color: context.theme
+                                                            .colorScheme
+                                                            .foreground,
+                                                      ),
                                                     )
                                                   : Icon(
                                                       playing
