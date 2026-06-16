@@ -195,6 +195,17 @@ abstract class ServiceUtils {
     return DateTime.parse(album.releaseDate);
   }
 
+  /// The collection-relative "added at" timestamp for sorting. Only full
+  /// tracks carry it; missing/unparseable values collapse to the epoch so they
+  /// group together rather than throwing.
+  static DateTime _addedAt(SonolythTrackObject track) {
+    final raw = track is SonolythFullTrackObject ? track.addedAt : null;
+    if (raw == null || raw.isEmpty) {
+      return DateTime.fromMillisecondsSinceEpoch(0);
+    }
+    return DateTime.tryParse(raw) ?? DateTime.fromMillisecondsSinceEpoch(0);
+  }
+
   static List<T> sortTracks<T extends SonolythTrackObject>(
       List<T> tracks, SortBy sortBy) {
     if (sortBy == SortBy.none) return tracks;
@@ -205,15 +216,13 @@ abstract class ServiceUtils {
             return a.name.compareTo(b.name);
           case SortBy.descending:
             return b.name.compareTo(a.name);
-          // TODO: We'll figure this one out later :')
-          // case SortBy.newest:
-          //   final aDate = parseSpotifyAlbumDate(a.album);
-          //   final bDate = parseSpotifyAlbumDate(b.album);
-          //   return bDate.compareTo(aDate);
-          // case SortBy.oldest:
-          //   final aDate = parseSpotifyAlbumDate(a.album);
-          //   final bDate = parseSpotifyAlbumDate(b.album);
-          // return aDate.compareTo(bDate);
+          // "Date added" sorts: the collection's per-track added timestamp.
+          // Tracks without one (no addedAt from the provider) fall to the
+          // bottom for newest and stay in fetched order otherwise.
+          case SortBy.newest:
+            return _addedAt(b).compareTo(_addedAt(a));
+          case SortBy.oldest:
+            return _addedAt(a).compareTo(_addedAt(b));
           case SortBy.duration:
             return a.durationMs.compareTo(b.durationMs);
           case SortBy.artist:

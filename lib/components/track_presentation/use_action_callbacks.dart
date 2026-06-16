@@ -87,13 +87,12 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
         // playback starts instantly on a deterministic index, so the player
         // modal always shows the track that's actually playing (mpv's
         // playlist shuffle reorders out from under the reported index).
-        // The page already prewarmed the first track's audio source, so
-        // starting with it (and shuffling everything behind it) makes
-        // shuffle-play start without the sourcing delay.
-        final shuffledTracks = [
-          initialTracks.first,
-          ...initialTracks.skip(1).toList()..shuffle(),
-        ];
+        // Shuffle the already-loaded first page and start on its head: that's
+        // a random track (not always the collection's first song) while still
+        // starting immediately without waiting on the full fetchAll. load()
+        // sources the start track itself, so we don't depend on the page's
+        // first-track prewarm landing on the chosen one.
+        final shuffledTracks = initialTracks.toList()..shuffle();
         await playlistNotifier.load(
           shuffledTracks,
           autoPlay: true,

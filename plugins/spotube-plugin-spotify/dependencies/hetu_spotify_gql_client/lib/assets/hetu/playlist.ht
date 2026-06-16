@@ -134,6 +134,9 @@ class SpotifyPlaylistEndpoint {
           external_urls: {
             spotify: "https://open.spotify.com/track/${item["uri"].split(":").last}",
           },
+          // Per-track "date added" for this playlist; powers the date-added
+          // sort. The wrapper item carries it (ISO-8601) alongside itemV2.
+          added_at: track["addedAt"] ?? track["addedDate"],
         }.toJson()
       }).toList()
 

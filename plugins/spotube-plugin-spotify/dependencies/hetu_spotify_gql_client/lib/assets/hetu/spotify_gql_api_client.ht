@@ -54,6 +54,20 @@ class RetryHttpClient {
           return self._send(makeReq, attempt + 1)
         })
       }
+      // Auth not ready yet: on launch a request can fire in the brief window
+      // before the restored access token is installed on the client, yielding
+      // 401/403. Retry a couple of times with a short backoff so the race
+      // self-heals instead of erroring the whole screen out.
+      if (res.statusCode == 401 || res.statusCode == 403) {
+        if (attempt >= 2) {
+          throw "Spotify request was unauthorized (HTTP ${res.statusCode}). If you're signed in, try again in a moment."
+        }
+        var authDelays = [1, 2, 4]
+        var authDelay = authDelays[attempt % authDelays.length]
+        return FutureUtils.delayed(Duration(seconds: authDelay), () {
+          return self._send(makeReq, attempt + 1)
+        })
+      }
       return res
     })
   }
@@ -108,8 +122,12 @@ class SpotifyGqlApi {
     headers["Authorization"] = "Bearer ${accessToken}"
     headers["User-Agent"] =  generateRandomUserAgent()
     
+    // 401/403 are accepted (not thrown) so RetryHttpClient can briefly retry
+    // the launch auth race before giving up; 429 is accepted for rate-limit
+    // backoff. Everything else still throws as before.
     var acceptRetryable = (status) {
-      return status != null && ((status >= 200 && status < 300) || status == 429)
+      return status != null &&
+        ((status >= 200 && status < 300) || status == 401 || status == 403 || status == 429)
     }
 
     this.apiClient = RetryHttpClient(HttpClient(

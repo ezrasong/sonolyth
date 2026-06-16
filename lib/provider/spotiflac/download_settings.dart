@@ -5,13 +5,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sonolyth/services/spotiflac/providers/deezer_provider.dart';
 import 'package:sonolyth/services/spotiflac/providers/qobuz_provider.dart';
 import 'package:sonolyth/services/spotiflac/providers/spotiflac_provider.dart';
+import 'package:sonolyth/services/spotiflac/providers/tidal_provider.dart';
 import 'package:sonolyth/services/spotiflac/providers/youtube_provider.dart';
 
 /// All download providers Sonolyth ships natively, in default priority order.
-/// YouTube is intentionally last — it's the lossy audio-only fallback used only
-/// when no lossless provider has the track.
+/// The lossless providers (Qobuz, Tidal, Deezer) come first; YouTube is
+/// intentionally last — it's the lossy audio-only fallback used only when no
+/// lossless provider has the track.
 final allSpotiFlacProviders = <SpotiFlacProvider>[
   QobuzProvider(),
+  TidalProvider(),
   DeezerProvider(),
   YouTubeProvider(),
 ];
@@ -76,11 +79,25 @@ class SpotiFlacDownloadSettings {
 
     final storedOrder =
         (json["order"] as List?)?.map((e) => e.toString()).toList() ?? [];
-    // Keep stored ordering, then append any providers added since.
-    final order = [
-      ...storedOrder.where(knownIds.contains),
-      ...defaults.order.where((id) => !storedOrder.contains(id)),
-    ];
+    // Keep the user's stored ordering, then splice in any providers added since
+    // (e.g. Tidal) at their default position rather than dead-last: each new
+    // provider lands just before its default successor that's already present,
+    // so a new lossless source ranks above the lower-priority ones (Tidal above
+    // Deezer) instead of below the YouTube fallback.
+    final order = [...storedOrder.where(knownIds.contains)];
+    for (final id in defaults.order) {
+      if (order.contains(id)) continue;
+      final defaultIndex = defaults.order.indexOf(id);
+      var insertAt = order.length;
+      for (var j = defaultIndex + 1; j < defaults.order.length; j++) {
+        final pos = order.indexOf(defaults.order[j]);
+        if (pos >= 0) {
+          insertAt = pos;
+          break;
+        }
+      }
+      order.insert(insertAt, id);
+    }
 
     return SpotiFlacDownloadSettings(
       order: order,

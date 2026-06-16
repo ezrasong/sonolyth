@@ -86,6 +86,11 @@ class NativeFlacDownloader {
     // Whether every failure so far was a rate-limit (vs a genuine no-match), so
     // the manager can pause-and-retry instead of failing the track outright.
     var rateLimited = false;
+    // A *lossless* provider was rate-limited specifically. When true we refuse
+    // to fall through to a lossy provider (YouTube/m4a): a transient limiter
+    // shouldn't bake in a worse-quality copy. We bail with the rate-limit
+    // signal so the queue pauses and retries the lossless source later.
+    var losslessRateLimited = false;
     for (final provider in providers) {
       // The resolve phase can take a minute+ (serialized gateway calls with
       // backoff); honor cancellation between providers instead of only once
@@ -96,6 +101,10 @@ class NativeFlacDownloader {
           reason: "Download cancelled",
         );
       }
+      // Lossless-first, lossy last resort: don't let a lossy provider win the
+      // track when a lossless provider was merely rate-limited. Stop here so
+      // the post-loop rate-limit path retries lossless once the limiter clears.
+      if (!provider.isLossless && losslessRateLimited) break;
       final quality = qualityByProvider[provider.id] ?? provider.defaultQuality;
       try {
         resolution = await provider.resolve(track, quality);
@@ -106,12 +115,14 @@ class NativeFlacDownloader {
         if (CancelToken.isCancel(e)) rethrow;
         final is429 = e.response?.statusCode == 429;
         rateLimited = rateLimited || is429;
+        if (is429 && provider.isLossless) losslessRateLimited = true;
         failures.add(
           "${provider.displayName}: ${is429 ? "rate limited" : "network error"}",
         );
         resolution = null;
       } on ZarzRateLimitedException {
         rateLimited = true;
+        if (provider.isLossless) losslessRateLimited = true;
         failures.add("${provider.displayName}: rate limited");
         resolution = null;
       } catch (e) {

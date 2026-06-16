@@ -113,6 +113,8 @@ class SpotifyUserEndpoint {
             spotify: "https://open.spotify.com/track/${id}",
           },
           uri: "spotify:track:${id}",
+          // Date the track was saved to the library; powers the date-added sort.
+          added_at: track["addedAt"] ?? track["addedDate"],
         }.toJson()
       }).toList()
 

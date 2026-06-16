@@ -506,7 +506,8 @@ class __$$WebSocketLoadEventDataAlbumImplCopyWithImpl<$Res>
       return null;
     }
 
-    return $SonolythSimpleAlbumObjectCopyWith<$Res>(_value.collection!, (value) {
+    return $SonolythSimpleAlbumObjectCopyWith<$Res>(_value.collection!,
+        (value) {
       return _then(_value.copyWith(collection: value));
     });
   }

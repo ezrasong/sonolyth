@@ -8,6 +8,7 @@ import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/spotiflac/download_settings.dart';
 import 'package:sonolyth/services/spotiflac/providers/qobuz_provider.dart';
 import 'package:sonolyth/services/spotiflac/providers/spotiflac_provider.dart';
+import 'package:sonolyth/services/spotiflac/providers/tidal_provider.dart';
 import 'package:sonolyth/services/spotiflac/providers/youtube_provider.dart';
 
 /// Settings for the native lossless download providers. Downloads run entirely
@@ -18,6 +19,7 @@ class SpotiFlacDownloadProvidersSection extends ConsumerWidget {
 
   String _qualityLabel(SpotiFlacProvider provider, String quality) {
     if (provider is QobuzProvider) return QobuzProvider.labelFor(quality);
+    if (provider is TidalProvider) return TidalProvider.labelFor(quality);
     return quality;
   }
 

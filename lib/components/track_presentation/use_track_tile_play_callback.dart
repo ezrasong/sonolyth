@@ -58,17 +58,22 @@ Future<void> Function(SonolythTrackObject track, int index)
         }
       } else {
         final tracks = await options.pagination.onFetchAll();
+        // `index` is the position in the visible (possibly partially loaded)
+        // list, which desyncs from the full fetched list. Resolve the tapped
+        // track's real position so playback starts on the song that was tapped.
+        final resolvedIndex = tracks.indexWhere((t) => t.id == track.id);
+        final initialIndex = resolvedIndex >= 0 ? resolvedIndex : index;
         await remotePlayback.load(
           options.collection is SonolythSimpleAlbumObject
               ? WebSocketLoadEventData.album(
                   tracks: tracks,
                   collection: options.collection as SonolythSimpleAlbumObject,
-                  initialIndex: index,
+                  initialIndex: initialIndex,
                 )
               : WebSocketLoadEventData.playlist(
                   tracks: tracks,
                   collection: options.collection as SonolythSimplePlaylistObject,
-                  initialIndex: index,
+                  initialIndex: initialIndex,
                 ),
         );
       }
@@ -77,9 +82,13 @@ Future<void> Function(SonolythTrackObject track, int index)
         await playlistNotifier.jumpToTrack(track);
       } else {
         final tracks = await options.pagination.onFetchAll();
+        // `index` is the tapped track's position in the visible list, which
+        // can differ from the full fetched list (partial load / filtering).
+        // Resolve by id so the tapped song becomes the active queue item.
+        final resolvedIndex = tracks.indexWhere((t) => t.id == track.id);
         await playlistNotifier.load(
           tracks,
-          initialIndex: index,
+          initialIndex: resolvedIndex >= 0 ? resolvedIndex : index,
           autoPlay: true,
         );
         playlistNotifier.addCollection(options.collectionId);

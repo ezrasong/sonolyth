@@ -43,6 +43,13 @@ abstract class SpotiFlacProvider {
 
   String get defaultQuality;
 
+  /// Whether this provider yields a lossless file (FLAC, occasionally MP3 for
+  /// Deezer). Lossy fallbacks (YouTube → m4a/Opus) override this to false so the
+  /// downloader can keep lossy sources as a true last resort: when a lossless
+  /// provider is only *rate-limited* (transient), the queue retries it later
+  /// rather than baking in a worse copy from a lossy provider.
+  bool get isLossless => true;
+
   /// Resolves [track] to a direct, downloadable lossless URL, or null when the
   /// provider has no match. Implementations match by ISRC first, then fall
   /// back to a title + artist search.

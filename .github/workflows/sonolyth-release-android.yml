@@ -9,6 +9,13 @@ on:
           - nightly
         default: stable
         description: The release channel
+      arch:
+        type: choice
+        options:
+          - all
+          - arm64
+        default: all
+        description: ABIs to build. "arm64" is a fast single-ABI dev build (modern phones only); "all" is the full distributable APK.
       dry_run:
         type: boolean
         default: false
@@ -56,6 +63,14 @@ jobs:
         with:
           toolchain: stable
 
+      # Cache the cargo registry + target dirs across runs. The native (media_kit
+      # etc.) Rust compile is most of the build time and was recompiled from
+      # scratch every run; this is the single biggest CI speedup.
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ inputs.arch }}
+
       - name: Install android dependencies
         run: |
           flutter pub get
@@ -91,7 +106,7 @@ jobs:
           DOTENV="${DOTENV}
           ENABLE_UPDATE_CHECK=1"
           export DOTENV
-          dart cli/cli.dart build --arch=all android
+          dart cli/cli.dart build --arch=${{ inputs.arch }} android
         env:
           CHANNEL: ${{ inputs.channel }}
           DOTENV: ${{ secrets.DOTENV_RELEASE }}

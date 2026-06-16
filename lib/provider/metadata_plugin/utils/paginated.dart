@@ -77,33 +77,44 @@ mixin PaginatedAsyncNotifierMixin<K>
     if (state.value == null) return [];
     if (!state.value!.hasMore) return state.value!.items.cast<K>();
 
+    // Dedup across pages and stop when a page adds nothing new, so a stalled
+    // cursor or capped listing can't loop forever or silently truncate.
+    final seen = <K>{...state.value!.items.cast<K>()};
+
     bool hasMore = true;
-    while (hasMore) {
-      final newState = await fetch(
-        state.value!.nextOffset!,
-        max(state.value!.limit, 100),
-      )
-          .catchError(
-            (e) => fetch(state.value!.nextOffset!, max(state.value!.limit, 50)),
-          )
-          .catchError(
-            (e) => fetch(state.value!.nextOffset!, state.value!.limit),
-          )
-          .catchError(
-        (e) async {
-          await Future.delayed(const Duration(milliseconds: 500));
-          return fetch(state.value!.nextOffset!, state.value!.limit);
-        },
-      );
+    var pages = 0;
+    while (hasMore && pages++ < 1000) {
+      final offset = state.value!.nextOffset!;
+      final newState = await fetch(offset, max(state.value!.limit, 100))
+          .catchError((e) => fetch(offset, max(state.value!.limit, 50)))
+          .catchError((e) => fetch(offset, state.value!.limit))
+          .catchError((e) async {
+        await Future.delayed(const Duration(milliseconds: 500));
+        return fetch(offset, state.value!.limit);
+      });
+
+      final fresh = [
+        for (final item in newState.items.cast<K>())
+          if (seen.add(item)) item,
+      ];
+
+      if (fresh.isEmpty) {
+        if (newState.total > seen.length) {
+          AppLogger.diag(
+            "fetchAll stopped early at ${seen.length}/${newState.total} "
+            "(offset $offset returned no new items)",
+          );
+        }
+        break;
+      }
 
       hasMore = newState.hasMore;
 
       final oldItems =
           state.value!.items.isEmpty ? <K>[] : state.value!.items.cast<K>();
-      final items = newState.items.isEmpty ? <K>[] : newState.items.cast<K>();
 
       state = AsyncData(
-        newState.copyWith(items: [...oldItems, ...items]),
+        newState.copyWith(items: [...oldItems, ...fresh]),
       );
     }
 

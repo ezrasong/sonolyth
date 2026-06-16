@@ -48,25 +48,25 @@ class $AssetsImagesGen {
       const AssetGenImage('assets/images/user-placeholder.png');
 
   /// List of all assets
-  List<AssetGenImage> get values => [
-        albumPlaceholder,
-        likedTracks,
-        placeholder,
-        userPlaceholder
-      ];
+  List<AssetGenImage> get values =>
+      [albumPlaceholder, likedTracks, placeholder, userPlaceholder];
 }
 
 class $AssetsPluginsGen {
   const $AssetsPluginsGen();
 
   /// Directory path: assets/plugins/spotube-plugin-musicbrainz-listenbrainz
-  $AssetsPluginsSonolythPluginMusicbrainzListenbrainzGen
+  $AssetsPluginsSpotubePluginMusicbrainzListenbrainzGen
       get spotubePluginMusicbrainzListenbrainz =>
-          const $AssetsPluginsSonolythPluginMusicbrainzListenbrainzGen();
+          const $AssetsPluginsSpotubePluginMusicbrainzListenbrainzGen();
+
+  /// Directory path: assets/plugins/spotube-plugin-spotify
+  $AssetsPluginsSpotubePluginSpotifyGen get spotubePluginSpotify =>
+      const $AssetsPluginsSpotubePluginSpotifyGen();
 
   /// Directory path: assets/plugins/spotube-plugin-youtube-audio
-  $AssetsPluginsSonolythPluginYoutubeAudioGen get spotubePluginYoutubeAudio =>
-      const $AssetsPluginsSonolythPluginYoutubeAudioGen();
+  $AssetsPluginsSpotubePluginYoutubeAudioGen get spotubePluginYoutubeAudio =>
+      const $AssetsPluginsSpotubePluginYoutubeAudioGen();
 }
 
 class $AssetsImagesLogosGen {
@@ -88,8 +88,8 @@ class $AssetsImagesLogosGen {
   List<AssetGenImage> get values => [dabMusic, invidious, jiosaavn];
 }
 
-class $AssetsPluginsSonolythPluginMusicbrainzListenbrainzGen {
-  const $AssetsPluginsSonolythPluginMusicbrainzListenbrainzGen();
+class $AssetsPluginsSpotubePluginMusicbrainzListenbrainzGen {
+  const $AssetsPluginsSpotubePluginMusicbrainzListenbrainzGen();
 
   /// File path: assets/plugins/spotube-plugin-musicbrainz-listenbrainz/plugin.smplug
   String get plugin =>
@@ -99,8 +99,18 @@ class $AssetsPluginsSonolythPluginMusicbrainzListenbrainzGen {
   List<String> get values => [plugin];
 }
 
-class $AssetsPluginsSonolythPluginYoutubeAudioGen {
-  const $AssetsPluginsSonolythPluginYoutubeAudioGen();
+class $AssetsPluginsSpotubePluginSpotifyGen {
+  const $AssetsPluginsSpotubePluginSpotifyGen();
+
+  /// File path: assets/plugins/spotube-plugin-spotify/plugin.smplug
+  String get plugin => 'assets/plugins/spotube-plugin-spotify/plugin.smplug';
+
+  /// List of all assets
+  List<String> get values => [plugin];
+}
+
+class $AssetsPluginsSpotubePluginYoutubeAudioGen {
+  const $AssetsPluginsSpotubePluginYoutubeAudioGen();
 
   /// File path: assets/plugins/spotube-plugin-youtube-audio/plugin.smplug
   String get plugin =>

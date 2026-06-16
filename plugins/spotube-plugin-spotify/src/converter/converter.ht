@@ -40,6 +40,9 @@ class Converters {
         isrc: track["external_ids"]?["isrc"] ?? "",
         artists: simpleArtists(track["artists"]),
         album: simpleAlbums([track["album"]])[0],
+        // Optional collection-relative "date added" (playlist / liked songs);
+        // null elsewhere. Drives the date-added sort on the Dart side.
+        addedAt: track["added_at"],
       }.toJson()
 
       modified.add(modifiedTrack)

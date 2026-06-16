@@ -21,6 +21,10 @@ class SonolythTrackObject with _$SonolythTrackObject {
     required int durationMs,
     required String isrc,
     required bool explicit,
+    // ISO-8601 timestamp of when the track was added to the collection it was
+    // fetched from (playlist / liked songs). Null outside those contexts
+    // (album tracks, search results) and on providers that don't expose it.
+    String? addedAt,
   }) = SonolythFullTrackObject;
 
   factory SonolythTrackObject.localTrackFromFile(

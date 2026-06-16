@@ -85,7 +85,8 @@ mixin _$SonolythAudioSourceContainerPreset {
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(SonolythAudioSourceContainerPresetLossy value)? lossy,
-    TResult Function(SonolythAudioSourceContainerPresetLossless value)? lossless,
+    TResult Function(SonolythAudioSourceContainerPresetLossless value)?
+        lossless,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -96,7 +97,8 @@ mixin _$SonolythAudioSourceContainerPreset {
   /// Create a copy of SonolythAudioSourceContainerPreset
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SonolythAudioSourceContainerPresetCopyWith<SonolythAudioSourceContainerPreset>
+  $SonolythAudioSourceContainerPresetCopyWith<
+          SonolythAudioSourceContainerPreset>
       get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -321,7 +323,8 @@ class _$SonolythAudioSourceContainerPresetLossyImpl
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(SonolythAudioSourceContainerPresetLossy value)? lossy,
-    TResult Function(SonolythAudioSourceContainerPresetLossless value)? lossless,
+    TResult Function(SonolythAudioSourceContainerPresetLossless value)?
+        lossless,
     required TResult orElse(),
   }) {
     if (lossy != null) {
@@ -372,7 +375,8 @@ abstract class _$$SonolythAudioSourceContainerPresetLosslessImplCopyWith<$Res>
     implements $SonolythAudioSourceContainerPresetCopyWith<$Res> {
   factory _$$SonolythAudioSourceContainerPresetLosslessImplCopyWith(
           _$SonolythAudioSourceContainerPresetLosslessImpl value,
-          $Res Function(_$SonolythAudioSourceContainerPresetLosslessImpl) then) =
+          $Res Function(_$SonolythAudioSourceContainerPresetLosslessImpl)
+              then) =
       __$$SonolythAudioSourceContainerPresetLosslessImplCopyWithImpl<$Res>;
   @override
   @useResult
@@ -546,7 +550,8 @@ class _$SonolythAudioSourceContainerPresetLosslessImpl
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(SonolythAudioSourceContainerPresetLossy value)? lossy,
-    TResult Function(SonolythAudioSourceContainerPresetLossless value)? lossless,
+    TResult Function(SonolythAudioSourceContainerPresetLossless value)?
+        lossless,
     required TResult orElse(),
   }) {
     if (lossless != null) {
@@ -607,7 +612,8 @@ mixin _$SonolythAudioLossyContainerQuality {
   /// Create a copy of SonolythAudioLossyContainerQuality
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SonolythAudioLossyContainerQualityCopyWith<SonolythAudioLossyContainerQuality>
+  $SonolythAudioLossyContainerQualityCopyWith<
+          SonolythAudioLossyContainerQuality>
       get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -1186,12 +1192,13 @@ class _$SonolythAudioSourceMatchObjectImpl
 abstract class _SonolythAudioSourceMatchObject
     implements SonolythAudioSourceMatchObject {
   factory _SonolythAudioSourceMatchObject(
-      {required final String id,
-      required final String title,
-      required final List<String> artists,
-      required final Duration duration,
-      final String? thumbnail,
-      required final String externalUri}) = _$SonolythAudioSourceMatchObjectImpl;
+          {required final String id,
+          required final String title,
+          required final List<String> artists,
+          required final Duration duration,
+          final String? thumbnail,
+          required final String externalUri}) =
+      _$SonolythAudioSourceMatchObjectImpl;
 
   factory _SonolythAudioSourceMatchObject.fromJson(Map<String, dynamic> json) =
       _$SonolythAudioSourceMatchObjectImpl.fromJson;
@@ -2496,15 +2503,16 @@ mixin _$SonolythSimpleArtistObject {
   /// Create a copy of SonolythSimpleArtistObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SonolythSimpleArtistObjectCopyWith<SonolythSimpleArtistObject> get copyWith =>
-      throw _privateConstructorUsedError;
+  $SonolythSimpleArtistObjectCopyWith<SonolythSimpleArtistObject>
+      get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $SonolythSimpleArtistObjectCopyWith<$Res> {
   factory $SonolythSimpleArtistObjectCopyWith(SonolythSimpleArtistObject value,
           $Res Function(SonolythSimpleArtistObject) then) =
-      _$SonolythSimpleArtistObjectCopyWithImpl<$Res, SonolythSimpleArtistObject>;
+      _$SonolythSimpleArtistObjectCopyWithImpl<$Res,
+          SonolythSimpleArtistObject>;
   @useResult
   $Res call(
       {String id,
@@ -2622,7 +2630,8 @@ class _$SonolythSimpleArtistObjectImpl implements _SonolythSimpleArtistObject {
       final List<SonolythImageObject>? images})
       : _images = images;
 
-  factory _$SonolythSimpleArtistObjectImpl.fromJson(Map<String, dynamic> json) =>
+  factory _$SonolythSimpleArtistObjectImpl.fromJson(
+          Map<String, dynamic> json) =>
       _$$SonolythSimpleArtistObjectImplFromJson(json);
 
   @override
@@ -2680,7 +2689,8 @@ class _$SonolythSimpleArtistObjectImpl implements _SonolythSimpleArtistObject {
   }
 }
 
-abstract class _SonolythSimpleArtistObject implements SonolythSimpleArtistObject {
+abstract class _SonolythSimpleArtistObject
+    implements SonolythSimpleArtistObject {
   factory _SonolythSimpleArtistObject(
           {required final String id,
           required final String name,
@@ -3751,8 +3761,9 @@ abstract class _SonolythImageObject implements SonolythImageObject {
       throw _privateConstructorUsedError;
 }
 
-SonolythPaginationResponseObject<T> _$SonolythPaginationResponseObjectFromJson<T>(
-    Map<String, dynamic> json, T Function(Object?) fromJsonT) {
+SonolythPaginationResponseObject<T>
+    _$SonolythPaginationResponseObjectFromJson<T>(
+        Map<String, dynamic> json, T Function(Object?) fromJsonT) {
   return _SonolythPaginationResponseObject<T>.fromJson(json, fromJsonT);
 }
 
@@ -3968,11 +3979,12 @@ class _$SonolythPaginationResponseObjectImpl<T>
 abstract class _SonolythPaginationResponseObject<T>
     implements SonolythPaginationResponseObject<T> {
   factory _SonolythPaginationResponseObject(
-      {required final int limit,
-      required final int? nextOffset,
-      required final int total,
-      required final bool hasMore,
-      required final List<T> items}) = _$SonolythPaginationResponseObjectImpl<T>;
+          {required final int limit,
+          required final int? nextOffset,
+          required final int total,
+          required final bool hasMore,
+          required final List<T> items}) =
+      _$SonolythPaginationResponseObjectImpl<T>;
 
   factory _SonolythPaginationResponseObject.fromJson(
           Map<String, dynamic> json, T Function(Object?) fromJsonT) =
@@ -4022,15 +4034,16 @@ mixin _$SonolythFullPlaylistObject {
   /// Create a copy of SonolythFullPlaylistObject
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SonolythFullPlaylistObjectCopyWith<SonolythFullPlaylistObject> get copyWith =>
-      throw _privateConstructorUsedError;
+  $SonolythFullPlaylistObjectCopyWith<SonolythFullPlaylistObject>
+      get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $SonolythFullPlaylistObjectCopyWith<$Res> {
   factory $SonolythFullPlaylistObjectCopyWith(SonolythFullPlaylistObject value,
           $Res Function(SonolythFullPlaylistObject) then) =
-      _$SonolythFullPlaylistObjectCopyWithImpl<$Res, SonolythFullPlaylistObject>;
+      _$SonolythFullPlaylistObjectCopyWithImpl<$Res,
+          SonolythFullPlaylistObject>;
   @useResult
   $Res call(
       {String id,
@@ -4229,7 +4242,8 @@ class _$SonolythFullPlaylistObjectImpl implements _SonolythFullPlaylistObject {
       : _images = images,
         _collaborators = collaborators;
 
-  factory _$SonolythFullPlaylistObjectImpl.fromJson(Map<String, dynamic> json) =>
+  factory _$SonolythFullPlaylistObjectImpl.fromJson(
+          Map<String, dynamic> json) =>
       _$$SonolythFullPlaylistObjectImplFromJson(json);
 
   @override
@@ -4323,7 +4337,8 @@ class _$SonolythFullPlaylistObjectImpl implements _SonolythFullPlaylistObject {
   }
 }
 
-abstract class _SonolythFullPlaylistObject implements SonolythFullPlaylistObject {
+abstract class _SonolythFullPlaylistObject
+    implements SonolythFullPlaylistObject {
   factory _SonolythFullPlaylistObject(
       {required final String id,
       required final String name,
@@ -4608,7 +4623,8 @@ class _$SonolythSimplePlaylistObjectImpl
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SonolythSimplePlaylistObjectImplCopyWith<_$SonolythSimplePlaylistObjectImpl>
+  _$$SonolythSimplePlaylistObjectImplCopyWith<
+          _$SonolythSimplePlaylistObjectImpl>
       get copyWith => __$$SonolythSimplePlaylistObjectImplCopyWithImpl<
           _$SonolythSimplePlaylistObjectImpl>(this, _$identity);
 
@@ -4651,7 +4667,8 @@ abstract class _SonolythSimplePlaylistObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SonolythSimplePlaylistObjectImplCopyWith<_$SonolythSimplePlaylistObjectImpl>
+  _$$SonolythSimplePlaylistObjectImplCopyWith<
+          _$SonolythSimplePlaylistObjectImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -4668,7 +4685,8 @@ mixin _$SonolythSearchResponseObject {
       throw _privateConstructorUsedError;
   List<SonolythSimplePlaylistObject> get playlists =>
       throw _privateConstructorUsedError;
-  List<SonolythFullTrackObject> get tracks => throw _privateConstructorUsedError;
+  List<SonolythFullTrackObject> get tracks =>
+      throw _privateConstructorUsedError;
 
   /// Serializes this SonolythSearchResponseObject to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -4875,7 +4893,8 @@ class _$SonolythSearchResponseObjectImpl
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SonolythSearchResponseObjectImplCopyWith<_$SonolythSearchResponseObjectImpl>
+  _$$SonolythSearchResponseObjectImplCopyWith<
+          _$SonolythSearchResponseObjectImpl>
       get copyWith => __$$SonolythSearchResponseObjectImplCopyWithImpl<
           _$SonolythSearchResponseObjectImpl>(this, _$identity);
 
@@ -4912,7 +4931,8 @@ abstract class _SonolythSearchResponseObject
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SonolythSearchResponseObjectImplCopyWith<_$SonolythSearchResponseObjectImpl>
+  _$$SonolythSearchResponseObjectImplCopyWith<
+          _$SonolythSearchResponseObjectImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -4957,7 +4977,8 @@ mixin _$SonolythTrackObject {
             SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
-            bool explicit)
+            bool explicit,
+            String? addedAt)
         full,
   }) =>
       throw _privateConstructorUsedError;
@@ -4980,7 +5001,8 @@ mixin _$SonolythTrackObject {
             SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
-            bool explicit)?
+            bool explicit,
+            String? addedAt)?
         full,
   }) =>
       throw _privateConstructorUsedError;
@@ -5003,7 +5025,8 @@ mixin _$SonolythTrackObject {
             SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
-            bool explicit)?
+            bool explicit,
+            String? addedAt)?
         full,
     required TResult orElse(),
   }) =>
@@ -5292,7 +5315,8 @@ class _$SonolythLocalTrackObjectImpl implements SonolythLocalTrackObject {
             SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
-            bool explicit)
+            bool explicit,
+            String? addedAt)
         full,
   }) {
     return local(id, name, externalUri, artists, album, durationMs, path);
@@ -5318,7 +5342,8 @@ class _$SonolythLocalTrackObjectImpl implements SonolythLocalTrackObject {
             SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
-            bool explicit)?
+            bool explicit,
+            String? addedAt)?
         full,
   }) {
     return local?.call(id, name, externalUri, artists, album, durationMs, path);
@@ -5344,7 +5369,8 @@ class _$SonolythLocalTrackObjectImpl implements SonolythLocalTrackObject {
             SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
-            bool explicit)?
+            bool explicit,
+            String? addedAt)?
         full,
     required TResult orElse(),
   }) {
@@ -5445,7 +5471,8 @@ abstract class _$$SonolythFullTrackObjectImplCopyWith<$Res>
       SonolythSimpleAlbumObject album,
       int durationMs,
       String isrc,
-      bool explicit});
+      bool explicit,
+      String? addedAt});
 
   @override
   $SonolythSimpleAlbumObjectCopyWith<$Res> get album;
@@ -5453,7 +5480,8 @@ abstract class _$$SonolythFullTrackObjectImplCopyWith<$Res>
 
 /// @nodoc
 class __$$SonolythFullTrackObjectImplCopyWithImpl<$Res>
-    extends _$SonolythTrackObjectCopyWithImpl<$Res, _$SonolythFullTrackObjectImpl>
+    extends _$SonolythTrackObjectCopyWithImpl<$Res,
+        _$SonolythFullTrackObjectImpl>
     implements _$$SonolythFullTrackObjectImplCopyWith<$Res> {
   __$$SonolythFullTrackObjectImplCopyWithImpl(
       _$SonolythFullTrackObjectImpl _value,
@@ -5473,6 +5501,7 @@ class __$$SonolythFullTrackObjectImplCopyWithImpl<$Res>
     Object? durationMs = null,
     Object? isrc = null,
     Object? explicit = null,
+    Object? addedAt = freezed,
   }) {
     return _then(_$SonolythFullTrackObjectImpl(
       id: null == id
@@ -5507,6 +5536,10 @@ class __$$SonolythFullTrackObjectImplCopyWithImpl<$Res>
           ? _value.explicit
           : explicit // ignore: cast_nullable_to_non_nullable
               as bool,
+      addedAt: freezed == addedAt
+          ? _value.addedAt
+          : addedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -5523,6 +5556,7 @@ class _$SonolythFullTrackObjectImpl implements SonolythFullTrackObject {
       required this.durationMs,
       required this.isrc,
       required this.explicit,
+      this.addedAt,
       final String? $type})
       : _artists = artists,
         $type = $type ?? 'full';
@@ -5553,13 +5587,18 @@ class _$SonolythFullTrackObjectImpl implements SonolythFullTrackObject {
   final String isrc;
   @override
   final bool explicit;
+// ISO-8601 timestamp of when the track was added to the collection it was
+// fetched from (playlist / liked songs). Null outside those contexts
+// (album tracks, search results) and on providers that don't expose it.
+  @override
+  final String? addedAt;
 
   @JsonKey(name: 'runtimeType')
   final String $type;
 
   @override
   String toString() {
-    return 'SonolythTrackObject.full(id: $id, name: $name, externalUri: $externalUri, artists: $artists, album: $album, durationMs: $durationMs, isrc: $isrc, explicit: $explicit)';
+    return 'SonolythTrackObject.full(id: $id, name: $name, externalUri: $externalUri, artists: $artists, album: $album, durationMs: $durationMs, isrc: $isrc, explicit: $explicit, addedAt: $addedAt)';
   }
 
   @override
@@ -5577,7 +5616,8 @@ class _$SonolythFullTrackObjectImpl implements SonolythFullTrackObject {
                 other.durationMs == durationMs) &&
             (identical(other.isrc, isrc) || other.isrc == isrc) &&
             (identical(other.explicit, explicit) ||
-                other.explicit == explicit));
+                other.explicit == explicit) &&
+            (identical(other.addedAt, addedAt) || other.addedAt == addedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -5591,7 +5631,8 @@ class _$SonolythFullTrackObjectImpl implements SonolythFullTrackObject {
       album,
       durationMs,
       isrc,
-      explicit);
+      explicit,
+      addedAt);
 
   /// Create a copy of SonolythTrackObject
   /// with the given fields replaced by the non-null parameter values.
@@ -5622,11 +5663,12 @@ class _$SonolythFullTrackObjectImpl implements SonolythFullTrackObject {
             SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
-            bool explicit)
+            bool explicit,
+            String? addedAt)
         full,
   }) {
-    return full(
-        id, name, externalUri, artists, album, durationMs, isrc, explicit);
+    return full(id, name, externalUri, artists, album, durationMs, isrc,
+        explicit, addedAt);
   }
 
   @override
@@ -5649,11 +5691,12 @@ class _$SonolythFullTrackObjectImpl implements SonolythFullTrackObject {
             SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
-            bool explicit)?
+            bool explicit,
+            String? addedAt)?
         full,
   }) {
-    return full?.call(
-        id, name, externalUri, artists, album, durationMs, isrc, explicit);
+    return full?.call(id, name, externalUri, artists, album, durationMs, isrc,
+        explicit, addedAt);
   }
 
   @override
@@ -5676,13 +5719,14 @@ class _$SonolythFullTrackObjectImpl implements SonolythFullTrackObject {
             SonolythSimpleAlbumObject album,
             int durationMs,
             String isrc,
-            bool explicit)?
+            bool explicit,
+            String? addedAt)?
         full,
     required TResult orElse(),
   }) {
     if (full != null) {
-      return full(
-          id, name, externalUri, artists, album, durationMs, isrc, explicit);
+      return full(id, name, externalUri, artists, album, durationMs, isrc,
+          explicit, addedAt);
     }
     return orElse();
   }
@@ -5735,7 +5779,8 @@ abstract class SonolythFullTrackObject implements SonolythTrackObject {
       required final SonolythSimpleAlbumObject album,
       required final int durationMs,
       required final String isrc,
-      required final bool explicit}) = _$SonolythFullTrackObjectImpl;
+      required final bool explicit,
+      final String? addedAt}) = _$SonolythFullTrackObjectImpl;
 
   factory SonolythFullTrackObject.fromJson(Map<String, dynamic> json) =
       _$SonolythFullTrackObjectImpl.fromJson;
@@ -5753,7 +5798,11 @@ abstract class SonolythFullTrackObject implements SonolythTrackObject {
   @override
   int get durationMs;
   String get isrc;
-  bool get explicit;
+  bool
+      get explicit; // ISO-8601 timestamp of when the track was added to the collection it was
+// fetched from (playlist / liked songs). Null outside those contexts
+// (album tracks, search results) and on providers that don't expose it.
+  String? get addedAt;
 
   /// Create a copy of SonolythTrackObject
   /// with the given fields replaced by the non-null parameter values.

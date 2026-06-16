@@ -31,6 +31,9 @@ class YouTubeProvider extends SpotiFlacProvider {
   String get defaultQuality => "best";
 
   @override
+  bool get isLossless => false;
+
+  @override
   Future<SpotiFlacDownloadResolution?> resolve(
     SonolythFullTrackObject track,
     String quality,

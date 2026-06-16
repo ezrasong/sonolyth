@@ -9,7 +9,8 @@ part of 'metadata.dart';
 _$SonolythAudioSourceContainerPresetLossyImpl
     _$$SonolythAudioSourceContainerPresetLossyImplFromJson(Map json) =>
         _$SonolythAudioSourceContainerPresetLossyImpl(
-          type: $enumDecode(_$SonolythMediaCompressionTypeEnumMap, json['type']),
+          type:
+              $enumDecode(_$SonolythMediaCompressionTypeEnumMap, json['type']),
           name: json['name'] as String,
           qualities: (json['qualities'] as List<dynamic>)
               .map((e) => SonolythAudioLossyContainerQuality.fromJson(
@@ -33,7 +34,8 @@ const _$SonolythMediaCompressionTypeEnumMap = {
 _$SonolythAudioSourceContainerPresetLosslessImpl
     _$$SonolythAudioSourceContainerPresetLosslessImplFromJson(Map json) =>
         _$SonolythAudioSourceContainerPresetLosslessImpl(
-          type: $enumDecode(_$SonolythMediaCompressionTypeEnumMap, json['type']),
+          type:
+              $enumDecode(_$SonolythMediaCompressionTypeEnumMap, json['type']),
           name: json['name'] as String,
           qualities: (json['qualities'] as List<dynamic>)
               .map((e) => SonolythAudioLosslessContainerQuality.fromJson(
@@ -104,7 +106,8 @@ _$SonolythAudioSourceStreamObjectImpl
         _$SonolythAudioSourceStreamObjectImpl(
           url: json['url'] as String,
           container: json['container'] as String,
-          type: $enumDecode(_$SonolythMediaCompressionTypeEnumMap, json['type']),
+          type:
+              $enumDecode(_$SonolythMediaCompressionTypeEnumMap, json['type']),
           codec: json['codec'] as String?,
           bitrate: (json['bitrate'] as num?)?.toDouble(),
           bitDepth: (json['bitDepth'] as num?)?.toInt(),
@@ -123,7 +126,8 @@ Map<String, dynamic> _$$SonolythAudioSourceStreamObjectImplToJson(
       'sampleRate': instance.sampleRate,
     };
 
-_$SonolythFullAlbumObjectImpl _$$SonolythFullAlbumObjectImplFromJson(Map json) =>
+_$SonolythFullAlbumObjectImpl _$$SonolythFullAlbumObjectImplFromJson(
+        Map json) =>
     _$SonolythFullAlbumObjectImpl(
       id: json['id'] as String,
       name: json['name'] as String,
@@ -481,7 +485,8 @@ Map<String, dynamic> _$$SonolythLocalTrackObjectImplToJson(
       'runtimeType': instance.$type,
     };
 
-_$SonolythFullTrackObjectImpl _$$SonolythFullTrackObjectImplFromJson(Map json) =>
+_$SonolythFullTrackObjectImpl _$$SonolythFullTrackObjectImplFromJson(
+        Map json) =>
     _$SonolythFullTrackObjectImpl(
       id: json['id'] as String,
       name: json['name'] as String,
@@ -496,6 +501,7 @@ _$SonolythFullTrackObjectImpl _$$SonolythFullTrackObjectImplFromJson(Map json) =
       durationMs: (json['durationMs'] as num).toInt(),
       isrc: json['isrc'] as String,
       explicit: json['explicit'] as bool,
+      addedAt: json['addedAt'] as String?,
       $type: json['runtimeType'] as String?,
     );
 
@@ -510,6 +516,7 @@ Map<String, dynamic> _$$SonolythFullTrackObjectImplToJson(
       'durationMs': instance.durationMs,
       'isrc': instance.isrc,
       'explicit': instance.explicit,
+      'addedAt': instance.addedAt,
       'runtimeType': instance.$type,
     };
 
