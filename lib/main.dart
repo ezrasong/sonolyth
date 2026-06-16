@@ -122,6 +122,17 @@ Future<void> main(List<String> rawArgs) async {
           .setBool('sourceMatchRankingV3', true);
     }
 
+    // One-time: clear matches the old first-track prewarm may have pinned to a
+    // lossy Piped source. Prewarming ran during the page-load request burst,
+    // which rate-limited the Qobuz match and cached YouTube permanently — so
+    // the first song always streamed via Piped. Re-resolving picks Qobuz first.
+    if (KVStoreService.sharedPreferences.getBool('sourceMatchQobuzFirstV1') !=
+        true) {
+      await database.delete(database.sourceMatchTable).go();
+      await KVStoreService.sharedPreferences
+          .setBool('sourceMatchQobuzFirstV1', true);
+    }
+
     if (kIsDesktop) {
       await localNotifier.setup(appName: "Sonolyth");
       await WindowManagerTools.initialize();

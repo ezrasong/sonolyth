@@ -96,19 +96,32 @@ class SourcedTrack extends BasicSourcedTrack {
         final qobuz = QobuzAudioSource();
 
         var qobuzCandidates = const <SonolythAudioSourceMatchObject>[];
+        // Distinguish a transient match (ISRC-search) failure from a clean
+        // "Qobuz has no candidates". A rate-limited or errored search — common
+        // during the page-load request burst, exactly when the first track is
+        // prewarmed — was previously swallowed and left qobuzCandidates empty,
+        // so it was misread as a genuine no-match and the YouTube result got
+        // cached PERMANENTLY. That pinned the first song to a lossy Piped source
+        // forever. Track these so the fall-through below stays uncached.
+        var rateLimited = false;
+        var matchError = false;
         try {
           qobuzCandidates = await qobuz.matches(query);
           AppLogger.diag(
             "[resolve] '${query.name}' qobuz matches=${qobuzCandidates.length} "
             "(+${sw.elapsedMilliseconds}ms)",
           );
+        } on ZarzRateLimitedException {
+          rateLimited = true;
+          AppLogger.diag(
+              "[resolve] '${query.name}' qobuz match 429 rate-limited");
         } catch (e) {
+          matchError = true;
           AppLogger.diag("[resolve] '${query.name}' qobuz match ERROR: $e");
         }
 
         SonolythAudioSourceMatchObject? chosen;
         List<SonolythAudioSourceStreamObject> manifest = const [];
-        var rateLimited = false;
         for (final candidate
             in qobuzCandidates.take(_maxQobuzPlaybackAttempts)) {
           final attemptAt = sw.elapsedMilliseconds;
@@ -158,16 +171,16 @@ class SourcedTrack extends BasicSourcedTrack {
           );
         }
 
-        // Qobuz is rate-limited, or carries the track (it returned candidates)
-        // but couldn't stream it right now — a gateway 500/timeout/network
-        // blip, not a real "Qobuz doesn't have it". Play via YouTube WITHOUT
-        // caching so the track upgrades back to lossless on a later play,
-        // rather than being permanently pinned to a (often wrong) YouTube
-        // match.
-        if (rateLimited || qobuzCandidates.isNotEmpty) {
+        // Qobuz is rate-limited, errored on the match step, or carries the
+        // track (it returned candidates) but couldn't stream it right now — a
+        // gateway 500/timeout/network blip, not a real "Qobuz doesn't have it".
+        // Play via YouTube WITHOUT caching so the track upgrades back to
+        // lossless on a later play, rather than being permanently pinned to a
+        // (often wrong) YouTube match.
+        if (rateLimited || matchError || qobuzCandidates.isNotEmpty) {
           AppLogger.diag(
             "[resolve] '${query.name}' -> youtube (qobuz "
-            "${rateLimited ? "rate-limited" : "carried but unplayable"}, "
+            "${rateLimited ? "rate-limited" : matchError ? "match error" : "carried but unplayable"}, "
             "NOT cached, +${sw.elapsedMilliseconds}ms)",
           );
           return _fetchViaPlugin(
@@ -177,7 +190,7 @@ class SourcedTrack extends BasicSourcedTrack {
             slug: audioSourceConfig.slug,
           );
         }
-        // Qobuz genuinely doesn't carry the track (no candidates) — fall
+        // Qobuz genuinely doesn't carry the track (clean empty result) — fall
         // through to the cached YouTube path below.
         AppLogger.diag(
           "[resolve] '${query.name}' qobuz has no candidates -> youtube (cached)",
