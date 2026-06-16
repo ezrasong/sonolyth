@@ -116,12 +116,15 @@ String? _readAddedAt(Object? value) {
           .toIso8601String();
     }
     // Diagnostic (one-shot): we got a Map we couldn't read a date out of, so
-    // the date-added sort silently no-ops. Log its shape once so the real key
-    // can be wired without guessing. Remove once confirmed.
+    // the date-added sort silently no-ops. The `diagnostics` flag is never
+    // enabled in shipped builds, so route this through reportError (which does
+    // append to .spotube_logs in release) to capture the real field shape once.
+    // Remove once the key is confirmed and wired.
     if (!_loggedAddedAtShape) {
       _loggedAddedAtShape = true;
-      AppLogger.diag("addedAt unrecognized Map: keys=${value.keys.toList()} "
-          "sample=$value");
+      AppLogger.reportError(
+        "ADDEDAT_PROBE keys=${value.keys.toList()} sample=$value",
+      );
     }
   }
   return null;

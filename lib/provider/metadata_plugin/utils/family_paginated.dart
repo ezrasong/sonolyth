@@ -37,56 +37,47 @@ abstract class FamilyPaginatedAsyncNotifier<K, A>
 
   Future<List<K>> fetchAll() async {
     if (state.value == null) return [];
-    if (!state.value!.hasMore) return state.value!.items.cast<K>();
 
-    // Dedup across pages by value: a server page cursor that stalls (re-serves
-    // a page we've seen) or a query that caps its window would otherwise either
-    // loop forever or silently inflate the count. We stop as soon as a page
-    // contributes no new items.
-    final seen = <K>{...state.value!.items.cast<K>()};
-
-    bool hasMore = true;
-    // Hard backstop so a misbehaving cursor can never spin indefinitely.
+    // Paginate until the provider stops returning NEW items, instead of
+    // trusting hasMore/total. Spotify's pathfinder reports a capped totalCount
+    // (~200) for large playlists/libraries yet still serves more rows when
+    // asked, so a hasMore-driven loop truncated big collections at ~200. Dedup
+    // by value so a stalled cursor (server re-serving a page) ends the loop
+    // rather than spinning. The 1000-page cap is a hard runaway backstop.
+    final all = <K>[...state.value!.items.cast<K>()];
+    final seen = <K>{...all};
+    final pageSize = max(state.value!.limit, 100);
+    var offset = all.length;
     var pages = 0;
-    while (hasMore && pages++ < 1000) {
-      final offset = state.value!.nextOffset!;
-      final newState = await fetch(offset, max(state.value!.limit, 100))
-          .catchError((e) => fetch(offset, max(state.value!.limit, 50)))
-          .catchError((e) => fetch(offset, state.value!.limit))
-          .catchError((e) async {
-        await Future.delayed(const Duration(milliseconds: 500));
-        return fetch(offset, state.value!.limit);
-      });
 
-      final fresh = [
-        for (final item in newState.items.cast<K>())
-          if (seen.add(item)) item,
-      ];
+    while (pages++ < 1000) {
+      try {
+        final newState = await fetch(offset, pageSize)
+            .catchError((e) => fetch(offset, 50))
+            .catchError((e) async {
+          await Future.delayed(const Duration(milliseconds: 500));
+          return fetch(offset, pageSize);
+        });
 
-      if (fresh.isEmpty) {
-        // Cursor stalled or the provider capped the listing while still
-        // reporting hasMore. Stop with what we have and record the shortfall
-        // so it's visible on-device instead of looking like a clean finish.
-        if (newState.total > seen.length) {
-          AppLogger.diag(
-            "fetchAll stopped early at ${seen.length}/${newState.total} "
-            "(offset $offset returned no new items)",
-          );
-        }
+        final items = newState.items.cast<K>();
+        if (items.isEmpty) break;
+
+        final fresh = [
+          for (final item in items)
+            if (seen.add(item)) item,
+        ];
+        if (fresh.isEmpty) break;
+
+        all.addAll(fresh);
+        offset += items.length;
+        state = AsyncData(newState.copyWith(items: List<K>.from(all)));
+      } catch (e, stack) {
+        AppLogger.reportError(e, stack);
         break;
       }
-
-      hasMore = newState.hasMore;
-
-      final oldItems =
-          state.value!.items.isEmpty ? <K>[] : state.value!.items.cast<K>();
-
-      state = AsyncData(
-        newState.copyWith(items: [...oldItems, ...fresh]),
-      );
     }
 
-    return state.value!.items.cast<K>();
+    return all;
   }
 }
 
