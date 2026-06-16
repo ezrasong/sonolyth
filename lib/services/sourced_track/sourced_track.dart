@@ -16,8 +16,10 @@ import 'package:sonolyth/services/metadata/errors/exceptions.dart';
 
 import 'package:sonolyth/services/sourced_track/exceptions.dart';
 import 'package:sonolyth/services/sourced_track/qobuz_audio_source.dart';
+import 'package:sonolyth/services/sourced_track/tidal_audio_source.dart';
 import 'package:sonolyth/services/metadata/endpoints/audio_source.dart';
 import 'package:sonolyth/provider/audio_player/qobuz_playback.dart';
+import 'package:sonolyth/provider/audio_player/tidal_playback.dart';
 import 'package:sonolyth/services/spotiflac/track_matching.dart';
 import 'package:sonolyth/services/spotiflac/zarz_client.dart';
 
@@ -83,123 +85,72 @@ class SourcedTrack extends BasicSourcedTrack {
     if (cachedSource == null) {
       final qobuzEnabled =
           await ref.read(qobuzPlaybackEnabledProvider.future);
+      final tidalEnabled =
+          await ref.read(tidalPlaybackEnabledProvider.future);
       AppLogger.diag(
-        "[resolve] '${query.name}' cold (qobuz=${qobuzEnabled ? "on" : "off"})",
+        "[resolve] '${query.name}' cold "
+        "(qobuz=${qobuzEnabled ? "on" : "off"} "
+        "tidal=${tidalEnabled ? "on" : "off"})",
       );
 
-      // Qobuz (ISRC-exact, lossless) is the priority source. Resolve it on the
-      // hot path FIRST and — crucially — WITHOUT touching the YouTube plugin
-      // (Piped): a FLAC-served track must never pay a Piped search round trip,
-      // and prefetching upcoming tracks must stay cheap so skips don't lag.
-      // YouTube is fetched lazily only when Qobuz can't serve the track.
+      // Lossless sources (ISRC-exact) are the priority, tried in order: Qobuz,
+      // then Tidal, then the YouTube plugin (Piped) as the last resort. Each is
+      // resolved WITHOUT touching the YouTube plugin so a FLAC-served track
+      // never pays a Piped search round trip and prefetching upcoming tracks
+      // stays cheap.
+      //
+      // `transient` = a lossless source had the track (or was rate-limited) but
+      // couldn't stream it right now (gateway blip), as opposed to genuinely
+      // not carrying it. On a transient miss we play YouTube WITHOUT caching so
+      // the track upgrades back to lossless on a later play, instead of being
+      // permanently pinned to a (often wrong) YouTube match.
+      var transient = false;
+
       if (qobuzEnabled) {
         final qobuz = QobuzAudioSource();
+        final result = await _tryLosslessSource(
+          label: "qobuz",
+          match: () => qobuz.matches(query),
+          stream: qobuz.streams,
+          query: query,
+          ref: ref,
+          slug: audioSourceConfig.slug,
+          sw: sw,
+        );
+        if (result.sourced != null) return result.sourced!;
+        transient = transient || result.transient;
+      }
 
-        var qobuzCandidates = const <SonolythAudioSourceMatchObject>[];
-        // Distinguish a transient match (ISRC-search) failure from a clean
-        // "Qobuz has no candidates". A rate-limited or errored search — common
-        // during the page-load request burst, exactly when the first track is
-        // prewarmed — was previously swallowed and left qobuzCandidates empty,
-        // so it was misread as a genuine no-match and the YouTube result got
-        // cached PERMANENTLY. That pinned the first song to a lossy Piped source
-        // forever. Track these so the fall-through below stays uncached.
-        var rateLimited = false;
-        var matchError = false;
-        try {
-          qobuzCandidates = await qobuz.matches(query);
-          AppLogger.diag(
-            "[resolve] '${query.name}' qobuz matches=${qobuzCandidates.length} "
-            "(+${sw.elapsedMilliseconds}ms)",
-          );
-        } on ZarzRateLimitedException {
-          rateLimited = true;
-          AppLogger.diag(
-              "[resolve] '${query.name}' qobuz match 429 rate-limited");
-        } catch (e) {
-          matchError = true;
-          AppLogger.diag("[resolve] '${query.name}' qobuz match ERROR: $e");
-        }
+      if (tidalEnabled) {
+        final tidal = TidalAudioSource();
+        final result = await _tryLosslessSource(
+          label: "tidal",
+          match: () => tidal.matches(query),
+          stream: tidal.streams,
+          query: query,
+          ref: ref,
+          slug: audioSourceConfig.slug,
+          sw: sw,
+        );
+        if (result.sourced != null) return result.sourced!;
+        transient = transient || result.transient;
+      }
 
-        SonolythAudioSourceMatchObject? chosen;
-        List<SonolythAudioSourceStreamObject> manifest = const [];
-        for (final candidate
-            in qobuzCandidates.take(_maxQobuzPlaybackAttempts)) {
-          final attemptAt = sw.elapsedMilliseconds;
-          try {
-            final streams = await qobuz.streams(candidate);
-            if (streams.isNotEmpty) {
-              chosen = candidate;
-              manifest = streams;
-              AppLogger.diag(
-                "[resolve] '${query.name}' qobuz stream OK id=${candidate.id} "
-                "(${sw.elapsedMilliseconds - attemptAt}ms)",
-              );
-              break;
-            }
-            AppLogger.diag(
-              "[resolve] '${query.name}' qobuz stream empty id=${candidate.id} "
-              "(${sw.elapsedMilliseconds - attemptAt}ms)",
-            );
-          } on ZarzRateLimitedException {
-            rateLimited = true;
-            AppLogger.diag("[resolve] '${query.name}' qobuz 429 rate-limited");
-            break;
-          } catch (e) {
-            AppLogger.diag(
-              "[resolve] '${query.name}' qobuz stream ERROR id=${candidate.id}: $e",
-            );
-          }
-        }
-
-        if (chosen != null) {
-          // Cache the match only after the stream resolves — caching first
-          // would poison the table with a match that can't actually stream.
-          // Siblings (YouTube alternatives) are fetched lazily by the sibling
-          // sheet, exactly like the cached path, so this stays Piped-free.
-          await _cacheMatch(ref, query.id, audioSourceConfig.slug, chosen);
-
-          AppLogger.diag(
-            "[resolve] '${query.name}' -> QOBUZ flac (total ${sw.elapsedMilliseconds}ms)",
-          );
-          return SourcedTrack(
-            ref: ref,
-            siblings: const [],
-            info: chosen,
-            source: audioSourceConfig.slug,
-            sources: manifest,
-            query: query,
-          );
-        }
-
-        // Qobuz is rate-limited, errored on the match step, or carries the
-        // track (it returned candidates) but couldn't stream it right now — a
-        // gateway 500/timeout/network blip, not a real "Qobuz doesn't have it".
-        // Play via YouTube WITHOUT caching so the track upgrades back to
-        // lossless on a later play, rather than being permanently pinned to a
-        // (often wrong) YouTube match.
-        if (rateLimited || matchError || qobuzCandidates.isNotEmpty) {
-          AppLogger.diag(
-            "[resolve] '${query.name}' -> youtube (qobuz "
-            "${rateLimited ? "rate-limited" : matchError ? "match error" : "carried but unplayable"}, "
-            "NOT cached, +${sw.elapsedMilliseconds}ms)",
-          );
-          return _fetchViaPlugin(
-            query: query,
-            ref: ref,
-            pluginAudioSource: audioSource.audioSource,
-            slug: audioSourceConfig.slug,
-          );
-        }
-        // Qobuz genuinely doesn't carry the track (clean empty result) — fall
-        // through to the cached YouTube path below.
+      if (transient) {
         AppLogger.diag(
-          "[resolve] '${query.name}' qobuz has no candidates -> youtube (cached)",
+          "[resolve] '${query.name}' -> youtube (lossless transient, "
+          "NOT cached, +${sw.elapsedMilliseconds}ms)",
+        );
+        return _fetchViaPlugin(
+          query: query,
+          ref: ref,
+          pluginAudioSource: audioSource.audioSource,
+          slug: audioSourceConfig.slug,
         );
       }
 
-      // YouTube path: Qobuz disabled, or it genuinely doesn't carry this
-      // track. Resolve the best YouTube sibling and cache it as a stable
-      // fallback.
+      // No lossless source carries this track (or both are disabled) — resolve
+      // the best YouTube sibling and cache it as a stable fallback.
       final youtube = await _fetchViaPlugin(
         query: query,
         ref: ref,
@@ -437,15 +388,100 @@ class SourcedTrack extends BasicSourcedTrack {
     });
   }
 
+  /// Resolves [query] against one lossless source (Qobuz or Tidal) on the hot
+  /// path, WITHOUT touching the YouTube plugin. Returns the SourcedTrack (and
+  /// caches the match) on success, or `transient: true` when the source was
+  /// rate-limited/errored or carried the track but couldn't stream it right
+  /// now — so the caller tries the next source and avoids caching a YouTube
+  /// fallback for what's only a temporary miss. A clean empty result is
+  /// `transient: false` (the source genuinely doesn't carry the track).
+  static Future<({SourcedTrack? sourced, bool transient})> _tryLosslessSource({
+    required String label,
+    required Future<List<SonolythAudioSourceMatchObject>> Function() match,
+    required Future<List<SonolythAudioSourceStreamObject>> Function(
+            SonolythAudioSourceMatchObject)
+        stream,
+    required SonolythFullTrackObject query,
+    required Ref ref,
+    required String slug,
+    required Stopwatch sw,
+  }) async {
+    var candidates = const <SonolythAudioSourceMatchObject>[];
+    var rateLimited = false;
+    var matchError = false;
+    try {
+      candidates = await match();
+      AppLogger.diag(
+        "[resolve] '${query.name}' $label matches=${candidates.length} "
+        "(+${sw.elapsedMilliseconds}ms)",
+      );
+    } on ZarzRateLimitedException {
+      rateLimited = true;
+      AppLogger.diag("[resolve] '${query.name}' $label match 429 rate-limited");
+    } catch (e) {
+      matchError = true;
+      AppLogger.diag("[resolve] '${query.name}' $label match ERROR: $e");
+    }
+
+    SonolythAudioSourceMatchObject? chosen;
+    var manifest = const <SonolythAudioSourceStreamObject>[];
+    for (final candidate in candidates.take(_maxQobuzPlaybackAttempts)) {
+      try {
+        final streams = await stream(candidate);
+        if (streams.isNotEmpty) {
+          chosen = candidate;
+          manifest = streams;
+          break;
+        }
+      } on ZarzRateLimitedException {
+        rateLimited = true;
+        AppLogger.diag("[resolve] '${query.name}' $label 429 rate-limited");
+        break;
+      } catch (e) {
+        AppLogger.diag(
+          "[resolve] '${query.name}' $label stream ERROR id=${candidate.id}: $e",
+        );
+      }
+    }
+
+    if (chosen != null) {
+      // Cache only after the stream resolves — caching first would poison the
+      // table with a match that can't actually stream.
+      await _cacheMatch(ref, query.id, slug, chosen);
+      AppLogger.diag(
+        "[resolve] '${query.name}' -> $label flac (total ${sw.elapsedMilliseconds}ms)",
+      );
+      return (
+        sourced: SourcedTrack(
+          ref: ref,
+          siblings: const [],
+          info: chosen,
+          source: slug,
+          sources: manifest,
+          query: query,
+        ),
+        transient: false,
+      );
+    }
+
+    return (
+      sourced: null,
+      transient: rateLimited || matchError || candidates.isNotEmpty,
+    );
+  }
+
   /// Routes stream resolution for [match] to the source that produced it: the
-  /// native Qobuz source for Qobuz-owned matches, otherwise the active plugin
-  /// audio source (YouTube).
+  /// native Qobuz/Tidal sources for their own matches, otherwise the active
+  /// plugin audio source (YouTube).
   static Future<List<SonolythAudioSourceStreamObject>> _resolveStreams(
     MetadataPluginAudioSourceEndpoint pluginAudioSource,
     SonolythAudioSourceMatchObject match,
   ) async {
     if (QobuzAudioSource.ownsMatch(match)) {
       return QobuzAudioSource().streams(match);
+    }
+    if (TidalAudioSource.ownsMatch(match)) {
+      return TidalAudioSource().streams(match);
     }
     return pluginAudioSource.streams(match);
   }

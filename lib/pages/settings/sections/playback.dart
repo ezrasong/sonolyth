@@ -15,6 +15,7 @@ import 'package:sonolyth/modules/settings/section_card_with_heading.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/modules/settings/youtube_engine_not_installed_dialog.dart';
 import 'package:sonolyth/provider/audio_player/qobuz_playback.dart';
+import 'package:sonolyth/provider/audio_player/tidal_playback.dart';
 import 'package:sonolyth/provider/metadata_plugin/audio_source/quality_presets.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 import 'package:sonolyth/services/kv_store/kv_store.dart';
@@ -34,6 +35,8 @@ class SettingsPlaybackSection extends HookConsumerWidget {
         ref.watch(audioSourcePresetsProvider.notifier);
     final qobuzPlaybackEnabled =
         ref.watch(qobuzPlaybackEnabledProvider).value ?? false;
+    final tidalPlaybackEnabled =
+        ref.watch(tidalPlaybackEnabledProvider).value ?? false;
     final theme = Theme.of(context);
 
     return SectionCardWithHeading(
@@ -80,6 +83,22 @@ class SettingsPlaybackSection extends HookConsumerWidget {
             onChanged: (value) {
               ref
                   .read(qobuzPlaybackEnabledProvider.notifier)
+                  .setEnabled(value);
+            },
+          ),
+        ),
+        ListTile(
+          leading: const Icon(SonolythIcons.audioQuality),
+          title: const Text("Tidal lossless playback (experimental)"),
+          subtitle: const Text(
+            "After Qobuz, match by ISRC and stream lossless FLAC from Tidal "
+            "for tracks Qobuz doesn't carry, before falling back to YouTube.",
+          ),
+          trailing: Switch(
+            value: tidalPlaybackEnabled,
+            onChanged: (value) {
+              ref
+                  .read(tidalPlaybackEnabledProvider.notifier)
                   .setEnabled(value);
             },
           ),

@@ -93,7 +93,7 @@ class TidalProvider extends SpotiFlacProvider {
     if (tidalId == null) return null;
 
     for (final tier in _fallbackChain(quality)) {
-      final url = await _streamUrlForId(tidalId, tier);
+      final url = await streamUrlForId(tidalId, tier);
       if (url != null) {
         return SpotiFlacDownloadResolution(url: url, fileExtension: "flac");
       }
@@ -101,10 +101,21 @@ class TidalProvider extends SpotiFlacProvider {
     return null;
   }
 
+  /// Candidate TIDAL tracks for [track] (raw search maps, each carrying `id`,
+  /// `isrc`, `title`, `duration`, `artists`). Exposed for callers that do their
+  /// own ISRC-first ranking — the playback audio source — mirroring the Qobuz
+  /// provider's searchTracks.
+  Future<List<Map>> searchTracks(SonolythFullTrackObject track) async {
+    final query =
+        "${track.name} ${track.artists.map((a) => a.name).join(" ")}".trim();
+    return _search(query, limit: 10);
+  }
+
   /// Resolves a direct FLAC URL for a TIDAL track id at [quality], or null when
   /// the gateway returns a preview, a non-lossless tier, or a manifest we can't
-  /// download directly (DASH/segmented).
-  Future<String?> _streamUrlForId(String tidalId, String quality) async {
+  /// download directly (DASH/segmented). Shared by the download path
+  /// ([resolve]) and the Tidal playback audio source.
+  Future<String?> streamUrlForId(String tidalId, String quality) async {
     final Map payload;
     try {
       payload = await _client.postJson(_downloadUrl, {
