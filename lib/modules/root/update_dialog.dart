@@ -108,6 +108,10 @@ class RootAppUpdateDialog extends HookWidget {
       ],
       content: Column(
         mainAxisSize: MainAxisSize.min,
+        // Left-align the body to match the (left-aligned) title and avoid the
+        // mixed title-left / body-center / button-right look; Column otherwise
+        // defaults to centering its children.
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             nightlyBuildNum != null
@@ -115,7 +119,7 @@ class RootAppUpdateDialog extends HookWidget {
                 : context.l10n.release_version(version!),
           ),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Text(context.l10n.read_the_latest),
               AnchorButton(
