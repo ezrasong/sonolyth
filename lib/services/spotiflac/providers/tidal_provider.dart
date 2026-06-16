@@ -111,11 +111,21 @@ class TidalProvider extends SpotiFlacProvider {
     return _search(query, limit: 10);
   }
 
-  /// Resolves a direct FLAC URL for a TIDAL track id at [quality], or null when
-  /// the gateway returns a preview, a non-lossless tier, or a manifest we can't
-  /// download directly (DASH/segmented). Shared by the download path
+  /// Resolves a playable FLAC URL for a TIDAL track id at [quality], or null on
+  /// a preview / non-lossless / unusable response. Shared by the download path
   /// ([resolve]) and the Tidal playback audio source.
-  Future<String?> streamUrlForId(String tidalId, String quality) async {
+  ///
+  /// TIDAL lossless usually comes back as a **DASH manifest** (FLAC segments),
+  /// not a single direct file URL. With [allowDash] true (playback) we return
+  /// the `.mpd` URL — mpv/media_kit streams DASH directly. With it false
+  /// (downloads, which can't fetch an .mpd as a file) DASH is deferred so the
+  /// next provider (Deezer) handles it. The rarer "BTS" response carries a
+  /// single direct FLAC URL usable by both.
+  Future<String?> streamUrlForId(
+    String tidalId,
+    String quality, {
+    bool allowDash = false,
+  }) async {
     final Map payload;
     try {
       payload = await _client.postJson(_downloadUrl, {
@@ -135,8 +145,12 @@ class TidalProvider extends SpotiFlacProvider {
       return null;
     }
     // A downgraded tier means TIDAL handed back lossy AAC; defer rather than
-    // bake in a worse copy than a later lossless provider could give.
-    final audioQuality = (data["audioQuality"]?.toString() ?? "").toUpperCase();
+    // bake in a worse copy than a later lossless provider could give. The
+    // resolved quality is reported both at top level and inside `data`.
+    final audioQuality =
+        (payload["audioQuality"] ?? data["audioQuality"] ?? "")
+            .toString()
+            .toUpperCase();
     if (audioQuality.isNotEmpty &&
         audioQuality != "LOSSLESS" &&
         audioQuality != "HI_RES" &&
@@ -144,6 +158,16 @@ class TidalProvider extends SpotiFlacProvider {
       return null;
     }
 
+    // DASH (the common lossless case): stream the manifest URL directly for
+    // playback; defer for downloads (no in-app segment stitching yet).
+    final manifestType = payload["manifestType"]?.toString().toLowerCase();
+    final mpdUri = payload["mpdUri"]?.toString();
+    if (manifestType == "dash" || (mpdUri != null && mpdUri.isNotEmpty)) {
+      if (allowDash && mpdUri != null && mpdUri.isNotEmpty) return mpdUri;
+      return null;
+    }
+
+    // BTS manifest: a JSON object with a single direct file URL.
     final manifestB64 = data["manifest"]?.toString();
     if (manifestB64 == null || manifestB64.isEmpty) return null;
 
@@ -154,8 +178,6 @@ class TidalProvider extends SpotiFlacProvider {
       return null;
     }
 
-    // BTS manifest: a JSON object with a direct file URL. DASH manifests start
-    // with '<' (XML) and need stitching — defer those to the next provider.
     final trimmed = manifestText.trimLeft();
     if (!trimmed.startsWith("{")) return null;
 

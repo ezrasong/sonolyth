@@ -81,7 +81,13 @@ class TidalAudioSource {
   Future<List<SonolythAudioSourceStreamObject>> streams(
     SonolythAudioSourceMatchObject match,
   ) async {
-    final url = await _provider.streamUrlForId(match.id, _streamingQuality);
+    // allowDash: TIDAL serves lossless as a DASH manifest; mpv/media_kit
+    // streams the `.mpd` directly, so playback uses it (downloads can't).
+    final url = await _provider.streamUrlForId(
+      match.id,
+      _streamingQuality,
+      allowDash: true,
+    );
     if (url == null || url.isEmpty) return const [];
 
     return [
