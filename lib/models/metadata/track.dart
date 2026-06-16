@@ -24,7 +24,10 @@ class SonolythTrackObject with _$SonolythTrackObject {
     // ISO-8601 timestamp of when the track was added to the collection it was
     // fetched from (playlist / liked songs). Null outside those contexts
     // (album tracks, search results) and on providers that don't expose it.
-    String? addedAt,
+    // Spotify's pathfinder returns this as a nested object ({isoString: ...})
+    // rather than a bare string, so it's coerced via [_readAddedAt] — passing
+    // the raw Map straight into a `String?` cast crashed every track's parse.
+    @JsonKey(fromJson: _readAddedAt) String? addedAt,
   }) = SonolythFullTrackObject;
 
   factory SonolythTrackObject.localTrackFromFile(
@@ -84,6 +87,36 @@ class SonolythTrackObject with _$SonolythTrackObject {
             ? {...json, "runtimeType": "local"}
             : {...json, "runtimeType": "full"},
       );
+}
+
+/// Coerces a track's "added at" into an ISO-8601 string. Spotify's pathfinder
+/// playlist/library items carry it as an object (e.g. `{isoString: "..."}` or
+/// an epoch-millis wrapper), not a bare string — and providers that don't
+/// expose it send null. Anything we can't read becomes null so a single odd
+/// shape can never crash the whole track-list parse (the date-added sort just
+/// no-ops for those tracks).
+String? _readAddedAt(Object? value) {
+  if (value == null) return null;
+  if (value is String) return value.isEmpty ? null : value;
+  if (value is Map) {
+    final iso = value["isoString"] ??
+        value["iso"] ??
+        value["date"] ??
+        value["datetime"] ??
+        value["dateTime"] ??
+        value["timestamp"];
+    if (iso is String && iso.isNotEmpty) return iso;
+    final millis = value["totalMilliseconds"] ??
+        value["milliseconds"] ??
+        value["ms"] ??
+        value["epochMillis"];
+    if (millis is num) {
+      return DateTime.fromMillisecondsSinceEpoch(millis.toInt())
+          .toUtc()
+          .toIso8601String();
+    }
+  }
+  return null;
 }
 
 extension AsMediaListSonolythTrackObject on Iterable<SonolythTrackObject> {

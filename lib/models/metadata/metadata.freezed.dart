@@ -4978,7 +4978,7 @@ mixin _$SonolythTrackObject {
             int durationMs,
             String isrc,
             bool explicit,
-            String? addedAt)
+            @JsonKey(fromJson: _readAddedAt) String? addedAt)
         full,
   }) =>
       throw _privateConstructorUsedError;
@@ -5002,7 +5002,7 @@ mixin _$SonolythTrackObject {
             int durationMs,
             String isrc,
             bool explicit,
-            String? addedAt)?
+            @JsonKey(fromJson: _readAddedAt) String? addedAt)?
         full,
   }) =>
       throw _privateConstructorUsedError;
@@ -5026,7 +5026,7 @@ mixin _$SonolythTrackObject {
             int durationMs,
             String isrc,
             bool explicit,
-            String? addedAt)?
+            @JsonKey(fromJson: _readAddedAt) String? addedAt)?
         full,
     required TResult orElse(),
   }) =>
@@ -5316,7 +5316,7 @@ class _$SonolythLocalTrackObjectImpl implements SonolythLocalTrackObject {
             int durationMs,
             String isrc,
             bool explicit,
-            String? addedAt)
+            @JsonKey(fromJson: _readAddedAt) String? addedAt)
         full,
   }) {
     return local(id, name, externalUri, artists, album, durationMs, path);
@@ -5343,7 +5343,7 @@ class _$SonolythLocalTrackObjectImpl implements SonolythLocalTrackObject {
             int durationMs,
             String isrc,
             bool explicit,
-            String? addedAt)?
+            @JsonKey(fromJson: _readAddedAt) String? addedAt)?
         full,
   }) {
     return local?.call(id, name, externalUri, artists, album, durationMs, path);
@@ -5370,7 +5370,7 @@ class _$SonolythLocalTrackObjectImpl implements SonolythLocalTrackObject {
             int durationMs,
             String isrc,
             bool explicit,
-            String? addedAt)?
+            @JsonKey(fromJson: _readAddedAt) String? addedAt)?
         full,
     required TResult orElse(),
   }) {
@@ -5472,7 +5472,7 @@ abstract class _$$SonolythFullTrackObjectImplCopyWith<$Res>
       int durationMs,
       String isrc,
       bool explicit,
-      String? addedAt});
+      @JsonKey(fromJson: _readAddedAt) String? addedAt});
 
   @override
   $SonolythSimpleAlbumObjectCopyWith<$Res> get album;
@@ -5556,7 +5556,7 @@ class _$SonolythFullTrackObjectImpl implements SonolythFullTrackObject {
       required this.durationMs,
       required this.isrc,
       required this.explicit,
-      this.addedAt,
+      @JsonKey(fromJson: _readAddedAt) this.addedAt,
       final String? $type})
       : _artists = artists,
         $type = $type ?? 'full';
@@ -5590,7 +5590,11 @@ class _$SonolythFullTrackObjectImpl implements SonolythFullTrackObject {
 // ISO-8601 timestamp of when the track was added to the collection it was
 // fetched from (playlist / liked songs). Null outside those contexts
 // (album tracks, search results) and on providers that don't expose it.
+// Spotify's pathfinder returns this as a nested object ({isoString: ...})
+// rather than a bare string, so it's coerced via [_readAddedAt] — passing
+// the raw Map straight into a `String?` cast crashed every track's parse.
   @override
+  @JsonKey(fromJson: _readAddedAt)
   final String? addedAt;
 
   @JsonKey(name: 'runtimeType')
@@ -5664,7 +5668,7 @@ class _$SonolythFullTrackObjectImpl implements SonolythFullTrackObject {
             int durationMs,
             String isrc,
             bool explicit,
-            String? addedAt)
+            @JsonKey(fromJson: _readAddedAt) String? addedAt)
         full,
   }) {
     return full(id, name, externalUri, artists, album, durationMs, isrc,
@@ -5692,7 +5696,7 @@ class _$SonolythFullTrackObjectImpl implements SonolythFullTrackObject {
             int durationMs,
             String isrc,
             bool explicit,
-            String? addedAt)?
+            @JsonKey(fromJson: _readAddedAt) String? addedAt)?
         full,
   }) {
     return full?.call(id, name, externalUri, artists, album, durationMs, isrc,
@@ -5720,7 +5724,7 @@ class _$SonolythFullTrackObjectImpl implements SonolythFullTrackObject {
             int durationMs,
             String isrc,
             bool explicit,
-            String? addedAt)?
+            @JsonKey(fromJson: _readAddedAt) String? addedAt)?
         full,
     required TResult orElse(),
   }) {
@@ -5772,15 +5776,16 @@ class _$SonolythFullTrackObjectImpl implements SonolythFullTrackObject {
 
 abstract class SonolythFullTrackObject implements SonolythTrackObject {
   factory SonolythFullTrackObject(
-      {required final String id,
-      required final String name,
-      required final String externalUri,
-      final List<SonolythSimpleArtistObject> artists,
-      required final SonolythSimpleAlbumObject album,
-      required final int durationMs,
-      required final String isrc,
-      required final bool explicit,
-      final String? addedAt}) = _$SonolythFullTrackObjectImpl;
+          {required final String id,
+          required final String name,
+          required final String externalUri,
+          final List<SonolythSimpleArtistObject> artists,
+          required final SonolythSimpleAlbumObject album,
+          required final int durationMs,
+          required final String isrc,
+          required final bool explicit,
+          @JsonKey(fromJson: _readAddedAt) final String? addedAt}) =
+      _$SonolythFullTrackObjectImpl;
 
   factory SonolythFullTrackObject.fromJson(Map<String, dynamic> json) =
       _$SonolythFullTrackObjectImpl.fromJson;
@@ -5802,6 +5807,10 @@ abstract class SonolythFullTrackObject implements SonolythTrackObject {
       get explicit; // ISO-8601 timestamp of when the track was added to the collection it was
 // fetched from (playlist / liked songs). Null outside those contexts
 // (album tracks, search results) and on providers that don't expose it.
+// Spotify's pathfinder returns this as a nested object ({isoString: ...})
+// rather than a bare string, so it's coerced via [_readAddedAt] — passing
+// the raw Map straight into a `String?` cast crashed every track's parse.
+  @JsonKey(fromJson: _readAddedAt)
   String? get addedAt;
 
   /// Create a copy of SonolythTrackObject

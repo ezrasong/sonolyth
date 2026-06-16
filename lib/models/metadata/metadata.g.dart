@@ -501,7 +501,7 @@ _$SonolythFullTrackObjectImpl _$$SonolythFullTrackObjectImplFromJson(
       durationMs: (json['durationMs'] as num).toInt(),
       isrc: json['isrc'] as String,
       explicit: json['explicit'] as bool,
-      addedAt: json['addedAt'] as String?,
+      addedAt: _readAddedAt(json['addedAt']),
       $type: json['runtimeType'] as String?,
     );
 
