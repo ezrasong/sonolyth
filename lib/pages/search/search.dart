@@ -89,15 +89,17 @@ class SearchPage extends HookConsumerWidget {
                   errorCode: MetadataPluginErrorCode.noDefaultMetadataPlugin,
                   message: _
                 )) {
-              return const NoDefaultMetadataPlugin();
+              return const Center(child: NoDefaultMetadataPlugin());
             }
 
             if (searchChipSnapshot.hasError) {
-              return ErrorBox(
-                error: searchChipSnapshot.error!,
-                onRetry: () {
-                  ref.invalidate(metadataPluginSearchChipsProvider);
-                },
+              return Center(
+                child: ErrorBox(
+                  error: searchChipSnapshot.error!,
+                  onRetry: () {
+                    ref.invalidate(metadataPluginSearchChipsProvider);
+                  },
+                ),
               );
             }
 

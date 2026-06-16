@@ -115,9 +115,19 @@ String? _readAddedAt(Object? value) {
           .toUtc()
           .toIso8601String();
     }
+    // Diagnostic (one-shot): we got a Map we couldn't read a date out of, so
+    // the date-added sort silently no-ops. Log its shape once so the real key
+    // can be wired without guessing. Remove once confirmed.
+    if (!_loggedAddedAtShape) {
+      _loggedAddedAtShape = true;
+      AppLogger.diag("addedAt unrecognized Map: keys=${value.keys.toList()} "
+          "sample=$value");
+    }
   }
   return null;
 }
+
+bool _loggedAddedAtShape = false;
 
 extension AsMediaListSonolythTrackObject on Iterable<SonolythTrackObject> {
   List<SonolythMedia> asMediaList() {

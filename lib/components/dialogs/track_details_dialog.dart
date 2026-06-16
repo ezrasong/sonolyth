@@ -20,7 +20,6 @@ class TrackDetailsDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final theme = Theme.of(context);
-    final mediaQuery = MediaQuery.of(context);
     // watch (not read): the card must update when the track finishes resolving
     // or its stream URL is refreshed, so the Source/URL rows reflect what's
     // actually playing instead of a stale/empty snapshot from when it opened.
@@ -103,7 +102,10 @@ class TrackDetailsDialog extends HookConsumerWidget {
         ],
       ),
       content: SizedBox(
-        width: mediaQuery.mdAndUp ? double.infinity : 700,
+        // Fill the dialog's own (constrained) width on every screen. The old
+        // value forced 700px on phones — far wider than the ~360px viewport —
+        // which overflowed the dialog horizontally.
+        width: double.infinity,
         child: Table(
           columnWidths: const {
             0: FixedTableSize(95),

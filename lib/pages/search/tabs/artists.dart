@@ -29,11 +29,13 @@ class SearchPageArtistsTab extends HookConsumerWidget {
     final searchArtists = searchArtistsSnapshot.asData?.value.items ?? [];
 
     if (searchArtistsSnapshot.hasError) {
-      return ErrorBox(
-        error: searchArtistsSnapshot.error!,
-        onRetry: () {
-          ref.invalidate(metadataPluginSearchArtistsProvider(searchTerm));
-        },
+      return Center(
+        child: ErrorBox(
+          error: searchArtistsSnapshot.error!,
+          onRetry: () {
+            ref.invalidate(metadataPluginSearchArtistsProvider(searchTerm));
+          },
+        ),
       );
     }
 

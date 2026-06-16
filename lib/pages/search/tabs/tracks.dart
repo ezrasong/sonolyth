@@ -33,11 +33,13 @@ class SearchPageTracksTab extends HookConsumerWidget {
     final playlistNotifier = ref.watch(audioPlayerProvider.notifier);
 
     if (searchTracksSnapshot.hasError) {
-      return ErrorBox(
-        error: searchTracksSnapshot.error!,
-        onRetry: () {
-          ref.invalidate(metadataPluginSearchTracksProvider(searchTerm));
-        },
+      return Center(
+        child: ErrorBox(
+          error: searchTracksSnapshot.error!,
+          onRetry: () {
+            ref.invalidate(metadataPluginSearchTracksProvider(searchTerm));
+          },
+        ),
       );
     }
 

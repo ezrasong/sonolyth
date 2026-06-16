@@ -97,7 +97,9 @@ class ColorSchemePickerDialog extends HookConsumerWidget {
       ],
       content: SizedBox(
         height: 200,
-        width: 400,
+        // Fill the dialog width instead of a fixed 400px, which overflowed on
+        // phones narrower than ~400 logical px; the Wrap reflows to fit.
+        width: double.infinity,
         child: Wrap(
           spacing: 8,
           runSpacing: 8,

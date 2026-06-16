@@ -22,11 +22,13 @@ class SearchPageAllTab extends HookConsumerWidget {
         ref.watch(metadataPluginSearchAllProvider(searchTerm));
 
     if (searchSnapshot.hasError) {
-      return ErrorBox(
-        error: searchSnapshot.error!,
-        onRetry: () {
-          ref.invalidate(metadataPluginSearchAllProvider(searchTerm));
-        },
+      return Center(
+        child: ErrorBox(
+          error: searchSnapshot.error!,
+          onRetry: () {
+            ref.invalidate(metadataPluginSearchAllProvider(searchTerm));
+          },
+        ),
       );
     }
 

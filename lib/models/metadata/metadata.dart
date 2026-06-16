@@ -11,6 +11,7 @@ import 'package:mime/mime.dart';
 import 'package:path/path.dart';
 import 'package:sonolyth/collections/assets.gen.dart';
 import 'package:sonolyth/services/audio_player/audio_player.dart';
+import 'package:sonolyth/services/logger/logger.dart';
 import 'package:sonolyth/utils/primitive_utils.dart';
 
 part 'metadata.g.dart';

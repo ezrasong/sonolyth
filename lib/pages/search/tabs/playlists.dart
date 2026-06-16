@@ -25,11 +25,13 @@ class SearchPagePlaylistsTab extends HookConsumerWidget {
         [FakeData.playlistSimple];
 
     if (searchPlaylistsSnapshot.hasError) {
-      return ErrorBox(
-        error: searchPlaylistsSnapshot.error!,
-        onRetry: () {
-          ref.invalidate(metadataPluginSearchPlaylistsProvider(searchTerm));
-        },
+      return Center(
+        child: ErrorBox(
+          error: searchPlaylistsSnapshot.error!,
+          onRetry: () {
+            ref.invalidate(metadataPluginSearchPlaylistsProvider(searchTerm));
+          },
+        ),
       );
     }
 

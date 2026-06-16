@@ -284,35 +284,20 @@ class TrackTile extends HookConsumerWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                      _ => Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              child: Button(
-                                style: ButtonVariance.link.copyWith(
-                                  padding: (context, states, value) =>
-                                      EdgeInsets.zero,
-                                ),
-                                onPressed: effectiveSelection
-                                    ? null
-                                    : () {
-                                        context.navigateTo(
-                                            TrackRoute(trackId: track.id));
-                                      },
-                                child: Text(
-                                  track.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: isPlaying
-                                      ? TextStyle(
-                                          color: theme.colorScheme.primary,
-                                          fontWeight: FontWeight.w600,
-                                        )
-                                      : null,
-                                ),
-                              ),
-                            ),
-                          ],
+                      // The track name is plain text (not a navigation link) so
+                      // a tap anywhere on the row — name included — falls through
+                      // to the row's onPressed and PLAYS the track, Spotify-style.
+                      // Track details remain reachable via the row's "⋯" menu.
+                      _ => Text(
+                          track.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: isPlaying
+                              ? TextStyle(
+                                  color: theme.colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                )
+                              : null,
                         ),
                     },
                   ),

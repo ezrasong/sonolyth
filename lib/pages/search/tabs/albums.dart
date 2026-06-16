@@ -25,11 +25,13 @@ class SearchPageAlbumsTab extends HookConsumerWidget {
         searchAlbumsSnapshot.asData?.value.items ?? [FakeData.albumSimple];
 
     if (searchAlbumsSnapshot.hasError) {
-      return ErrorBox(
-        error: searchAlbumsSnapshot.error!,
-        onRetry: () {
-          ref.invalidate(metadataPluginSearchAlbumsProvider(searchTerm));
-        },
+      return Center(
+        child: ErrorBox(
+          error: searchAlbumsSnapshot.error!,
+          onRetry: () {
+            ref.invalidate(metadataPluginSearchAlbumsProvider(searchTerm));
+          },
+        ),
       );
     }
 
