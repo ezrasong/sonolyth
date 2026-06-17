@@ -54,6 +54,18 @@ typedef _HeadBuffer = ({
   String upstreamUrl,
 });
 
+/// A sized map of a TIDAL DASH track's segments: each segment's absolute URL,
+/// its byte size, and the running byte offset where it begins, plus the total.
+/// Lets the server present the segmented track as a single SEEKABLE file while
+/// fetching segments on-demand (instant start, only the played bytes downloaded)
+/// instead of assembling the whole file first.
+typedef _DashSegmentMap = ({
+  List<String> urls,
+  List<int> starts,
+  List<int> sizes,
+  int total,
+});
+
 class ServerPlaybackRoutes {
   final Ref ref;
   UserPreferences get userPreferences => ref.read(userPreferencesProvider);
@@ -615,33 +627,196 @@ class ServerPlaybackRoutes {
   /// requests share ONE stitch instead of each re-downloading the track.
   static final Map<String, Future<File>> _dashStitchJobs = {};
 
-  /// Serves a TIDAL DASH track by stitching its FLAC segments into one COMPLETE
-  /// fMP4 file, then serving that with Range support.
+  /// Sized segment maps keyed by track id, so range requests within a play reuse
+  /// the (one-time) segment HEADs instead of re-probing.
+  static final Map<String, _DashSegmentMap> _dashMaps = {};
+
+  /// Serves a TIDAL DASH track as a SEEKABLE virtual file: it sizes the FLAC
+  /// segments once (parallel HEAD), reports the exact total as content-length,
+  /// and serves any byte range by fetching just the overlapping segments
+  /// on-demand. media_kit's mpv needs a seekable, sized source (a DASH manifest
+  /// or a non-seekable concat both give "Error decoding audio" on-device) but
+  /// does NOT need the whole file up front — so playback starts on the first
+  /// segment (instant) and only the bytes you actually listen to are fetched.
   ///
-  /// TIDAL lossless is FLAC split across dozens of fMP4 segments. media_kit's
-  /// mpv canNOT play a DASH manifest or a non-seekable progressive concat — both
-  /// give "Error decoding audio" on-device (verified in `.spotube_logs`). It
-  /// only reliably plays a complete, seekable file, exactly like a download. So
-  /// we assemble the whole track once (cached + reused for the session) and
-  /// [_serveLocalFile] serves it with content-length + ranges. The first play of
-  /// a track buffers while it assembles; replays/seeks are instant.
+  /// Falls back to assembling the complete file ([_stitchedDashFile]) when the
+  /// segments can't be sized (so a HEAD-less CDN still plays, just with a
+  /// buffer). A fully-assembled file from a prior play is served directly.
   Future<Response> _serveDashTrack(
     Request request,
     SourcedTrack track, {
     required bool headOnly,
   }) async {
-    final File file;
+    // A complete file from a prior full play / fallback — serve it directly.
+    final completeFile = File(join(
+      await UserPreferencesNotifier.getMusicCacheDir(),
+      "tidal-dash-${track.info.id}.mp4",
+    ));
+    if (await completeFile.exists() && await completeFile.length() > 0) {
+      return _serveLocalFile(
+          request, completeFile, await completeFile.length(), "audio/mp4",
+          headOnly: headOnly);
+    }
+
+    _DashSegmentMap? map;
     try {
-      file = await _stitchedDashFile(track);
+      map = await _dashSegmentMap(track);
     } catch (e, stack) {
       AppLogger.reportError(e, stack);
-      return Response.internalServerError(
-        body: "Could not resolve Tidal DASH track",
-      );
     }
-    final length = await file.length();
-    return _serveLocalFile(request, file, length, "audio/mp4",
-        headOnly: headOnly);
+
+    // Couldn't size the segments → assemble the whole file first (still plays).
+    if (map == null) {
+      final File file;
+      try {
+        file = await _stitchedDashFile(track);
+      } catch (e, stack) {
+        AppLogger.reportError(e, stack);
+        return Response.internalServerError(
+          body: "Could not resolve Tidal DASH track",
+        );
+      }
+      return _serveLocalFile(
+          request, file, await file.length(), "audio/mp4",
+          headOnly: headOnly);
+    }
+
+    final total = map.total;
+    final rangeHeader = request.headers["range"];
+    final m = rangeHeader == null
+        ? null
+        : RegExp(r"^bytes=(\d*)-(\d*)$").firstMatch(rangeHeader.trim());
+    final isRange =
+        m != null && (m.group(1)!.isNotEmpty || m.group(2)!.isNotEmpty);
+
+    int start = 0;
+    int end = total - 1;
+    if (isRange) {
+      if (m.group(1)!.isEmpty) {
+        start = max(0, total - int.parse(m.group(2)!));
+      } else {
+        start = int.parse(m.group(1)!);
+        end = m.group(2)!.isEmpty
+            ? total - 1
+            : min(int.parse(m.group(2)!), total - 1);
+      }
+    }
+    if (start < 0 || start > end || start >= total) {
+      return Response(416, headers: {"content-range": "bytes */$total"});
+    }
+
+    final headers = <String, String>{
+      "content-type": "audio/mp4",
+      "content-length": "${end - start + 1}",
+      "accept-ranges": "bytes",
+      if (isRange) "content-range": "bytes $start-$end/$total",
+    };
+    final status = isRange ? 206 : 200;
+    if (headOnly) return Response(status, headers: headers);
+    return Response(status,
+        body: _streamDashRange(track, map, start, end), headers: headers);
+  }
+
+  /// Builds (or reuses) the sized segment map for [track]. Fetches the manifest
+  /// and HEADs every segment in parallel for its byte size. Returns null if any
+  /// size is unknown (no seekable total possible → caller assembles the file).
+  Future<_DashSegmentMap?> _dashSegmentMap(SourcedTrack track) async {
+    final cached = _dashMaps[track.info.id];
+    if (cached != null) return cached;
+
+    final mpdUrl = stripDashUrl(track.url!);
+    final manifest = await TidalDashStitcher(dio).fetchManifest(mpdUrl);
+    if (manifest.isEmpty) return null;
+
+    final sizes = await Future.wait(manifest.segmentUrls.map(_segmentSize));
+    if (sizes.any((s) => s == null)) return null;
+
+    final starts = <int>[];
+    var acc = 0;
+    for (final s in sizes) {
+      starts.add(acc);
+      acc += s!;
+    }
+    if (acc <= 0) return null;
+
+    final map = (
+      urls: manifest.segmentUrls,
+      starts: starts,
+      sizes: sizes.cast<int>(),
+      total: acc,
+    );
+    _dashMaps[track.info.id] = map;
+    while (_dashMaps.length > 6) {
+      _dashMaps.remove(_dashMaps.keys.first);
+    }
+    return map;
+  }
+
+  /// The byte size of one segment via HEAD, or null when the CDN doesn't report
+  /// a content-length (then a seekable map can't be built).
+  Future<int?> _segmentSize(String url) async {
+    try {
+      final res = await dio.head(
+        url,
+        options: Options(
+          headers: {"user-agent": dashSegmentUserAgent},
+          validateStatus: (s) => s != null && s < 400,
+        ),
+      );
+      final cl = res.headers.value("content-length");
+      return cl == null ? null : int.tryParse(cl);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Streams bytes [start]-[end] of the virtual file by fetching just the
+  /// overlapping segments (in order) and slicing each to the needed bytes.
+  Stream<List<int>> _streamDashRange(
+    SourcedTrack track,
+    _DashSegmentMap map,
+    int start,
+    int end,
+  ) async* {
+    // First segment overlapping `start`.
+    var i = 0;
+    while (i < map.urls.length - 1 && map.starts[i + 1] <= start) {
+      i++;
+    }
+    for (; i < map.urls.length; i++) {
+      final segStart = map.starts[i];
+      if (segStart > end) break;
+      final bytes = await _fetchSegmentBytes(map.urls[i]);
+      if (bytes == null) {
+        // Expired/unreachable mid-stream — drop the map so a later open
+        // re-resolves with fresh segment URLs.
+        _dashMaps.remove(track.info.id);
+        return;
+      }
+      final from = start > segStart ? start - segStart : 0;
+      final to = end < segStart + bytes.length
+          ? end - segStart + 1
+          : bytes.length;
+      if (from < to && from < bytes.length) {
+        yield bytes.sublist(from, min(to, bytes.length));
+      }
+    }
+  }
+
+  Future<List<int>?> _fetchSegmentBytes(String url) async {
+    try {
+      final res = await dio.get<List<int>>(
+        url,
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: {"user-agent": dashSegmentUserAgent},
+          validateStatus: (s) => s != null && s < 400,
+        ),
+      );
+      return res.data;
+    } catch (_) {
+      return null;
+    }
   }
 
   /// The complete stitched fMP4 file for [track], built once and shared across
