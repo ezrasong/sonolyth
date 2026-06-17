@@ -88,6 +88,14 @@ class SmartShuffleNotifier extends Notifier<bool> {
     }
   }
 
+  /// Mirror the injected-track set into [smartShuffleInjectedIdsProvider] so the
+  /// queue UI can mark which tracks are recommendations vs. real queue tracks.
+  void _syncInjected() {
+    ref
+        .read(smartShuffleInjectedIdsProvider.notifier)
+        .update(_injectedTrackIds.toSet());
+  }
+
   Future<void> _persist(bool enabled) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -135,6 +143,7 @@ class SmartShuffleNotifier extends Notifier<bool> {
           .read(audioPlayerProvider.notifier)
           .removeTracks(_injectedTrackIds.where((id) => id != activeId));
       _injectedTrackIds = {};
+      _syncInjected();
     }
     _suggestedEver = {};
     if (!keepShuffle) {
@@ -190,6 +199,7 @@ class SmartShuffleNotifier extends Notifier<bool> {
       // again on disable, where the id could now belong to a track the new
       // queue legitimately contains.
       _injectedTrackIds.removeWhere((id) => !existingIds.contains(id));
+      _syncInjected();
       final artistIds = queueTracks
           .expand((t) => t.artists.map((a) => a.id))
           .toSet()
@@ -220,6 +230,7 @@ class SmartShuffleNotifier extends Notifier<bool> {
       final picked = recommendations.take(count).toList();
       _injectedTrackIds.addAll(picked.map((t) => t.id));
       _suggestedEver.addAll(picked.map((t) => t.id));
+      _syncInjected();
       await ref.read(audioPlayerProvider.notifier).addTracks(picked);
     } catch (e, stack) {
       AppLogger.reportError(e, stack);
@@ -232,6 +243,22 @@ class SmartShuffleNotifier extends Notifier<bool> {
 final smartShuffleProvider = NotifierProvider<SmartShuffleNotifier, bool>(
   SmartShuffleNotifier.new,
 );
+
+/// Track ids currently injected as smart-shuffle recommendations — i.e. NOT
+/// part of the original queue/playlist. The queue UI watches this to mark
+/// recommendations distinctly from the playlist's own tracks. Empty when smart
+/// shuffle is off.
+final smartShuffleInjectedIdsProvider =
+    NotifierProvider<SmartShuffleInjectedIdsNotifier, Set<String>>(
+  SmartShuffleInjectedIdsNotifier.new,
+);
+
+class SmartShuffleInjectedIdsNotifier extends Notifier<Set<String>> {
+  @override
+  Set<String> build() => const {};
+
+  void update(Set<String> ids) => state = ids;
+}
 
 /// Cycles shuffle off -> shuffle -> smart shuffle -> off, mirroring Spotify.
 Future<void> cycleShuffleMode(WidgetRef ref) =>

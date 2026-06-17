@@ -20,6 +20,7 @@ import 'package:sonolyth/hooks/controllers/use_auto_scroll_controller.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/modules/player/player_queue_actions.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/audio_player/smart_shuffle.dart';
 import 'package:sonolyth/provider/audio_player/state.dart';
 
 class PlayerQueue extends HookConsumerWidget {
@@ -53,7 +54,12 @@ class PlayerQueue extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
+    final theme = Theme.of(context);
     final mediaQuery = MediaQuery.sizeOf(context);
+
+    // Track ids injected by smart shuffle (recommendations, not from the
+    // playlist) — marked with a badge in the list below.
+    final injectedIds = ref.watch(smartShuffleInjectedIdsProvider);
 
     final controller = useAutoScrollController();
     final searchText = useState('');
@@ -338,6 +344,24 @@ class PlayerQueue extends HookConsumerWidget {
                                     }
                                   },
                                   leadingActions: [
+                                    // Smart-shuffle recommendation (not part of
+                                    // the playlist) — mark it so it's clear which
+                                    // tracks are suggestions vs. your own queue.
+                                    if (injectedIds.contains(track.id))
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 8.0),
+                                        child: Tooltip(
+                                          tooltip: const TooltipContainer(
+                                            child: Text("Recommended"),
+                                          ).call,
+                                          child: Icon(
+                                            SonolythIcons.lightningOutlined,
+                                            size: 16,
+                                            color: theme.colorScheme.primary,
+                                          ),
+                                        ),
+                                      ),
                                     if (!isSearching.value &&
                                         searchText.value.isEmpty &&
                                         !selectionMode.value)

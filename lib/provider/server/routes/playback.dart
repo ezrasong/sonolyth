@@ -1013,6 +1013,16 @@ class ServerPlaybackRoutes {
         if (headResponse != null) return headResponse;
       }
 
+      // Diagnostic: a Qobuz track reaching the live path means its head wasn't
+      // pre-fetched in time — i.e. the skip outran the prefetch (the likely
+      // cause of a Qobuz skip delay). Lands in .spotube_logs to confirm/refute.
+      if (head == null && QobuzAudioSource.ownsMatch(sourcedTrack.info)) {
+        AppLogger.reportError(
+          "[qobuz-serve] cold open, head not ready: '${sourcedTrack.query.name}'",
+          StackTrace.empty,
+        );
+      }
+
       final res = await streamTrack(
         request,
         sourcedTrack,
