@@ -19,10 +19,33 @@ abstract class TrackMatching {
   static final _nonAlphaNum = RegExp(r"[^a-z0-9\s]");
   static final _spaces = RegExp(r"\s+");
 
+  /// Bracketed release descriptors that DON'T change the recording's identity —
+  /// "Song (Remastered 2011)", "[Deluxe Edition]", "(2019 Remaster)" — pure
+  /// matching noise. Word-overlap scoring otherwise drops a valid track to a
+  /// low score just because the provider tagged it with a remaster/edition
+  /// suffix the Spotify title lacks (or vice-versa). Variant markers
+  /// (live/remix/acoustic/...) are deliberately NOT stripped — those ARE
+  /// different recordings and must keep failing the match (see [variantWords]).
+  // NB: "version"/"mix"/"edit" are intentionally absent — a re-recording
+  // ("Taylor's Version"), radio edit, or remix is a DIFFERENT recording, so
+  // stripping those would match the wrong audio.
+  static final _descriptorGroupRegex = RegExp(
+    r"\s*[\(\[][^\)\]]*\b(re-?master(ed)?|reissue|deluxe|expanded|anniversary|bonus|mono|stereo|edition)\b[^\)\]]*[\)\]]",
+    caseSensitive: false,
+  );
+
+  /// Unbracketed trailing descriptor, e.g. "Song - 2011 Remaster".
+  static final _trailingDescriptorRegex = RegExp(
+    r"\s*-\s*(\d{4}\s+)?(re-?master(ed)?|reissue)(\s+\d{4})?\s*$",
+    caseSensitive: false,
+  );
+
   static String normalize(String value) {
     var text = value.toLowerCase();
     text = text.replaceAll(_featureRegex, " ");
     text = text.replaceAll(_bareFeatureRegex, " ");
+    text = text.replaceAll(_descriptorGroupRegex, " ");
+    text = text.replaceAll(_trailingDescriptorRegex, " ");
     text = _stripDiacritics(text);
     text = text.replaceAll(_nonAlphaNum, " ");
     return text.replaceAll(_spaces, " ").trim();
