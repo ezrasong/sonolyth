@@ -14,6 +14,7 @@ import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart'
 import 'package:sonolyth/provider/server/routes/playback.dart';
 import 'package:sonolyth/provider/server/sourced_track_provider.dart';
 import 'package:sonolyth/services/sourced_track/sourced_track.dart';
+import 'package:sonolyth/services/sourced_track/tidal_dash.dart';
 import 'package:sonolyth/provider/skip_segments/skip_segments.dart';
 import 'package:sonolyth/provider/scrobbler/scrobbler.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
@@ -369,7 +370,10 @@ class AudioPlayerStreamListeners {
     SourcedTrack sourced,
   ) async {
     final url = sourced.url;
-    if (url == null) return;
+    // A TIDAL DASH track's url is the `x-tidal-dash:` marker, not a real HTTP
+    // URL — probing/refreshing it throws "No host specified". It's served by
+    // stitching the manifest server-side, so skip the alive-check here.
+    if (url == null || isDashUrl(url)) return;
     try {
       await _prefetchDio.get(
         url,

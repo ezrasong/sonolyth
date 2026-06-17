@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
@@ -573,107 +572,119 @@ class ServerPlaybackRoutes {
     return Response(status, body: stream, headers: responseHeaders);
   }
 
-  /// Serves a TIDAL DASH track by handing mpv the manifest to play NATIVELY —
-  /// the only approach with zero startup delay AND correct duration/seeking.
-  ///
-  /// TIDAL lossless is FLAC split across dozens of fMP4 segments (no single
-  /// seekable URL). ffmpeg/mpv plays a DASH manifest directly (fetching only the
-  /// init + first segment to start, exact duration from the manifest, native
-  /// seeking) — but TIDAL's CDN rejects mpv's default UA, so we rewrite every
-  /// segment URL to the local segment proxy ([tidalSegment]) which refetches it
-  /// with a browser UA. mpv only ever talks to localhost. Nothing is
-  /// pre-downloaded, so start/skip/seek are immediate.
-  Future<Response> _serveDashManifest(Request request, SourcedTrack track) async {
-    try {
-      final mpdUrl = stripDashUrl(track.url!);
-      final (xml, base) = await loadDashManifestXml(dio, mpdUrl);
-      if (xml == null || !xml.contains("<MPD")) {
-        throw StateError(
-          "Tidal DASH manifest not loadable for '${track.query.name}'",
-        );
-      }
-      // Same scheme/host/port mpv already used to reach us, so the proxied
-      // segment URLs are reachable from the same client.
-      final origin = "${request.requestedUri.scheme}://"
-          "${request.requestedUri.host}:${request.requestedUri.port}";
-      final rewritten =
-          rewriteDashManifestForProxy(xml, base, proxyOrigin: origin);
+  /// In-flight DASH stitch jobs keyed by track id so mpv's HEAD + GET + range
+  /// requests share ONE stitch instead of each re-downloading the track.
+  static final Map<String, Future<File>> _dashStitchJobs = {};
 
-      AppLogger.log.i(
-        "Serving Tidal DASH manifest for '${track.query.name}' (native, proxied)",
-      );
-      return Response.ok(rewritten, headers: const {
-        "content-type": "application/dash+xml",
-        "cache-control": "no-store",
-      });
+  /// Serves a TIDAL DASH track by stitching its FLAC segments into one COMPLETE
+  /// fMP4 file, then serving that with Range support.
+  ///
+  /// TIDAL lossless is FLAC split across dozens of fMP4 segments. media_kit's
+  /// mpv canNOT play a DASH manifest or a non-seekable progressive concat — both
+  /// give "Error decoding audio" on-device (verified in `.spotube_logs`). It
+  /// only reliably plays a complete, seekable file, exactly like a download. So
+  /// we assemble the whole track once (cached + reused for the session) and
+  /// [_serveLocalFile] serves it with content-length + ranges. The first play of
+  /// a track buffers while it assembles; replays/seeks are instant.
+  Future<Response> _serveDashTrack(
+    Request request,
+    SourcedTrack track, {
+    required bool headOnly,
+  }) async {
+    final File file;
+    try {
+      file = await _stitchedDashFile(track);
     } catch (e, stack) {
       AppLogger.reportError(e, stack);
       return Response.internalServerError(
-        body: "Could not resolve Tidal DASH manifest",
+        body: "Could not resolve Tidal DASH track",
       );
     }
+    final length = await file.length();
+    return _serveLocalFile(request, file, length, "audio/mp4",
+        headOnly: headOnly);
   }
 
-  /// @get('/tidal-seg/<seg>')
-  ///
-  /// Proxies one TIDAL DASH segment for [_serveDashManifest]. The real CDN URL
-  /// is carried base64url in `?t=`; `<seg>` is the segment number (or `init`).
-  /// We refetch it from TIDAL with the browser UA the CDN accepts (mpv's default
-  /// UA gets 403 — the reason raw `.mpd` playback failed) and stream it back.
-  Future<Response> tidalSegment(Request request, String seg) async {
-    final token = request.url.queryParameters["t"];
-    if (token == null || token.isEmpty) {
-      return Response.notFound("missing segment reference");
+  /// The complete stitched fMP4 file for [track], built once and shared across
+  /// concurrent requests; re-stitches if a prior file was pruned away.
+  Future<File> _stitchedDashFile(SourcedTrack track) async {
+    final existing = _dashStitchJobs[track.info.id];
+    if (existing != null) {
+      try {
+        final f = await existing;
+        if (await f.exists() && await f.length() > 0) return f;
+      } catch (_) {/* fall through to a fresh stitch */}
+      _dashStitchJobs.remove(track.info.id);
     }
+    final job = _stitchDashToFile(track).catchError((Object e) {
+      _dashStitchJobs.remove(track.info.id);
+      throw e;
+    });
+    _dashStitchJobs[track.info.id] = job;
+    return job;
+  }
 
-    String target;
-    try {
-      target = utf8.decode(base64Url.decode(base64Url.normalize(token)));
-    } catch (_) {
-      return Response.badRequest(body: "bad segment reference");
-    }
+  Future<File> _stitchDashToFile(SourcedTrack track) async {
+    final dir = await UserPreferencesNotifier.getMusicCacheDir();
+    final file = File(join(dir, "tidal-dash-${track.info.id}.mp4"));
+    if (await file.exists() && await file.length() > 0) return file;
 
-    // For media segments mpv has substituted the number into the path; fill it
-    // into the stored template. The init segment has no number.
-    final number = int.tryParse(seg);
-    if (number != null) {
-      target = fillDashTemplate(target, number: number);
-    }
-
-    // Never act as an open relay — only proxy TIDAL's own CDN.
-    final uri = Uri.tryParse(target);
-    if (uri == null ||
-        !(uri.host == "tidal.com" || uri.host.endsWith(".tidal.com"))) {
-      return Response.forbidden("disallowed segment host");
-    }
-
-    try {
-      final res = await dio.get<ResponseBody>(
-        target,
-        options: Options(
-          responseType: ResponseType.stream,
-          headers: {
-            "user-agent": dashSegmentUserAgent,
-            if (request.headers["range"] != null)
-              "range": request.headers["range"]!,
-          },
-          validateStatus: (status) => status != null && status < 500,
-        ),
+    final mpdUrl = stripDashUrl(track.url!);
+    final stitcher = TidalDashStitcher(dio);
+    final manifest = await stitcher.fetchManifest(mpdUrl);
+    if (manifest.isEmpty) {
+      throw StateError(
+        "Tidal DASH manifest yielded no segments for "
+        "'${track.query.name}' ($mpdUrl)",
       );
-      final headers = <String, String>{
-        "content-type": res.headers.value("content-type") ?? "audio/mp4",
-        "accept-ranges": res.headers.value("accept-ranges") ?? "bytes",
-      };
-      final contentLength = res.headers.value("content-length");
-      if (contentLength != null) headers["content-length"] = contentLength;
-      final contentRange = res.headers.value("content-range");
-      if (contentRange != null) headers["content-range"] = contentRange;
-
-      return Response(res.statusCode!, body: res.data!.stream, headers: headers);
-    } catch (e, stack) {
-      AppLogger.reportError(e, stack);
-      return Response.internalServerError();
     }
+
+    await _pruneStitchedDashFiles(dir, keep: 4);
+
+    final part = File("${file.path}.part");
+    if (await part.exists()) await part.delete();
+    await part.create(recursive: true);
+    final sink = part.openWrite();
+    var ok = false;
+    try {
+      await for (final chunk in stitcher.streamSegments(manifest)) {
+        sink.add(chunk);
+      }
+      await sink.flush();
+      ok = true;
+    } finally {
+      await sink.close();
+      if (!ok && await part.exists()) {
+        try {
+          await part.delete();
+        } catch (_) {/* best effort */}
+      }
+    }
+    await part.rename(file.path);
+    return file;
+  }
+
+  /// Keeps only the [keep] most-recent stitched DASH files so a session doesn't
+  /// accumulate ~20MB per played TIDAL track in the cache dir.
+  Future<void> _pruneStitchedDashFiles(String dir, {required int keep}) async {
+    try {
+      final files = <File>[];
+      await for (final entity in Directory(dir).list()) {
+        if (entity is File &&
+            basename(entity.path).startsWith("tidal-dash-") &&
+            entity.path.endsWith(".mp4")) {
+          files.add(entity);
+        }
+      }
+      if (files.length <= keep) return;
+      files.sort(
+          (a, b) => b.statSync().modified.compareTo(a.statSync().modified));
+      for (final stale in files.skip(keep)) {
+        try {
+          await stale.delete();
+        } catch (_) {/* best effort */}
+      }
+    } catch (_) {/* never block playback on cleanup */}
   }
 
   /// Serves a natively downloaded file for tracks whose media was enqueued
@@ -718,11 +729,10 @@ class ServerPlaybackRoutes {
           await _serveCachedFile(request, sourcedTrack, headOnly: true);
       if (cached != null) return cached;
 
-      // TIDAL DASH: mpv plays the manifest natively (served on GET). Report the
-      // DASH content-type on HEAD and let mpv fall through to the GET.
+      // TIDAL DASH: stitch into a complete file and report its real length so
+      // mpv knows the duration and can seek (the stitch is shared with the GET).
       if (isDashUrl(sourcedTrack.url)) {
-        return Response.ok(null,
-            headers: const {"content-type": "application/dash+xml"});
+        return await _serveDashTrack(request, sourcedTrack, headOnly: true);
       }
 
       // Prefix buffer present: report its sizing so HEAD and the follow-up GET
@@ -770,10 +780,10 @@ class ServerPlaybackRoutes {
           await _serveCachedFile(request, sourcedTrack, headOnly: false);
       if (cached != null) return cached;
 
-      // TIDAL DASH: serve the manifest for mpv to play natively (instant start,
-      // seekable, exact duration) — segments proxied via /tidal-seg.
+      // TIDAL DASH: stitch the FLAC segments into one complete seekable file
+      // (the only thing media_kit reliably plays) and serve it with ranges.
       if (isDashUrl(sourcedTrack.url)) {
-        return await _serveDashManifest(request, sourcedTrack);
+        return await _serveDashTrack(request, sourcedTrack, headOnly: false);
       }
 
       // Prefix buffer: a skip starts instantly from the in-memory head while the

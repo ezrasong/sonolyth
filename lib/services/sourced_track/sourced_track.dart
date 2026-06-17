@@ -17,6 +17,7 @@ import 'package:sonolyth/services/metadata/errors/exceptions.dart';
 import 'package:sonolyth/services/sourced_track/exceptions.dart';
 import 'package:sonolyth/services/sourced_track/qobuz_audio_source.dart';
 import 'package:sonolyth/services/sourced_track/tidal_audio_source.dart';
+import 'package:sonolyth/services/sourced_track/tidal_dash.dart';
 import 'package:sonolyth/services/metadata/endpoints/audio_source.dart';
 import 'package:sonolyth/provider/audio_player/qobuz_playback.dart';
 import 'package:sonolyth/provider/audio_player/tidal_playback.dart';
@@ -634,6 +635,10 @@ class SourcedTrack extends BasicSourcedTrack {
 
     final stringBuffer = StringBuffer();
     for (final source in sources) {
+      // A TIDAL DASH source's url is the `x-tidal-dash:` marker, not a real HTTP
+      // URL (HEAD-probing it throws "No host specified"). Skip it so the
+      // empty -> re-resolve path below re-mints a fresh manifest instead.
+      if (isDashUrl(source.url)) continue;
       final res = await globalDio.head(
         source.url,
         options: Options(
