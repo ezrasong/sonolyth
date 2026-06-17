@@ -21,6 +21,7 @@ import 'package:sonolyth/provider/server/sourced_track_provider.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 import 'package:sonolyth/services/audio_player/audio_player.dart';
 import 'package:sonolyth/services/logger/logger.dart';
+import 'package:sonolyth/services/sourced_track/qobuz_audio_source.dart';
 import 'package:sonolyth/services/sourced_track/sourced_track.dart';
 import 'package:sonolyth/services/sourced_track/tidal_dash.dart';
 import 'package:sonolyth/utils/service_utils.dart';
@@ -417,13 +418,19 @@ class ServerPlaybackRoutes {
   /// Pre-fetches the first [_headPrefixBytes] of [track] into memory so a later
   /// skip to it starts instantly (served from RAM) while the remainder streams.
   /// Tiny data cost (a few seconds of audio that is the start of a track about
-  /// to play). No-op for TIDAL DASH (played natively), already-buffered tracks,
-  /// and upstreams that don't report a total size (can't serve correct lengths).
+  /// to play).
+  ///
+  /// Restricted to QOBUZ: its direct FLAC URL is byte-range seekable and a
+  /// re-sign points at the SAME file, so the lazily-fetched remainder stays
+  /// continuous with the head. TIDAL is stitched to a file (not head-buffered);
+  /// the YouTube fallback can change format on a refresh, which would desync the
+  /// head from the remainder, so it streams normally.
   Future<void> prebufferHead(SourcedTrack track, {CancelToken? cancelToken}) async {
     final id = track.info.id;
     if (_headBuffers.containsKey(id)) return;
     final url = track.url;
     if (url == null || isDashUrl(url)) return;
+    if (!QobuzAudioSource.ownsMatch(track.info)) return;
 
     try {
       final res = await dio.get<ResponseBody>(
@@ -517,31 +524,6 @@ class ServerPlaybackRoutes {
     // Anything odd → let the normal path handle it.
     if (start < 0 || start > end || start >= total) return null;
 
-    // Open the upstream for the proxied remainder FIRST. If it fails (the stored
-    // URL expired), drop the head and fall back cleanly — before sending bytes.
-    Stream<Uint8List>? proxyStream;
-    if (end >= headLen) {
-      final proxyStart = max(start, headLen);
-      try {
-        final res = await dio.get<ResponseBody>(
-          head.upstreamUrl,
-          options: Options(
-            responseType: ResponseType.stream,
-            headers: {
-              "range": "bytes=$proxyStart-$end",
-              "user-agent": streamUserAgentFor(track),
-              "host": Uri.parse(head.upstreamUrl).host,
-            },
-            validateStatus: (status) => status != null && status < 400,
-          ),
-        );
-        proxyStream = res.data!.stream;
-      } catch (_) {
-        _headBuffers.remove(track.info.id);
-        return null;
-      }
-    }
-
     final responseHeaders = <String, String>{
       "content-type": head.contentType,
       "content-length": "${end - start + 1}",
@@ -549,13 +531,28 @@ class ServerPlaybackRoutes {
       if (isRange) "content-range": "bytes $start-$end/$total",
     };
     final status = isRange ? 206 : 200;
+    // HEAD only needs the sizing — never open the upstream here. (Opening it on
+    // HEAD *and* GET was a wasted ~round-trip each that made skips feel ~2s slow
+    // even though the head bytes were already in RAM.)
     if (headOnly) return Response(status, headers: responseHeaders);
 
+    // Serve the in-RAM head IMMEDIATELY; open the proxied remainder LAZILY (no
+    // upfront round-trip), so playback starts from the head — ~9s of audio —
+    // while the remainder connects in the background. The head was pre-fetched
+    // seconds ago so the URL is fresh; if it has expired, re-mint and retry.
     Stream<Uint8List> body() async* {
       if (start < headLen) {
         yield Uint8List.sublistView(head.bytes, start, min(end + 1, headLen));
       }
-      if (proxyStream != null) yield* proxyStream;
+      if (end >= headLen) {
+        final remainder = await _openRemainder(
+          track,
+          head.upstreamUrl,
+          max(start, headLen),
+          end,
+        );
+        if (remainder != null) yield* remainder;
+      }
     }
 
     // A full byte-0 response caches just like the live path.
@@ -570,6 +567,48 @@ class ServerPlaybackRoutes {
         : body();
 
     return Response(status, body: stream, headers: responseHeaders);
+  }
+
+  /// Opens the proxied remainder [from]-[to] of [track] from [url]; if the URL
+  /// has expired, re-mints a fresh one (a Qobuz re-sign points at the SAME file,
+  /// so the bytes stay continuous with the already-served head) and retries.
+  /// Returns null if the remainder can't be opened.
+  Future<Stream<Uint8List>?> _openRemainder(
+    SourcedTrack track,
+    String url,
+    int from,
+    int to,
+  ) async {
+    Future<Stream<Uint8List>> open(String u) async {
+      final res = await dio.get<ResponseBody>(
+        u,
+        options: Options(
+          responseType: ResponseType.stream,
+          headers: {
+            "range": "bytes=$from-$to",
+            "user-agent": streamUserAgentFor(track),
+            "host": Uri.parse(u).host,
+          },
+          validateStatus: (status) => status != null && status < 400,
+        ),
+      );
+      return res.data!.stream;
+    }
+
+    try {
+      return await open(url);
+    } catch (_) {
+      try {
+        final refreshed = await ref
+            .read(sourcedTrackProvider(track.query).notifier)
+            .refreshStreamingUrl();
+        final fresh = refreshed.url;
+        return fresh == null ? null : await open(fresh);
+      } catch (e, stack) {
+        AppLogger.reportError(e, stack);
+        return null;
+      }
+    }
   }
 
   /// In-flight DASH stitch jobs keyed by track id so mpv's HEAD + GET + range

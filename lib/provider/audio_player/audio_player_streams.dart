@@ -320,7 +320,10 @@ class AudioPlayerStreamListeners {
     _bufferAheadToken?.cancel();
     final token = _bufferAheadToken = CancelToken();
 
-    await Future.delayed(const Duration(seconds: 1));
+    // A short settle so a skip burst coalesces on the landing track, but quick
+    // enough that the head is usually ready before the user skips again. The
+    // head is only ~1MB so it doesn't meaningfully contend with playback.
+    await Future.delayed(const Duration(milliseconds: 400));
     if (token.isCancelled) return;
 
     final routes = ref.read(serverPlaybackRoutesProvider);
