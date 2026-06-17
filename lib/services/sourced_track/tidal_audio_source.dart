@@ -15,9 +15,11 @@ final _tidalPlaybackZarzClient = ZarzClient(
 
 /// Native (non-plugin) playback audio source backed by Tidal via the zarz
 /// gateway. Like [QobuzAudioSource] it resolves by ISRC for the exact recording
-/// and serves a direct lossless FLAC stream. Tracks Tidal only exposes as a
-/// DASH/segmented manifest return no stream, so the caller falls through to the
-/// next source (YouTube) rather than hard-failing playback.
+/// and serves a lossless FLAC stream. Most Tidal lossless tracks come back as a
+/// DASH manifest; that URL is tagged with [dashUrlMarker] and the playback
+/// server stitches its FLAC segments into one fMP4 stream for mpv. Only when
+/// the gateway returns nothing usable does the caller fall through to the next
+/// source (YouTube).
 class TidalAudioSource {
   /// Stable slug used to namespace this source.
   static const slug = "tidal";
@@ -75,14 +77,16 @@ class TidalAudioSource {
     return scored.map((e) => e.$1).toList();
   }
 
-  /// Direct lossless FLAC stream(s) for a previously matched Tidal track, or an
-  /// empty list when the gateway can't serve a direct FLAC URL (preview, lossy
-  /// downgrade, or DASH-only) so the caller can fall back to the next source.
+  /// Lossless FLAC stream(s) for a previously matched Tidal track, or an empty
+  /// list when the gateway can't serve anything usable (preview / lossy
+  /// downgrade) so the caller can fall back to the next source. A DASH manifest
+  /// comes back as a [dashUrlMarker]-tagged URL the playback server stitches.
   Future<List<SonolythAudioSourceStreamObject>> streams(
     SonolythAudioSourceMatchObject match,
   ) async {
-    // allowDash: TIDAL serves lossless as a DASH manifest; mpv/media_kit
-    // streams the `.mpd` directly, so playback uses it (downloads can't).
+    // allowDash: TIDAL serves lossless as a DASH manifest. The marked `.mpd`
+    // URL is stitched into a single fMP4 FLAC stream by the playback server
+    // (downloads can't consume an .mpd as a file, so they don't set this).
     final url = await _provider.streamUrlForId(
       match.id,
       _streamingQuality,

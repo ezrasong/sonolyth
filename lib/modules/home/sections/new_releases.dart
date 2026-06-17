@@ -1,13 +1,11 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:sonolyth/components/fallbacks/error_box.dart';
 import 'package:sonolyth/components/horizontal_playbutton_card_view/horizontal_playbutton_card_view.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/metadata_plugin/album/releases.dart';
 import 'package:sonolyth/provider/metadata_plugin/core/auth.dart';
 import 'package:sonolyth/provider/metadata_plugin/utils/common.dart';
-import 'package:sonolyth/services/metadata/errors/exceptions.dart';
 
 class HomeNewReleasesSection extends HookConsumerWidget {
   const HomeNewReleasesSection({super.key});
@@ -20,17 +18,17 @@ class HomeNewReleasesSection extends HookConsumerWidget {
     final newReleasesNotifier =
         ref.read(metadataPluginAlbumReleasesProvider.notifier);
 
+    // "New Releases" is Spotify's personalized What's-New feed. It can fail in
+    // ways the rest of Home doesn't (e.g. a persistent 401 on the pathfinder
+    // queryWhatsNewFeed even when catalog calls succeed). Since the row is
+    // supplementary, hide it on ANY error instead of dropping a full-width
+    // ErrorBox onto the home screen — same graceful degrade as the no-plugin
+    // case. The provider re-fetches when the auth state flips, so a transient
+    // failure self-heals on the next rebuild.
     if (authenticated.asData?.value != true ||
         newReleases.isLoading ||
+        newReleases.hasError ||
         newReleases.asData?.value.items.isEmpty == true) {
-      return const SizedBox.shrink();
-    }
-
-    if (newReleases.error
-        case MetadataPluginException(
-          errorCode: MetadataPluginErrorCode.noDefaultMetadataPlugin,
-          message: _,
-        )) {
       return const SizedBox.shrink();
     }
 
@@ -40,16 +38,6 @@ class HomeNewReleasesSection extends HookConsumerWidget {
       isLoadingNextPage: newReleases.isLoadingNextPage,
       hasNextPage: newReleases.asData?.value.hasMore ?? false,
       onFetchMore: newReleasesNotifier.fetchMore,
-      error: newReleases.hasError
-          ? Center(
-              child: ErrorBox(
-                error: newReleases.error!,
-                onRetry: () {
-                  ref.invalidate(metadataPluginAlbumReleasesProvider);
-                },
-              ),
-            )
-          : null,
     );
   }
 }

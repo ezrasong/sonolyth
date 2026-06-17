@@ -22,6 +22,7 @@ import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dar
 import 'package:sonolyth/services/audio_player/audio_player.dart';
 import 'package:sonolyth/services/logger/logger.dart';
 import 'package:sonolyth/services/sourced_track/sourced_track.dart';
+import 'package:sonolyth/services/sourced_track/tidal_dash.dart';
 import 'package:sonolyth/utils/service_utils.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
@@ -376,6 +377,48 @@ class ServerPlaybackRoutes {
     return res;
   }
 
+  /// Streams a TIDAL DASH track: fetches the `.mpd`, resolves its FLAC segment
+  /// URLs and pipes the concatenated segment bytes (init first) to mpv as one
+  /// continuous fMP4 stream. mpv can't open TIDAL's tokenized `.mpd` directly,
+  /// so the stitching happens here. The response is a plain 200 with no
+  /// content-length (the total size isn't known without downloading), so it is
+  /// not byte-seekable — mpv buffers it like any progressive stream.
+  Future<Response> _streamDashTrack(
+    Request request,
+    SourcedTrack track,
+  ) async {
+    final mpdUrl = stripDashUrl(track.url!);
+    final stitcher = TidalDashStitcher(dio);
+    final manifest = await stitcher.fetchManifest(mpdUrl);
+
+    if (manifest.isEmpty) {
+      // Couldn't parse a segment list — surface it (it lands in .spotube_logs
+      // for on-device debugging) rather than streaming an empty body.
+      AppLogger.reportError(
+        "Tidal DASH manifest yielded no segments for "
+        "'${track.query.name}' ($mpdUrl)",
+        StackTrace.current,
+      );
+      return Response.internalServerError(
+        body: "Could not resolve Tidal DASH manifest",
+      );
+    }
+
+    AppLogger.log.i(
+      "Streaming Tidal DASH for '${track.query.name}': "
+      "${manifest.segmentUrls.length} segment(s)",
+    );
+
+    return Response(
+      200,
+      body: stitcher.streamSegments(manifest),
+      headers: const {
+        "content-type": "audio/mp4",
+        "accept-ranges": "none",
+      },
+    );
+  }
+
   /// Serves a natively downloaded file for tracks whose media was enqueued
   /// (pointing at the server) before the download finished, so playback still
   /// uses the local file instead of an online stream.
@@ -418,6 +461,15 @@ class ServerPlaybackRoutes {
           await _serveCachedFile(request, sourcedTrack, headOnly: true);
       if (cached != null) return cached;
 
+      // TIDAL DASH is stitched on GET; a HEAD can't cheaply know the length, so
+      // report an unsized, non-seekable fMP4 and let mpv fall through to GET.
+      if (isDashUrl(sourcedTrack.url)) {
+        return Response.ok(null, headers: const {
+          "content-type": "audio/mp4",
+          "accept-ranges": "none",
+        });
+      }
+
       final res = await streamTrackInformation(
         request,
         sourcedTrack,
@@ -449,6 +501,11 @@ class ServerPlaybackRoutes {
       final cached =
           await _serveCachedFile(request, sourcedTrack, headOnly: false);
       if (cached != null) return cached;
+
+      // TIDAL DASH: fetch the manifest and stitch its FLAC segments for mpv.
+      if (isDashUrl(sourcedTrack.url)) {
+        return await _streamDashTrack(request, sourcedTrack);
+      }
 
       final res = await streamTrack(
         request,

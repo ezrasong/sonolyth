@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/dialogs/prompt_dialog.dart';
 import 'package:sonolyth/modules/library/user_downloads/download_item.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/download_manager_provider.dart';
@@ -96,29 +97,19 @@ class UserDownloadsPage extends HookConsumerWidget {
                 onPressed: downloadQueue.isEmpty
                     ? null
                     : () async {
-                        final accepted = await showDialog<bool>(
+                        // Use the shared prompt dialog (bounded width +
+                        // centred text); a bare AlertDialog with a short
+                        // title/content right-hugs them against the buttons.
+                        final accepted = await showPromptDialog(
                           context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text(context.l10n.cancel_all),
-                            content: Text(context.l10n.are_you_sure),
-                            actions: [
-                              Button.outline(
-                                onPressed: () {
-                                  Navigator.of(context).pop(false);
-                                },
-                                child: Text(context.l10n.decline),
-                              ),
-                              Button.destructive(
-                                onPressed: () {
-                                  Navigator.of(context).pop(true);
-                                },
-                                child: Text(context.l10n.accept),
-                              ),
-                            ],
-                          ),
+                          title: context.l10n.cancel_all,
+                          message: context.l10n.are_you_sure,
+                          okText: context.l10n.accept,
+                          cancelText: context.l10n.decline,
+                          destructive: true,
                         );
 
-                        if (accepted != true) return;
+                        if (!accepted) return;
 
                         downloadManagerNotifier.clearAll();
                       },

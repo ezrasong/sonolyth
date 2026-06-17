@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/services/sourced_track/tidal_dash.dart';
 import 'package:sonolyth/services/spotiflac/providers/spotiflac_provider.dart';
 import 'package:sonolyth/services/spotiflac/track_matching.dart';
 import 'package:sonolyth/services/spotiflac/zarz_client.dart';
@@ -158,12 +159,16 @@ class TidalProvider extends SpotiFlacProvider {
       return null;
     }
 
-    // DASH (the common lossless case): stream the manifest URL directly for
-    // playback; defer for downloads (no in-app segment stitching yet).
+    // DASH (the common lossless case): for playback, hand back the manifest URL
+    // tagged with [dashUrlMarker] so the playback server fetches and stitches
+    // the FLAC segments into one fMP4 stream for mpv. Downloads still defer (no
+    // file output yet) so the next provider (Deezer) takes the track.
     final manifestType = payload["manifestType"]?.toString().toLowerCase();
     final mpdUri = payload["mpdUri"]?.toString();
     if (manifestType == "dash" || (mpdUri != null && mpdUri.isNotEmpty)) {
-      if (allowDash && mpdUri != null && mpdUri.isNotEmpty) return mpdUri;
+      if (allowDash && mpdUri != null && mpdUri.isNotEmpty) {
+        return markDashUrl(mpdUri);
+      }
       return null;
     }
 

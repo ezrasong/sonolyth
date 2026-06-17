@@ -10,6 +10,7 @@ import 'package:sonolyth/models/connect/connect.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/audio_player/qobuz_playback.dart';
+import 'package:sonolyth/provider/audio_player/tidal_playback.dart';
 import 'package:sonolyth/provider/connect/connect.dart';
 import 'package:sonolyth/provider/history/history.dart';
 import 'package:sonolyth/provider/server/sourced_track_provider.dart';
@@ -48,15 +49,17 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
     if (firstTrack is SonolythFullTrackObject) {
       Future(() async {
         try {
-          // Skip the prewarm when Qobuz playback is enabled. Prewarming runs
-          // during the page-load request burst, where the Qobuz match for the
-          // first track can get rate-limited and fall back to a lossy Piped
-          // source — and since sourcedTrackProvider isn't auto-disposed, that
-          // result sticks for the session, pinning the first song to Piped.
-          // With Qobuz on, let the first track resolve at play time (a calmer
-          // gateway window) so it streams lossless like the rest of the queue.
+          // Skip the prewarm when a lossless source (Qobuz OR Tidal) is on.
+          // Prewarming runs during the page-load request burst, where the
+          // gateway match for the first track can get rate-limited and fall
+          // back to a lossy Piped source — and since sourcedTrackProvider isn't
+          // auto-disposed, that result sticks for the session, pinning the
+          // first song to Piped. With a lossless source on, let the first track
+          // resolve at play time (a calmer gateway window) so it streams
+          // lossless like the rest of the queue.
           final qobuzOn = await ref.read(qobuzPlaybackEnabledProvider.future);
-          if (qobuzOn) return;
+          final tidalOn = await ref.read(tidalPlaybackEnabledProvider.future);
+          if (qobuzOn || tidalOn) return;
           await ref.read(sourcedTrackProvider(firstTrack).future);
         } catch (e, stack) {
           AppLogger.reportError(e, stack);
