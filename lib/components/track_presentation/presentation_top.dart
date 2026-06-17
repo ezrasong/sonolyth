@@ -110,7 +110,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
       tooltip: TooltipContainer(
         child: Text(context.l10n.shuffle_playlist),
       ).call,
-      child: IconButton.ghost(
+      child: IconButton(
         // The icon keeps its footprint while loading (the spinner is overlaid
         // on a transparent icon) so the action row never re-layouts mid-press.
         icon: Stack(
@@ -129,6 +129,11 @@ class TrackPresentationTopSection extends HookConsumerWidget {
           ],
         ),
         shape: ButtonShape.circle,
+        // Show the ON state with a filled background, like the main player —
+        // a bare primary-color tint is invisible on themes where primary ≈ the
+        // default foreground (so shuffle looked "dead" even though it toggles).
+        variance:
+            isShuffled ? ButtonVariance.secondary : ButtonVariance.ghost,
         enabled: !isLoading,
         // When this collection is already playing, the button toggles the
         // player's shuffle mode instead of being disabled (same pattern as
@@ -148,7 +153,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
               : context.l10n.repeat_playlist,
         ),
       ).call,
-      child: IconButton.ghost(
+      child: IconButton(
         icon: Icon(
           loopMode == PlaylistMode.single
               ? SonolythIcons.repeatOne
@@ -158,6 +163,11 @@ class TrackPresentationTopSection extends HookConsumerWidget {
               : null,
         ),
         shape: ButtonShape.circle,
+        // Filled background when looping (matches the main player); the plain
+        // primary tint is imperceptible on the user's theme.
+        variance: loopMode != PlaylistMode.none
+            ? ButtonVariance.secondary
+            : ButtonVariance.ghost,
         onPressed: () => audioPlayer.setLoopMode(
           switch (loopMode) {
             PlaylistMode.loop => PlaylistMode.single,
