@@ -3,12 +3,13 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/links/artist_link.dart';
 import 'package:sonolyth/components/links/hyper_link.dart';
-import 'package:sonolyth/extensions/constrains.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/extensions/duration.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/server/sourced_track_provider.dart';
 import 'package:sonolyth/services/sourced_track/qobuz_audio_source.dart';
+import 'package:sonolyth/services/sourced_track/tidal_audio_source.dart';
+import 'package:sonolyth/services/sourced_track/tidal_dash.dart';
 
 class TrackDetailsDialog extends HookConsumerWidget {
   final SonolythFullTrackObject track;
@@ -50,22 +51,40 @@ class TrackDetailsDialog extends HookConsumerWidget {
     final streamUrl = sourcedTrack.asData?.value.url;
     final isQobuz =
         sourceInfo != null && QobuzAudioSource.ownsMatch(sourceInfo);
+    final isTidal =
+        sourceInfo != null && TidalAudioSource.ownsMatch(sourceInfo);
+    // The native lossless sources (Qobuz/Tidal) cache under the plugin slug for
+    // namespacing, so SourcedTrack.source is always "youtube" — derive the real
+    // source from the match instead.
+    final qualityLabel = sourcedTrack.asData?.value.qualityLabel;
+    // The TIDAL stream url is the internal `x-tidal-dash:` marker; show the real
+    // manifest URL.
+    final displayStreamUrl = streamUrl == null
+        ? null
+        : (isDashUrl(streamUrl) ? stripDashUrl(streamUrl) : streamUrl);
 
     final ytTracksDetailsMap = sourceInfo == null
         ? {}
         : {
-            // Show the REAL source. A Qobuz-served track plays lossless FLAC
-            // even though SourcedTrack.source carries the plugin slug for cache
-            // namespacing — so derive the label from the match, not the slug.
             "Source": Text(
-              isQobuz ? "Qobuz · FLAC Lossless" : "YouTube",
+              isQobuz
+                  ? "Qobuz · ${qualityLabel ?? "FLAC Lossless"}"
+                  : isTidal
+                      ? "Tidal · ${qualityLabel ?? "FLAC Lossless"}"
+                      : "YouTube",
               style: theme.typography.normal,
             ),
-            // Only YouTube/plugin tracks are actually on Piped; a Qobuz track
-            // links to its Qobuz page instead of a bogus piped.video URL built
-            // from a numeric Qobuz id.
+            // Qobuz/Tidal link to their own track page; only true plugin tracks
+            // are on Piped (a numeric Qobuz/Tidal id would make a bogus URL).
             if (isQobuz)
               "Qobuz": Hyperlink(
+                sourceInfo.externalUri,
+                sourceInfo.externalUri,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              )
+            else if (isTidal)
+              "Tidal": Hyperlink(
                 sourceInfo.externalUri,
                 sourceInfo.externalUri,
                 maxLines: 2,
@@ -79,10 +98,10 @@ class TrackDetailsDialog extends HookConsumerWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             context.l10n.channel: Text(sourceInfo.artists.join(", ")),
-            if (streamUrl != null)
+            if (displayStreamUrl != null)
               context.l10n.streamUrl: Hyperlink(
-                streamUrl,
-                streamUrl,
+                displayStreamUrl,
+                displayStreamUrl,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
