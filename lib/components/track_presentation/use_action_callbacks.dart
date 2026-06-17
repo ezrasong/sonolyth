@@ -43,24 +43,34 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
   );
 
   // Warm up the first track's audio source as soon as the page has tracks so
-  // pressing play doesn't wait on the YouTube search + manifest round trip.
+  // pressing play starts instantly instead of waiting on the source search +
+  // stream-manifest round trip — for EVERY source, lossless included.
   final firstTrack = options.tracks.firstOrNull;
   useEffect(() {
     if (firstTrack is SonolythFullTrackObject) {
       Future(() async {
         try {
-          // Skip the prewarm when a lossless source (Qobuz OR Tidal) is on.
-          // Prewarming runs during the page-load request burst, where the
-          // gateway match for the first track can get rate-limited and fall
-          // back to a lossy Piped source — and since sourcedTrackProvider isn't
-          // auto-disposed, that result sticks for the session, pinning the
-          // first song to Piped. With a lossless source on, let the first track
-          // resolve at play time (a calmer gateway window) so it streams
-          // lossless like the rest of the queue.
+          final sourced =
+              await ref.read(sourcedTrackProvider(firstTrack).future);
+
+          // Poison guard: when a lossless source is on but this prewarm landed
+          // on a lossy (YouTube) stream, the gateway match was likely briefly
+          // rate-limited during the page-load burst. Drop the cached resolution
+          // so pressing play re-resolves instead of the (non-auto-disposed)
+          // provider pinning the lossy fallback for the session. This composes
+          // with fetchFromTrack's caching: a genuine no-lossless-match track is
+          // already DB-cached (the re-resolve is an instant cache hit), while a
+          // transient rate-limit isn't cached (the re-resolve recovers
+          // lossless). The common case — the track IS on the lossless source —
+          // caches cleanly here so play starts instantly.
           final qobuzOn = await ref.read(qobuzPlaybackEnabledProvider.future);
           final tidalOn = await ref.read(tidalPlaybackEnabledProvider.future);
-          if (qobuzOn || tidalOn) return;
-          await ref.read(sourcedTrackProvider(firstTrack).future);
+          final isLossless = sourced.sources.any(
+            (s) => s.type == SonolythMediaCompressionType.lossless,
+          );
+          if ((qobuzOn || tidalOn) && !isLossless) {
+            ref.invalidate(sourcedTrackProvider(firstTrack));
+          }
         } catch (e, stack) {
           AppLogger.reportError(e, stack);
         }

@@ -1,11 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart' hide Response;
 import 'package:dio/dio.dart' as dio_lib;
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:metadata_god/metadata_god.dart';
 import 'package:path/path.dart';
@@ -42,6 +43,17 @@ String? streamUserAgentFor(SourcedTrack track) => _deviceClients
     .elementAt(track.info.id.hashCode.abs() % _deviceClients.length)
     .payload["context"]["client"]["userAgent"];
 
+/// A pre-fetched leading slice of a track held in memory: enough to start
+/// playback instantly on a skip while the remainder streams from [upstreamUrl].
+/// Keeps the speculative data cost to a few seconds of audio — unlike caching a
+/// whole track ahead — and those bytes are the start of a track about to play.
+typedef _HeadBuffer = ({
+  Uint8List bytes,
+  int total,
+  String contentType,
+  String upstreamUrl,
+});
+
 class ServerPlaybackRoutes {
   final Ref ref;
   UserPreferences get userPreferences => ref.read(userPreferencesProvider);
@@ -53,6 +65,18 @@ class ServerPlaybackRoutes {
   /// Cache files with a write already in progress (keyed by cache path) —
   /// a second concurrent writer would interleave bytes and corrupt the file.
   static final Set<String> _cacheWritesInFlight = {};
+
+  /// Pre-fetched track heads (keyed by track id) for instant skips. Bounded to
+  /// the most-recent few to keep memory small.
+  static final Map<String, _HeadBuffer> _headBuffers = {};
+
+  /// ~9s of CD-FLAC (much more for a lossy stream) — enough for mpv to start
+  /// instantly and for the proxied remainder to catch up, while keeping the
+  /// speculative data per track tiny.
+  static const _headPrefixBytes = 1 * 1024 * 1024;
+
+  /// Max heads held in memory at once (~8MB worst case).
+  static const _headBufferMax = 4;
 
   Future<String> _getTrackCacheFilePath(SourcedTrack track) async {
     return join(
@@ -289,18 +313,6 @@ class ServerPlaybackRoutes {
       "Content-Length: ${res.headers.value("content-length")}",
     );
 
-    if (!userPreferences.cacheMusic) {
-      return res;
-    }
-
-    // Cache only sound responses: a linear stream that starts at byte 0 with
-    // a known total, written by a single writer. The old code APPENDED every
-    // response to the .part file — an mpv tail probe or seek mid-download
-    // interleaved bytes at the wrong offsets, the completeness check then
-    // never passed, and the cache silently never finished. A track that
-    // never finishes caching is re-streamed from the network on every
-    // replay, which is why "previous" stalled while "next" (prefetched by
-    // mpv) felt instant.
     final contentRangeValue = res.headers.value("content-range");
     final contentRange = contentRangeValue != null
         ? ContentRangeHeader.parse(contentRangeValue)
@@ -309,43 +321,71 @@ class ServerPlaybackRoutes {
     final expectedTotal = contentRange?.total ??
         int.tryParse(res.headers.value("content-length") ?? "") ??
         0;
-    final cacheable = expectedTotal > 0 &&
-        (contentRange == null || contentRange.start == 0) &&
-        !_cacheWritesInFlight.contains(trackCacheFile.path);
-    if (!cacheable) {
-      return res;
+
+    res.data!.stream = await _teeToCacheFile(
+      cacheFile: trackCacheFile,
+      source: res.data!.stream,
+      expectedTotal: expectedTotal,
+      startsAtZero: contentRange == null || contentRange.start == 0,
+      track: track,
+    );
+    return res;
+  }
+
+  /// Tees [source] to the music cache file for [track] and returns a stream
+  /// that yields the same bytes. Used by both the live stream path and the
+  /// prefix-buffer path so they cache identically.
+  ///
+  /// Caches ONLY a linear, byte-0, single-writer response: the old code
+  /// appended every response to the .part file, so an mpv tail probe or a seek
+  /// mid-download interleaved bytes at the wrong offsets, the completeness check
+  /// never passed, and the cache silently never finished (re-streaming on every
+  /// replay). A mid-file range, an unknown total, caching-off, or a second
+  /// concurrent writer returns [source] unchanged (served, not cached). The
+  /// write is best-effort — a cache failure never interrupts playback.
+  Future<Stream<T>> _teeToCacheFile<T extends List<int>>({
+    required File cacheFile,
+    required Stream<T> source,
+    required int expectedTotal,
+    required bool startsAtZero,
+    required SourcedTrack track,
+  }) async {
+    if (!userPreferences.cacheMusic ||
+        expectedTotal <= 0 ||
+        !startsAtZero ||
+        _cacheWritesInFlight.contains(cacheFile.path)) {
+      return source;
     }
-    _cacheWritesInFlight.add(trackCacheFile.path);
+    _cacheWritesInFlight.add(cacheFile.path);
 
-    final resStream = res.data!.stream.asBroadcastStream();
+    final broadcast = source.asBroadcastStream();
 
-    final trackPartialCacheFile = File("${trackCacheFile.path}.part");
-    // A leftover partial from an aborted/older write would corrupt this
-    // linear write — start clean.
-    if (await trackPartialCacheFile.exists()) {
-      await trackPartialCacheFile.delete();
+    final partialCacheFile = File("${cacheFile.path}.part");
+    // A leftover partial from an aborted/older write would corrupt this linear
+    // write — start clean.
+    if (await partialCacheFile.exists()) {
+      await partialCacheFile.delete();
     }
-    await trackPartialCacheFile.create(recursive: true);
+    await partialCacheFile.create(recursive: true);
 
-    final partialCacheFileSink =
-        trackPartialCacheFile.openWrite(mode: FileMode.writeOnlyAppend);
+    final sink = partialCacheFile.openWrite(mode: FileMode.writeOnlyAppend);
 
-    resStream.listen(
+    broadcast.listen(
       (data) {
-        partialCacheFileSink.add(data);
+        sink.add(data);
       },
       onError: (e, stack) {
-        _cacheWritesInFlight.remove(trackCacheFile.path);
-        partialCacheFileSink.close();
+        _cacheWritesInFlight.remove(cacheFile.path);
+        sink.close();
       },
       onDone: () async {
         try {
-          await partialCacheFileSink.close();
+          await sink.close();
 
-          final fileLength = await trackPartialCacheFile.length();
+          final fileLength = await partialCacheFile.length();
           if (fileLength != expectedTotal) return;
 
-          await trackPartialCacheFile.rename(trackCacheFile.path);
+          await partialCacheFile.rename(cacheFile.path);
 
           if (track.playbackFileExtension == "weba") return;
 
@@ -357,7 +397,7 @@ class ServerPlaybackRoutes {
           );
 
           await MetadataGod.writeMetadata(
-            file: trackCacheFile.path,
+            file: cacheFile.path,
             metadata: track.query.toMetadata(
               imageBytes: imageBytes,
               fileLength: fileLength,
@@ -366,57 +406,274 @@ class ServerPlaybackRoutes {
             AppLogger.reportError(e, stackTrace);
           });
         } finally {
-          _cacheWritesInFlight.remove(trackCacheFile.path);
+          _cacheWritesInFlight.remove(cacheFile.path);
         }
       },
       cancelOnError: true,
     );
 
-    res.data?.stream =
-        resStream; // To avoid Stream has been already listened to exception
-    return res;
+    return broadcast;
   }
 
-  /// Streams a TIDAL DASH track: fetches the `.mpd`, resolves its FLAC segment
-  /// URLs and pipes the concatenated segment bytes (init first) to mpv as one
-  /// continuous fMP4 stream. mpv can't open TIDAL's tokenized `.mpd` directly,
-  /// so the stitching happens here. The response is a plain 200 with no
-  /// content-length (the total size isn't known without downloading), so it is
-  /// not byte-seekable — mpv buffers it like any progressive stream.
-  Future<Response> _streamDashTrack(
+  /// Pre-fetches the first [_headPrefixBytes] of [track] into memory so a later
+  /// skip to it starts instantly (served from RAM) while the remainder streams.
+  /// Tiny data cost (a few seconds of audio that is the start of a track about
+  /// to play). No-op for TIDAL DASH (played natively), already-buffered tracks,
+  /// and upstreams that don't report a total size (can't serve correct lengths).
+  Future<void> prebufferHead(SourcedTrack track, {CancelToken? cancelToken}) async {
+    final id = track.info.id;
+    if (_headBuffers.containsKey(id)) return;
+    final url = track.url;
+    if (url == null || isDashUrl(url)) return;
+
+    try {
+      final res = await dio.get<ResponseBody>(
+        url,
+        cancelToken: cancelToken,
+        options: Options(
+          responseType: ResponseType.stream,
+          headers: {
+            "range": "bytes=0-${_headPrefixBytes - 1}",
+            "user-agent": streamUserAgentFor(track),
+            "host": Uri.parse(url).host,
+          },
+          validateStatus: (status) => status != null && status < 400,
+        ),
+      );
+
+      final contentRangeValue = res.headers.value("content-range");
+      final total = (contentRangeValue != null
+              ? ContentRangeHeader.parse(contentRangeValue).total
+              : null) ??
+          int.tryParse(res.headers.value("content-length") ?? "");
+
+      final builder = BytesBuilder(copy: false);
+      await for (final chunk in res.data!.stream) {
+        builder.add(chunk);
+        if (builder.length >= _headPrefixBytes) break;
+      }
+      if (builder.isEmpty) return;
+
+      var bytes = builder.takeBytes();
+      if (bytes.length > _headPrefixBytes) {
+        bytes = Uint8List.sublistView(bytes, 0, _headPrefixBytes);
+      }
+      // A range response gives the real total; without one, fall back to the
+      // bytes we got (only valid if the whole short track fit in the prefix).
+      final effectiveTotal =
+          (total == null || total < bytes.length) ? bytes.length : total;
+      if (effectiveTotal <= 0) return;
+
+      _headBuffers[id] = (
+        bytes: bytes,
+        total: effectiveTotal,
+        contentType:
+            res.headers.value("content-type") ?? "audio/${track.playbackContainer}",
+        upstreamUrl: url,
+      );
+      while (_headBuffers.length > _headBufferMax) {
+        _headBuffers.remove(_headBuffers.keys.first);
+      }
+    } on DioException catch (e) {
+      if (CancelToken.isCancel(e)) return;
+    } catch (_) {
+      // Best effort — a failed pre-buffer just means a normal cold open on skip.
+    }
+  }
+
+  /// Serves [track] starting from its in-memory [head] (instant) and proxying
+  /// the remainder from the upstream, so a skip plays immediately without a cold
+  /// network open. Returns null to fall back to normal streaming when the head
+  /// can't be used (odd range, or the stored URL no longer answers — checked by
+  /// opening the remainder BEFORE any head bytes are committed, so a dead URL
+  /// never corrupts the stream).
+  Future<Response?> _serveWithHeadBuffer(
     Request request,
     SourcedTrack track,
-  ) async {
-    final mpdUrl = stripDashUrl(track.url!);
-    final stitcher = TidalDashStitcher(dio);
-    final manifest = await stitcher.fetchManifest(mpdUrl);
+    _HeadBuffer head, {
+    required bool headOnly,
+  }) async {
+    final total = head.total;
+    final headLen = head.bytes.length;
 
-    if (manifest.isEmpty) {
-      // Couldn't parse a segment list — surface it (it lands in .spotube_logs
-      // for on-device debugging) rather than streaming an empty body.
-      AppLogger.reportError(
-        "Tidal DASH manifest yielded no segments for "
-        "'${track.query.name}' ($mpdUrl)",
-        StackTrace.current,
+    final rangeHeader = request.headers["range"];
+    final match = rangeHeader == null
+        ? null
+        : RegExp(r"^bytes=(\d*)-(\d*)$").firstMatch(rangeHeader.trim());
+    final isRange = match != null &&
+        (match.group(1)!.isNotEmpty || match.group(2)!.isNotEmpty);
+
+    int start = 0;
+    int end = total - 1;
+    if (isRange) {
+      if (match.group(1)!.isEmpty) {
+        start = max(0, total - int.parse(match.group(2)!));
+      } else {
+        start = int.parse(match.group(1)!);
+        end = match.group(2)!.isEmpty
+            ? total - 1
+            : min(int.parse(match.group(2)!), total - 1);
+      }
+    }
+    // Anything odd → let the normal path handle it.
+    if (start < 0 || start > end || start >= total) return null;
+
+    // Open the upstream for the proxied remainder FIRST. If it fails (the stored
+    // URL expired), drop the head and fall back cleanly — before sending bytes.
+    Stream<Uint8List>? proxyStream;
+    if (end >= headLen) {
+      final proxyStart = max(start, headLen);
+      try {
+        final res = await dio.get<ResponseBody>(
+          head.upstreamUrl,
+          options: Options(
+            responseType: ResponseType.stream,
+            headers: {
+              "range": "bytes=$proxyStart-$end",
+              "user-agent": streamUserAgentFor(track),
+              "host": Uri.parse(head.upstreamUrl).host,
+            },
+            validateStatus: (status) => status != null && status < 400,
+          ),
+        );
+        proxyStream = res.data!.stream;
+      } catch (_) {
+        _headBuffers.remove(track.info.id);
+        return null;
+      }
+    }
+
+    final responseHeaders = <String, String>{
+      "content-type": head.contentType,
+      "content-length": "${end - start + 1}",
+      "accept-ranges": "bytes",
+      if (isRange) "content-range": "bytes $start-$end/$total",
+    };
+    final status = isRange ? 206 : 200;
+    if (headOnly) return Response(status, headers: responseHeaders);
+
+    Stream<Uint8List> body() async* {
+      if (start < headLen) {
+        yield Uint8List.sublistView(head.bytes, start, min(end + 1, headLen));
+      }
+      if (proxyStream != null) yield* proxyStream;
+    }
+
+    // A full byte-0 response caches just like the live path.
+    final stream = (start == 0 && end == total - 1)
+        ? await _teeToCacheFile(
+            cacheFile: File(await _getTrackCacheFilePath(track)),
+            source: body(),
+            expectedTotal: total,
+            startsAtZero: true,
+            track: track,
+          )
+        : body();
+
+    return Response(status, body: stream, headers: responseHeaders);
+  }
+
+  /// Serves a TIDAL DASH track by handing mpv the manifest to play NATIVELY —
+  /// the only approach with zero startup delay AND correct duration/seeking.
+  ///
+  /// TIDAL lossless is FLAC split across dozens of fMP4 segments (no single
+  /// seekable URL). ffmpeg/mpv plays a DASH manifest directly (fetching only the
+  /// init + first segment to start, exact duration from the manifest, native
+  /// seeking) — but TIDAL's CDN rejects mpv's default UA, so we rewrite every
+  /// segment URL to the local segment proxy ([tidalSegment]) which refetches it
+  /// with a browser UA. mpv only ever talks to localhost. Nothing is
+  /// pre-downloaded, so start/skip/seek are immediate.
+  Future<Response> _serveDashManifest(Request request, SourcedTrack track) async {
+    try {
+      final mpdUrl = stripDashUrl(track.url!);
+      final (xml, base) = await loadDashManifestXml(dio, mpdUrl);
+      if (xml == null || !xml.contains("<MPD")) {
+        throw StateError(
+          "Tidal DASH manifest not loadable for '${track.query.name}'",
+        );
+      }
+      // Same scheme/host/port mpv already used to reach us, so the proxied
+      // segment URLs are reachable from the same client.
+      final origin = "${request.requestedUri.scheme}://"
+          "${request.requestedUri.host}:${request.requestedUri.port}";
+      final rewritten =
+          rewriteDashManifestForProxy(xml, base, proxyOrigin: origin);
+
+      AppLogger.log.i(
+        "Serving Tidal DASH manifest for '${track.query.name}' (native, proxied)",
       );
+      return Response.ok(rewritten, headers: const {
+        "content-type": "application/dash+xml",
+        "cache-control": "no-store",
+      });
+    } catch (e, stack) {
+      AppLogger.reportError(e, stack);
       return Response.internalServerError(
         body: "Could not resolve Tidal DASH manifest",
       );
     }
+  }
 
-    AppLogger.log.i(
-      "Streaming Tidal DASH for '${track.query.name}': "
-      "${manifest.segmentUrls.length} segment(s)",
-    );
+  /// @get('/tidal-seg/<seg>')
+  ///
+  /// Proxies one TIDAL DASH segment for [_serveDashManifest]. The real CDN URL
+  /// is carried base64url in `?t=`; `<seg>` is the segment number (or `init`).
+  /// We refetch it from TIDAL with the browser UA the CDN accepts (mpv's default
+  /// UA gets 403 — the reason raw `.mpd` playback failed) and stream it back.
+  Future<Response> tidalSegment(Request request, String seg) async {
+    final token = request.url.queryParameters["t"];
+    if (token == null || token.isEmpty) {
+      return Response.notFound("missing segment reference");
+    }
 
-    return Response(
-      200,
-      body: stitcher.streamSegments(manifest),
-      headers: const {
-        "content-type": "audio/mp4",
-        "accept-ranges": "none",
-      },
-    );
+    String target;
+    try {
+      target = utf8.decode(base64Url.decode(base64Url.normalize(token)));
+    } catch (_) {
+      return Response.badRequest(body: "bad segment reference");
+    }
+
+    // For media segments mpv has substituted the number into the path; fill it
+    // into the stored template. The init segment has no number.
+    final number = int.tryParse(seg);
+    if (number != null) {
+      target = fillDashTemplate(target, number: number);
+    }
+
+    // Never act as an open relay — only proxy TIDAL's own CDN.
+    final uri = Uri.tryParse(target);
+    if (uri == null ||
+        !(uri.host == "tidal.com" || uri.host.endsWith(".tidal.com"))) {
+      return Response.forbidden("disallowed segment host");
+    }
+
+    try {
+      final res = await dio.get<ResponseBody>(
+        target,
+        options: Options(
+          responseType: ResponseType.stream,
+          headers: {
+            "user-agent": dashSegmentUserAgent,
+            if (request.headers["range"] != null)
+              "range": request.headers["range"]!,
+          },
+          validateStatus: (status) => status != null && status < 500,
+        ),
+      );
+      final headers = <String, String>{
+        "content-type": res.headers.value("content-type") ?? "audio/mp4",
+        "accept-ranges": res.headers.value("accept-ranges") ?? "bytes",
+      };
+      final contentLength = res.headers.value("content-length");
+      if (contentLength != null) headers["content-length"] = contentLength;
+      final contentRange = res.headers.value("content-range");
+      if (contentRange != null) headers["content-range"] = contentRange;
+
+      return Response(res.statusCode!, body: res.data!.stream, headers: headers);
+    } catch (e, stack) {
+      AppLogger.reportError(e, stack);
+      return Response.internalServerError();
+    }
   }
 
   /// Serves a natively downloaded file for tracks whose media was enqueued
@@ -461,13 +718,24 @@ class ServerPlaybackRoutes {
           await _serveCachedFile(request, sourcedTrack, headOnly: true);
       if (cached != null) return cached;
 
-      // TIDAL DASH is stitched on GET; a HEAD can't cheaply know the length, so
-      // report an unsized, non-seekable fMP4 and let mpv fall through to GET.
+      // TIDAL DASH: mpv plays the manifest natively (served on GET). Report the
+      // DASH content-type on HEAD and let mpv fall through to the GET.
       if (isDashUrl(sourcedTrack.url)) {
-        return Response.ok(null, headers: const {
-          "content-type": "audio/mp4",
-          "accept-ranges": "none",
-        });
+        return Response.ok(null,
+            headers: const {"content-type": "application/dash+xml"});
+      }
+
+      // Prefix buffer present: report its sizing so HEAD and the follow-up GET
+      // agree (the GET serves head-from-memory + proxied remainder).
+      final head = _headBuffers[trackId];
+      if (head != null) {
+        final headResponse = await _serveWithHeadBuffer(
+          request,
+          sourcedTrack,
+          head,
+          headOnly: true,
+        );
+        if (headResponse != null) return headResponse;
       }
 
       final res = await streamTrackInformation(
@@ -502,9 +770,23 @@ class ServerPlaybackRoutes {
           await _serveCachedFile(request, sourcedTrack, headOnly: false);
       if (cached != null) return cached;
 
-      // TIDAL DASH: fetch the manifest and stitch its FLAC segments for mpv.
+      // TIDAL DASH: serve the manifest for mpv to play natively (instant start,
+      // seekable, exact duration) — segments proxied via /tidal-seg.
       if (isDashUrl(sourcedTrack.url)) {
-        return await _streamDashTrack(request, sourcedTrack);
+        return await _serveDashManifest(request, sourcedTrack);
+      }
+
+      // Prefix buffer: a skip starts instantly from the in-memory head while the
+      // remainder streams. Falls through to live streaming when there's no head.
+      final head = _headBuffers[trackId];
+      if (head != null) {
+        final headResponse = await _serveWithHeadBuffer(
+          request,
+          sourcedTrack,
+          head,
+          headOnly: false,
+        );
+        if (headResponse != null) return headResponse;
       }
 
       final res = await streamTrack(

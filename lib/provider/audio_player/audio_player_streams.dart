@@ -59,10 +59,12 @@ class AudioPlayerStreamListeners {
       subscribeToScrobbleChanged(),
       subscribeToPosition(),
       subscribeToNextTrackPrefetch(),
+      subscribeToShuffleRewarm(),
       subscribeToPlayerError(),
     ];
 
     ref.onDispose(() {
+      _bufferAheadToken?.cancel();
       for (final subscription in subscriptions) {
         subscription.cancel();
       }
@@ -70,6 +72,14 @@ class AudioPlayerStreamListeners {
   }
 
   final Dio _prefetchDio = Dio();
+
+  /// Cancels an in-flight buffer-ahead when the active track changes, so rapid
+  /// skips don't pile up background downloads of tracks you've already passed.
+  CancelToken? _bufferAheadToken;
+
+  /// Tracks already pulled into the cache this session, so a stable queue isn't
+  /// re-drained over localhost on every track change.
+  final Set<String> _bufferedAhead = {};
 
   ScrobblerNotifier get scrobbler => ref.read(scrobblerProvider.notifier);
   UserPreferences get preferences => ref.read(userPreferencesProvider);
@@ -224,36 +234,15 @@ class AudioPlayerStreamListeners {
         await Future.delayed(const Duration(milliseconds: 200));
         if (audioPlayerState.activeTrack?.id != activeId) return;
 
-        // Warm the window IN PARALLEL — sequential warming (one search +
-        // manifest at a time) can't keep pace with repeated skips, which is
-        // exactly when the window matters. Resolutions are cached per track,
-        // so overlapping runs only pay for tracks not already resolved, and
-        // one track failing must not sink the rest of the window.
-        final upcoming = audioPlayerState.tracks
-            .skip(audioPlayerState.currentIndex + 1)
-            .whereType<SonolythFullTrackObject>()
-            .take(5)
-            .toList();
+        await _warmUpcomingWindow();
 
-        final warmSw = Stopwatch()..start();
-        AppLogger.diag(
-          "[prefetch] warming ${upcoming.length} upcoming "
-          "after '${audioPlayerState.activeTrack?.name}'",
-        );
-        await Future.wait(
-          upcoming.map(
-            (track) async {
-              try {
-                await ref.read(sourcedTrackProvider(track).future);
-              } catch (e, stack) {
-                AppLogger.reportError(e, stack);
-              }
-            },
-          ),
-        );
-        AppLogger.diag(
-          "[prefetch] window ready in ${warmSw.elapsedMilliseconds}ms",
-        );
+        // Resolution alone isn't enough for instant skips: mpv's
+        // prefetch-playlist only opens the next entry near the CURRENT track's
+        // end, so a mid-track skip (the common case) pays a cold network open —
+        // most noticeable on lossless (Qobuz/Tidal FLAC opens heavier than a
+        // lossy stream), and a skip of +2 is never prefetched at all. Pull the
+        // next couple of tracks into the music cache so a skip plays from disk.
+        unawaited(_bufferAheadTracks());
 
         // "Previous" gets no prefetch from mpv (prefetch-playlist only
         // buffers the next entry), so pressing back pays the full stream
@@ -273,6 +262,99 @@ class AudioPlayerStreamListeners {
             AppLogger.reportError(e, stack);
           }
         }
+      } catch (e, stack) {
+        AppLogger.reportError(e, stack);
+      }
+    });
+  }
+
+  /// Resolves (in parallel) the audio sources of the next few upcoming tracks
+  /// so a manual skip never waits on a source search + stream-manifest round
+  /// trip. Resolutions are cached per track, so overlapping runs only pay for
+  /// tracks not already resolved, and one track failing must not sink the rest
+  /// of the window.
+  Future<void> _warmUpcomingWindow() async {
+    final upcoming = audioPlayerState.tracks
+        .skip(audioPlayerState.currentIndex + 1)
+        .whereType<SonolythFullTrackObject>()
+        .take(5)
+        .toList();
+
+    final warmSw = Stopwatch()..start();
+    AppLogger.diag(
+      "[prefetch] warming ${upcoming.length} upcoming "
+      "after '${audioPlayerState.activeTrack?.name}'",
+    );
+    await Future.wait(
+      upcoming.map(
+        (track) async {
+          try {
+            await ref.read(sourcedTrackProvider(track).future);
+          } catch (e, stack) {
+            AppLogger.reportError(e, stack);
+          }
+        },
+      ),
+    );
+    AppLogger.diag(
+      "[prefetch] window ready in ${warmSw.elapsedMilliseconds}ms",
+    );
+  }
+
+  /// How many upcoming tracks to prefix-buffer. Each is only a ~9s head (≈1MB),
+  /// deduped so a track is fetched at most once, so 2-ahead costs roughly the
+  /// same total data as 1-ahead while also covering a quick double-skip.
+  static const _bufferAheadCount = 2;
+
+  /// Prefix-buffers the next couple of tracks (see
+  /// [ServerPlaybackRoutes.prebufferHead]) so a skip starts instantly from the
+  /// in-memory head while the remainder streams.
+  ///
+  /// Data-conscious: only the first ~9s of each track is fetched (NOT the whole
+  /// file), so it's safe even on mobile data — and the bytes are the start of a
+  /// track you're about to play. Cancels on every track change so rapid skips
+  /// don't stack fetches; [_bufferedAhead] dedups; a short delay first lets the
+  /// current track open before competing for bandwidth.
+  Future<void> _bufferAheadTracks() async {
+    _bufferAheadToken?.cancel();
+    final token = _bufferAheadToken = CancelToken();
+
+    await Future.delayed(const Duration(seconds: 1));
+    if (token.isCancelled) return;
+
+    final routes = ref.read(serverPlaybackRoutesProvider);
+    final upcoming = audioPlayerState.tracks
+        .skip(audioPlayerState.currentIndex + 1)
+        .whereType<SonolythFullTrackObject>()
+        .where((t) => !_bufferedAhead.contains(t.id))
+        .take(_bufferAheadCount)
+        .toList();
+
+    for (final track in upcoming) {
+      if (token.isCancelled) return;
+      try {
+        final sourced = await ref.read(sourcedTrackProvider(track).future);
+        await routes.prebufferHead(sourced, cancelToken: token);
+        if (!token.isCancelled) _bufferedAhead.add(track.id);
+      } on DioException catch (e) {
+        if (CancelToken.isCancel(e)) return;
+      } catch (_) {
+        // Best effort — a failed prefix just means a normal cold open on skip.
+      }
+    }
+  }
+
+  /// Re-warms the upcoming window when shuffle is toggled. The upcoming order
+  /// changes but the active track doesn't, so [subscribeToNextTrackPrefetch]
+  /// (keyed on active-track change) won't re-fire — without this the first skip
+  /// after a shuffle would pay the full resolve.
+  StreamSubscription subscribeToShuffleRewarm() {
+    return audioPlayer.shuffledStream.listen((_) async {
+      try {
+        // Let mpv commit the reshuffled order first, then warm the new window.
+        await Future.delayed(const Duration(milliseconds: 200));
+        await _warmUpcomingWindow();
+        unawaited(_bufferAheadTracks());
       } catch (e, stack) {
         AppLogger.reportError(e, stack);
       }

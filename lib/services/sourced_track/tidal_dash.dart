@@ -30,6 +30,143 @@ bool isDashUrl(String? url) => url != null && url.startsWith(dashUrlMarker);
 String stripDashUrl(String url) =>
     url.startsWith(dashUrlMarker) ? url.substring(dashUrlMarker.length) : url;
 
+/// Browser-ish UA for TIDAL manifest/segment fetches. TIDAL's CDN serves its
+/// pre-signed URLs to web clients and rejects mpv/ffmpeg's default UA — which
+/// is why handing mpv the raw `.mpd` failed. The playback server proxies every
+/// segment with this UA so mpv (talking only to localhost) plays DASH natively.
+const dashSegmentUserAgent =
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0 Safari/537.36";
+
+/// Fetches the raw manifest XML for [mpdUrl] (a plain http(s) URL, or an inline
+/// `data:...;base64,` manifest) and returns it with the base URI to resolve
+/// segment refs against. Returns a null body when nothing usable was fetched.
+Future<(String?, Uri)> loadDashManifestXml(
+  Dio dio,
+  String mpdUrl, {
+  String userAgent = dashSegmentUserAgent,
+}) async {
+  if (mpdUrl.startsWith("data:")) {
+    final comma = mpdUrl.indexOf(',');
+    if (comma == -1) return (null, Uri.parse("https://tidal.com/"));
+    final meta = mpdUrl.substring(5, comma);
+    final payload = mpdUrl.substring(comma + 1);
+    final decoded = meta.contains("base64")
+        ? utf8.decode(base64.decode(Uri.decodeComponent(payload)))
+        : Uri.decodeComponent(payload);
+    return (decoded, Uri.parse("https://tidal.com/"));
+  }
+
+  final uri = Uri.parse(mpdUrl);
+  final res = await dio.get<String>(
+    mpdUrl,
+    options: Options(
+      responseType: ResponseType.plain,
+      headers: {"User-Agent": userAgent},
+      validateStatus: (s) => s != null && s < 400,
+    ),
+  );
+  var body = res.data ?? "";
+  // Some gateways return the manifest base64-wrapped rather than as XML.
+  if (!body.contains("<MPD") && !body.trimLeft().startsWith("<")) {
+    try {
+      body = utf8.decode(base64.decode(body.trim()));
+    } catch (_) {/* leave as-is; parse will fail soft */}
+  }
+  return (body, uri);
+}
+
+/// Public wrapper over the DASH `$Identifier$` substitution used both when
+/// parsing and when the segment proxy fills `$Number$` for one request.
+String fillDashTemplate(
+  String template, {
+  String repId = "",
+  String bandwidth = "",
+  int? number,
+}) =>
+    _fillTemplate(template, repId: repId, bandwidth: bandwidth, number: number);
+
+/// Rewrites a TIDAL DASH manifest so every segment URL points at the local
+/// playback server's segment proxy ([proxyOrigin] + `/tidal-seg/...`). This
+/// lets mpv play the manifest NATIVELY — instant start, native seeking, exact
+/// duration, no pre-download — while the proxy adds the browser UA the CDN
+/// requires. `$RepresentationID$`/`$Bandwidth$` are pre-filled here so the proxy
+/// only has to substitute `$Number$` (carried through unencoded in the path).
+String rewriteDashManifestForProxy(
+  String xmlText,
+  Uri baseUri, {
+  required String proxyOrigin,
+}) {
+  final doc = XmlDocument.parse(xmlText);
+  final mpd = doc.rootElement;
+
+  Uri base = baseUri;
+  final mpdBaseUrl = mpd.getElement("BaseURL")?.innerText.trim();
+  if (mpdBaseUrl != null && mpdBaseUrl.isNotEmpty) {
+    base = base.resolve(mpdBaseUrl);
+  }
+
+  String proxyUrl(String absoluteUrl, {required bool isTemplate}) {
+    final token = base64Url.encode(utf8.encode(absoluteUrl));
+    // A literal `$Number$` in the PATH (not the token) so mpv substitutes the
+    // segment number there; the proxy reads it back from the path.
+    final seg = isTemplate ? r"$Number$" : "init";
+    return "$proxyOrigin/tidal-seg/$seg?t=$token";
+  }
+
+  // Resolve a possibly-relative segment URL to absolute while shielding the
+  // `$Number$` placeholder from URI normalization.
+  String absolutize(Uri b, String value) {
+    if (value.startsWith("http://") || value.startsWith("https://")) {
+      return value;
+    }
+    const ph = "__SONOLYTH_NUM__";
+    final shielded = value.replaceAll(r"$Number$", ph);
+    return b.resolve(shielded).toString().replaceAll(ph, r"$Number$");
+  }
+
+  for (final tmpl in doc.findAllElements("SegmentTemplate")) {
+    final repr = _enclosingRepresentation(tmpl);
+    final repId = repr?.getAttribute("id") ?? "";
+    final bandwidth = repr?.getAttribute("bandwidth") ?? "";
+    Uri b = base;
+    if (repr != null) {
+      for (final ancestorBase in _baseUrlsFor(repr)) {
+        b = b.resolve(ancestorBase);
+      }
+    }
+
+    final init = tmpl.getAttribute("initialization");
+    if (init != null && init.isNotEmpty) {
+      final filled =
+          fillDashTemplate(init, repId: repId, bandwidth: bandwidth);
+      tmpl.setAttribute(
+        "initialization",
+        proxyUrl(absolutize(b, filled), isTemplate: false),
+      );
+    }
+    final media = tmpl.getAttribute("media");
+    if (media != null && media.isNotEmpty) {
+      final filled =
+          fillDashTemplate(media, repId: repId, bandwidth: bandwidth);
+      tmpl.setAttribute(
+        "media",
+        proxyUrl(absolutize(b, filled), isTemplate: true),
+      );
+    }
+  }
+
+  return doc.toXmlString();
+}
+
+XmlElement? _enclosingRepresentation(XmlElement el) {
+  XmlElement? node = el;
+  while (node != null && node.name.local != "Representation") {
+    node = node.parentElement;
+  }
+  return node;
+}
+
 /// An ordered, absolute list of segment URLs for one DASH audio
 /// representation — the init segment first, then the media segments in
 /// playback order.
@@ -53,9 +190,7 @@ class TidalDashStitcher {
 
   /// A browser-ish UA for the segment/manifest fetches — TIDAL's CDN serves the
   /// pre-signed URLs to web clients.
-  static const _userAgent =
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/120.0 Safari/537.36";
+  static const _userAgent = dashSegmentUserAgent;
 
   /// Fetches and parses the manifest at [mpdUrl] (a plain http(s) URL, or a
   /// `data:...;base64,` inline manifest) into an ordered segment list. Returns
@@ -88,37 +223,8 @@ class TidalDashStitcher {
   static String _snippet(String s) =>
       s.length <= 2000 ? s : "${s.substring(0, 2000)}…";
 
-  Future<(String?, Uri)> _loadManifestXml(String mpdUrl) async {
-    // Inline data: manifests carry the XML directly (some gateways embed it).
-    if (mpdUrl.startsWith("data:")) {
-      final comma = mpdUrl.indexOf(',');
-      if (comma == -1) return (null, Uri.parse("https://tidal.com/"));
-      final meta = mpdUrl.substring(5, comma);
-      final payload = mpdUrl.substring(comma + 1);
-      final decoded = meta.contains("base64")
-          ? utf8.decode(base64.decode(Uri.decodeComponent(payload)))
-          : Uri.decodeComponent(payload);
-      return (decoded, Uri.parse("https://tidal.com/"));
-    }
-
-    final uri = Uri.parse(mpdUrl);
-    final res = await _dio.get<String>(
-      mpdUrl,
-      options: Options(
-        responseType: ResponseType.plain,
-        headers: {"User-Agent": _userAgent},
-        validateStatus: (s) => s != null && s < 400,
-      ),
-    );
-    var body = res.data ?? "";
-    // Some gateways return the manifest base64-wrapped rather than as XML.
-    if (!body.contains("<MPD") && !body.trimLeft().startsWith("<")) {
-      try {
-        body = utf8.decode(base64.decode(body.trim()));
-      } catch (_) {/* leave as-is; parse will fail soft */}
-    }
-    return (body, uri);
-  }
+  Future<(String?, Uri)> _loadManifestXml(String mpdUrl) =>
+      loadDashManifestXml(_dio, mpdUrl, userAgent: _userAgent);
 
   /// Streams the concatenated bytes of every segment in [manifest], in order.
   /// Each segment is fetched then yielded, so memory stays at roughly one

@@ -15,6 +15,10 @@ final serverRouterProvider = Provider((ref) {
   router.head("/stream/<trackId>", playbackRoutes.headStreamTrackId);
   router.get("/stream/<trackId>", playbackRoutes.getStreamTrackId);
 
+  // Per-segment proxy for native TIDAL DASH playback (adds the browser UA the
+  // CDN requires; keeps mpv talking only to localhost).
+  router.get("/tidal-seg/<seg>", playbackRoutes.tidalSegment);
+
   router.get("/playback/toggle-playback", playbackRoutes.togglePlayback);
   router.get("/playback/previous", playbackRoutes.previousTrack);
   router.get("/playback/next", playbackRoutes.nextTrack);
