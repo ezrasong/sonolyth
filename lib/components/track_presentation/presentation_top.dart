@@ -17,6 +17,7 @@ import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:media_kit/media_kit.dart' show PlaylistMode;
 import 'package:sonolyth/modules/playlist/playlist_create_dialog.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/audio_player/smart_shuffle.dart';
 import 'package:sonolyth/provider/download_manager_provider.dart';
 import 'package:sonolyth/services/audio_player/audio_player.dart';
 
@@ -58,6 +59,9 @@ class TrackPresentationTopSection extends HookConsumerWidget {
         useStream(audioPlayer.playingStream).data ?? audioPlayer.isPlaying;
     final isShuffled =
         useStream(audioPlayer.shuffledStream).data ?? audioPlayer.isShuffled;
+    // Smart shuffle is a player-wide mode; it's only meaningful for THIS
+    // collection's button when this collection is the one playing.
+    final smartShuffle = ref.watch(smartShuffleProvider);
     final isDownloadingAll = useState(false);
 
     Future<void> onDownloadAll() async {
@@ -106,9 +110,17 @@ class TrackPresentationTopSection extends HookConsumerWidget {
       ),
     );
 
+    // Smart shuffle (lightning) shows only while THIS collection is the active
+    // one; otherwise it's a plain shuffle starter for the collection.
+    final isSmart = isActive && smartShuffle;
+    final shuffleActive = isActive && (isShuffled || smartShuffle);
     final shuffleButton = Tooltip(
       tooltip: TooltipContainer(
-        child: Text(context.l10n.shuffle_playlist),
+        // When active the button cycles shuffle -> smart shuffle -> off, so the
+        // label reflects what the next tap does.
+        child: Text(
+          isActive ? context.l10n.smart_shuffle : context.l10n.shuffle_playlist,
+        ),
       ).call,
       child: IconButton(
         // The icon keeps its footprint while loading (the spinner is overlaid
@@ -119,9 +131,10 @@ class TrackPresentationTopSection extends HookConsumerWidget {
             Opacity(
               opacity: isShuffleLoading ? 0 : 1,
               child: Icon(
-                SonolythIcons.shuffle,
+                // Lightning while smart shuffle is on, plain shuffle otherwise.
+                isSmart ? SonolythIcons.lightning : SonolythIcons.shuffle,
                 color:
-                    isShuffled ? context.theme.colorScheme.primary : null,
+                    shuffleActive ? context.theme.colorScheme.primary : null,
               ),
             ),
             if (isShuffleLoading)
@@ -133,14 +146,12 @@ class TrackPresentationTopSection extends HookConsumerWidget {
         // a bare primary-color tint is invisible on themes where primary ≈ the
         // default foreground (so shuffle looked "dead" even though it toggles).
         variance:
-            isShuffled ? ButtonVariance.secondary : ButtonVariance.ghost,
+            shuffleActive ? ButtonVariance.secondary : ButtonVariance.ghost,
         enabled: !isLoading,
-        // When this collection is already playing, the button toggles the
-        // player's shuffle mode instead of being disabled (same pattern as
-        // the play button's pause/resume).
-        onPressed: isActive
-            ? () => audioPlayer.setShuffle(!isShuffled)
-            : onShuffle,
+        // When this collection is already playing, the button cycles
+        // shuffle -> smart shuffle -> off (so smart shuffle is reachable from
+        // the playlist view); otherwise it starts the collection shuffled.
+        onPressed: isActive ? () => cycleShuffleMode(ref) : onShuffle,
       ),
     );
 
@@ -401,7 +412,7 @@ class TrackPresentationTopSection extends HookConsumerWidget {
                 ],
               ),
               Row(
-                spacing: 8 * scale,
+                spacing: 14 * scale,
                 children: [
                   playButton,
                   ...secondaryActions,
@@ -425,6 +436,9 @@ class TrackPresentationTopSection extends HookConsumerWidget {
               // on each side, so Play stays centred even when the two groups
               // hold an unequal number of icons (e.g. 3 left / 2 right).
               Row(
+                // Breathing room between shuffle / play / repeat (and the
+                // secondary groups) so the action bar isn't cramped.
+                spacing: 12 * scale,
                 children: [
                   Expanded(
                     child: Row(
