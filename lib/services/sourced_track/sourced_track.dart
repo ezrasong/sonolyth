@@ -812,4 +812,26 @@ class SourcedTrack extends BasicSourcedTrack {
   /// `audio/<container>` content-type.
   String get playbackContainer =>
       _selectedStream?.container ?? qualityPreset?.name ?? "mp4";
+
+  /// Human label for the stream ACTUALLY being played (e.g. "flac • 16bit •
+  /// 44.1kHz" for a Qobuz/Tidal lossless stream, "mp4 • 256kbps" for a YouTube
+  /// fallback) — derived from the resolved stream, not the configured preset, so
+  /// the player shows the real source quality. Null when no stream is selected.
+  String? get qualityLabel {
+    final stream = _selectedStream;
+    if (stream == null) return null;
+    final container = stream.container;
+    if (stream.type == SonolythMediaCompressionType.lossless) {
+      if (stream.bitDepth != null && stream.sampleRate != null) {
+        return "$container • ${stream.bitDepth}bit • "
+            "${oneOptionalDecimalFormatter.format(stream.sampleRate! / 1000)}kHz";
+      }
+      return "$container • lossless";
+    }
+    if (stream.bitrate != null) {
+      return "$container • "
+          "${oneOptionalDecimalFormatter.format(stream.bitrate! / 1000)}kbps";
+    }
+    return container;
+  }
 }

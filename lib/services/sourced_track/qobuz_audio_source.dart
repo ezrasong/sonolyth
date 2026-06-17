@@ -111,6 +111,9 @@ class QobuzAudioSource {
         container: "flac",
         type: SonolythMediaCompressionType.lossless,
         codec: "flac",
+        // Streaming quality "6" is CD lossless (16-bit / 44.1kHz).
+        bitDepth: 16,
+        sampleRate: 44100,
       ),
     ];
   }

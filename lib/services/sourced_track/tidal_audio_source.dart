@@ -100,6 +100,9 @@ class TidalAudioSource {
         container: "flac",
         type: SonolythMediaCompressionType.lossless,
         codec: "flac",
+        // TIDAL "LOSSLESS" tier is CD quality (16-bit / 44.1kHz).
+        bitDepth: 16,
+        sampleRate: 44100,
       ),
     ];
   }
