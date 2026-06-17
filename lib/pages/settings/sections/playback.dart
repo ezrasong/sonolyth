@@ -37,6 +37,15 @@ class SettingsPlaybackSection extends HookConsumerWidget {
         ref.watch(qobuzPlaybackEnabledProvider).value ?? false;
     final tidalPlaybackEnabled =
         ref.watch(tidalPlaybackEnabledProvider).value ?? false;
+    // A lossless source (Qobuz and/or Tidal) is active — they work in tandem
+    // (Qobuz first, then Tidal for tracks Qobuz doesn't carry), so the format
+    // UI should reflect EITHER being on, not just Qobuz.
+    final losslessPlaybackEnabled =
+        qobuzPlaybackEnabled || tidalPlaybackEnabled;
+    final losslessSources = [
+      if (qobuzPlaybackEnabled) "Qobuz",
+      if (tidalPlaybackEnabled) "Tidal",
+    ].join(", then ");
     final theme = Theme.of(context);
 
     return SectionCardWithHeading(
@@ -103,18 +112,17 @@ class SettingsPlaybackSection extends HookConsumerWidget {
             },
           ),
         ),
-        // With Qobuz lossless playback on, the streaming format is FLAC for
-        // every track Qobuz carries — the preset selectors below only govern
-        // the YouTube fallback, so surface that instead of letting the page
-        // read "Streaming music format: mp4" (which looks like everything
-        // plays lossy).
-        if (qobuzPlaybackEnabled)
+        // With a lossless source on, the streaming format is FLAC for every
+        // track it carries — the preset selectors below only govern the YouTube
+        // fallback, so surface that instead of letting the page read "Streaming
+        // music format: mp4" (which looks like everything plays lossy).
+        if (losslessPlaybackEnabled)
           ListTile(
             leading: const Icon(SonolythIcons.audioQuality),
             title: Text(context.l10n.streaming_music_format),
-            subtitle: const Text(
-              "Lossless FLAC via Qobuz. The format/quality below only apply to "
-              "the YouTube fallback for tracks Qobuz doesn't carry.",
+            subtitle: Text(
+              "Lossless FLAC via $losslessSources. The format/quality below only "
+              "apply to the YouTube fallback for tracks they don't carry.",
             ),
             trailing: const OutlineBadge(child: Text("FLAC · Lossless")),
           ),
@@ -122,7 +130,7 @@ class SettingsPlaybackSection extends HookConsumerWidget {
           AdaptiveSelectTile(
             secondary: const Icon(SonolythIcons.plugin),
             title: Text(
-              qobuzPlaybackEnabled
+              losslessPlaybackEnabled
                   ? "YouTube fallback format"
                   : context.l10n.streaming_music_format,
             ),
@@ -140,7 +148,7 @@ class SettingsPlaybackSection extends HookConsumerWidget {
           AdaptiveSelectTile(
             secondary: const Icon(SonolythIcons.audioQuality),
             title: Text(
-              qobuzPlaybackEnabled
+              losslessPlaybackEnabled
                   ? "YouTube fallback quality"
                   : context.l10n.streaming_music_quality,
             ),
