@@ -10,6 +10,7 @@ import { generateRandomUserAgent } from "utils.ht"
 
 var HttpClient = std.HttpClient
 var HttpBaseOptions = std.HttpBaseOptions
+var RequestOptions = std.RequestOptions
 var FutureUtils = std.FutureUtils
 var Duration = std.Duration
 // Required: hetu encapsulates Dart response objects by looking up the class
@@ -24,10 +25,35 @@ var HttpResponse = std.HttpResponse
 class RetryHttpClient {
   var _client
   var _maxRetries
+  // Optional `() -> string?` returning the current Spotify client-token. Set
+  // only for the pathfinder (gql) client: as of the Feb 2026 API change
+  // api-partner.spotify.com rejects requests without a `client-token` header
+  // (HTTP 401), even with a valid bearer. The token is fetched in the
+  // background, so this is read per-request (and per-retry) and is null until
+  // it lands — a request that races the fetch 401s and the retry below picks
+  // it up. When null, requests go out exactly as before (graceful no-op).
+  var _clientTokenProvider
 
-  construct (client, {maxRetries}) {
+  construct (client, {maxRetries, clientTokenProvider}) {
     this._client = client
     this._maxRetries = maxRetries ?? 4
+    this._clientTokenProvider = clientTokenProvider
+  }
+
+  // Merges the current client-token into a request's options. The gql endpoints
+  // never pass their own `options`, so in practice this builds a fresh
+  // RequestOptions carrying just the client-token — Dio merges it with the
+  // client's base Authorization/User-Agent headers, so auth is preserved.
+  fun _withClientToken(options) {
+    var self = this
+    if (self._clientTokenProvider == null) {
+      return options
+    }
+    var token = self._clientTokenProvider()
+    if (token == null || options != null) {
+      return options
+    }
+    return RequestOptions(headers: { "client-token": token }.toJson())
   }
 
   fun _send(makeReq, attempt) {
@@ -75,35 +101,44 @@ class RetryHttpClient {
   fun get_req(path, {url, options, queryParameters}) {
     var self = this
     return self._send(() {
-      return self._client.get_req(path, url: url, options: options, queryParameters: queryParameters)
+      return self._client.get_req(path, url: url, options: self._withClientToken(options), queryParameters: queryParameters)
     }, 0)
   }
 
   fun post(path, {url, data, options, queryParameters}) {
     var self = this
     return self._send(() {
-      return self._client.post(path, url: url, data: data, options: options, queryParameters: queryParameters)
+      return self._client.post(path, url: url, data: data, options: self._withClientToken(options), queryParameters: queryParameters)
     }, 0)
   }
 
   fun put(path, {url, data, options, queryParameters}) {
     var self = this
     return self._send(() {
-      return self._client.put(path, url: url, data: data, options: options, queryParameters: queryParameters)
+      return self._client.put(path, url: url, data: data, options: self._withClientToken(options), queryParameters: queryParameters)
     }, 0)
   }
 
   fun delete_req(path, {url, data, options, queryParameters}) {
     var self = this
     return self._send(() {
-      return self._client.delete_req(path, url: url, data: data, options: options, queryParameters: queryParameters)
+      return self._client.delete_req(path, url: url, data: data, options: self._withClientToken(options), queryParameters: queryParameters)
     }, 0)
   }
 }
 
+// Spotify's web player client id — the bearer is minted for this id
+// (productType=web-player), so the client-token must be too.
+var SPOTIFY_WEB_CLIENT_ID = "d8a5ed958d274c2e8ee717e6a4b0971d"
+
 class SpotifyGqlApi {
   var apiClient
   var gqlClient
+
+  // The Spotify client-token (separate from the bearer) the pathfinder began
+  // requiring in Feb 2026. Fetched once in the background; null until it lands.
+  var _clientToken
+  var _clientTokenFetching
 
   var album: SpotifyAlbumEndpoint
   var artist: SpotifyArtistEndpoint
@@ -117,14 +152,66 @@ class SpotifyGqlApi {
     this.setAccessToken(accessToken)
   }
 
+  // Fetches a client-token from clienttoken.spotify.com (the same call the web
+  // player makes on load) and caches it. Fire-and-forget: pathfinder requests
+  // read it per-request via the gql client's provider, and the 401 retry rides
+  // out the brief race before it lands. validateStatus accepts everything so an
+  // error response resolves (token stays null = previous behaviour) instead of
+  // throwing into an unhandled future.
+  fun _fetchClientToken() {
+    var self = this
+    if (self._clientToken != null || self._clientTokenFetching == true) {
+      return
+    }
+    self._clientTokenFetching = true
+
+    var http = HttpClient(HttpBaseOptions(
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "User-Agent": generateRandomUserAgent(),
+        "Origin": "https://open.spotify.com",
+        "Referer": "https://open.spotify.com/"
+      }.toJson(),
+      validateStatus: (status) => true
+    ))
+
+    var body = {
+      "client_data": {
+        "client_version": "1.2.13.477.ga4363038",
+        "client_id": SPOTIFY_WEB_CLIENT_ID,
+        "js_sdk_data": {
+          "device_brand": "unknown",
+          "device_id": "",
+          "device_model": "unknown",
+          "device_type": "computer",
+          "os": "windows",
+          "os_version": "NT 10.0"
+        }
+      }
+    }
+
+    http.post(
+      "https://clienttoken.spotify.com/v1/clienttoken",
+      data: body.toJson()
+    ).then((res) {
+      self._clientTokenFetching = false
+      var data = res.data
+      if (data != null && data["granted_token"] != null) {
+        self._clientToken = data["granted_token"]["token"]
+      }
+    })
+  }
+
   fun setAccessToken(accessToken: string) {
+    var self = this
     var headers = Map()
     headers["Authorization"] = "Bearer ${accessToken}"
     headers["User-Agent"] =  generateRandomUserAgent()
-    
+
     // 401/403 are accepted (not thrown) so RetryHttpClient can briefly retry
-    // the launch auth race before giving up; 429 is accepted for rate-limit
-    // backoff. Everything else still throws as before.
+    // the launch auth race (and the client-token race) before giving up; 429 is
+    // accepted for rate-limit backoff. Everything else still throws as before.
     var acceptRetryable = (status) {
       return status != null &&
         ((status >= 200 && status < 300) || status == 401 || status == 403 || status == 429)
@@ -137,13 +224,16 @@ class SpotifyGqlApi {
         validateStatus: acceptRetryable
       )
     ))
-    this.gqlClient = RetryHttpClient(HttpClient(
-      HttpBaseOptions(
-        baseUrl: "https://api-partner.spotify.com/pathfinder/v2/query",
-        headers: headers,
-        validateStatus: acceptRetryable
-      )
-    ))
+    this.gqlClient = RetryHttpClient(
+      HttpClient(
+        HttpBaseOptions(
+          baseUrl: "https://api-partner.spotify.com/pathfinder/v2/query",
+          headers: headers,
+          validateStatus: acceptRetryable
+        )
+      ),
+      clientTokenProvider: () => self._clientToken
+    )
 
     this.album = SpotifyAlbumEndpoint(this.apiClient, this.gqlClient)
     this.artist = SpotifyArtistEndpoint(this.apiClient, this.gqlClient)
@@ -152,6 +242,10 @@ class SpotifyGqlApi {
     this.search = SpotifySearchEndpoint(this.apiClient, this.gqlClient)
     this.track = SpotifyTrackEndpoint(this.apiClient, this.gqlClient)
     this.user = SpotifyUserEndpoint(this.apiClient, this.gqlClient)
+
+    // Pathfinder (api-partner) now needs a client-token; fetch it in the
+    // background so gql requests can attach it.
+    self._fetchClientToken()
   }
 }
 
