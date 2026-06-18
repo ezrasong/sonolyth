@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/pages/library/user_local_tracks/user_local_tracks.dart';
 import 'package:sonolyth/provider/metadata_plugin/library/tracks.dart';
@@ -36,6 +37,9 @@ class PresentationStateNotifier
     extends AutoDisposeFamilyNotifier<PresentationState, Object> {
   @override
   PresentationState build(collection) {
+    // Apply (and re-apply once it loads from prefs / the user changes it) the
+    // sort the user last picked, instead of always starting unsorted.
+    final savedSort = ref.watch(playlistSortProvider);
     if (arg case SonolythSimplePlaylistObject() || SonolythSimpleAlbumObject()) {
       if (isSavedTrackPlaylist) {
         ref.listen(
@@ -74,8 +78,8 @@ class PresentationStateNotifier
 
     return PresentationState(
       selectedTracks: [],
-      presentationTracks: tracks,
-      sortBy: SortBy.none,
+      presentationTracks: ServiceUtils.sortTracks(tracks, savedSort),
+      sortBy: savedSort,
     );
   }
 
@@ -177,12 +181,9 @@ class PresentationStateNotifier
   }
 
   void sortTracks(SortBy sortBy) {
-    state = state.copyWith(
-      presentationTracks: sortBy == SortBy.none
-          ? tracks
-          : ServiceUtils.sortTracks(state.presentationTracks, sortBy),
-      sortBy: sortBy,
-    );
+    // Persist the choice (and re-sort): build() watches playlistSortProvider,
+    // so this both remembers the sort for next time and re-applies it here.
+    ref.read(playlistSortProvider.notifier).set(sortBy);
   }
 }
 
@@ -190,3 +191,39 @@ final presentationStateProvider = AutoDisposeNotifierProviderFamily<
     PresentationStateNotifier, PresentationState, Object>(
   () => PresentationStateNotifier(),
 );
+
+/// The last sort the user picked, persisted across playlists and app restarts.
+/// Stored in SharedPreferences (no drift migration). Loads asynchronously, so a
+/// presentation that watches this re-applies the saved sort once it lands.
+class PlaylistSortNotifier extends Notifier<SortBy> {
+  static const _prefsKey = "playlist-sort-by";
+
+  @override
+  SortBy build() {
+    _load();
+    return SortBy.none;
+  }
+
+  Future<void> _load() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final name = prefs.getString(_prefsKey);
+      if (name == null) return;
+      final saved = SortBy.values.firstWhereOrNull((s) => s.name == name);
+      if (saved != null && saved != state) state = saved;
+    } catch (_) {
+      // A missing/unreadable preference just leaves the default (none).
+    }
+  }
+
+  Future<void> set(SortBy sortBy) async {
+    state = sortBy;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_prefsKey, sortBy.name);
+    } catch (_) {/* best effort */}
+  }
+}
+
+final playlistSortProvider =
+    NotifierProvider<PlaylistSortNotifier, SortBy>(PlaylistSortNotifier.new);

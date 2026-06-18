@@ -81,23 +81,51 @@ Future<void> Function(SonolythTrackObject track, int index)
       if (isActive || playlist.tracks.containsBy(track, (a) => a.id)) {
         await playlistNotifier.jumpToTrack(track);
       } else {
-        final tracks = await options.pagination.onFetchAll();
-        // `index` is the tapped track's position in the visible list, which
-        // can differ from the full fetched list (partial load / filtering).
-        // Resolve by id so the tapped song becomes the active queue item.
-        final resolvedIndex = tracks.indexWhere((t) => t.id == track.id);
-        await playlistNotifier.load(
-          tracks,
-          initialIndex: resolvedIndex >= 0 ? resolvedIndex : index,
-          autoPlay: true,
-        );
-        playlistNotifier.addCollection(options.collectionId);
-        if (options.collection is SonolythSimpleAlbumObject) {
-          historyNotifier
-              .addAlbums([options.collection as SonolythSimpleAlbumObject]);
+        // Start playback IMMEDIATELY on the tapped track from the
+        // already-loaded page, then pull the rest of the collection in the
+        // background — instead of blocking the first note on a full paginated
+        // fetchAll (which made tapping a song slow to load, especially on big
+        // playlists). Mirrors the Play/Shuffle buttons.
+        final loaded = options.tracks;
+        final loadedIndex = loaded.indexWhere((t) => t.id == track.id);
+
+        if (loadedIndex >= 0) {
+          await playlistNotifier.load(
+            loaded,
+            initialIndex: loadedIndex,
+            autoPlay: true,
+          );
+          playlistNotifier.addCollection(options.collectionId);
+          if (options.collection is SonolythSimpleAlbumObject) {
+            historyNotifier
+                .addAlbums([options.collection as SonolythSimpleAlbumObject]);
+          } else {
+            historyNotifier.addPlaylists(
+                [options.collection as SonolythSimplePlaylistObject]);
+          }
+
+          final allTracks = await options.pagination.onFetchAll();
+          await playlistNotifier.addTracks(
+            allTracks.skip(loaded.length).toList(),
+          );
         } else {
-          historyNotifier.addPlaylists(
-              [options.collection as SonolythSimplePlaylistObject]);
+          // Tapped track isn't in the loaded page (shouldn't normally happen) —
+          // fall back to fetching all, then load at the resolved position.
+          final tracks = await options.pagination.onFetchAll();
+          final resolvedIndex = tracks.indexWhere((t) => t.id == track.id);
+          await playlistNotifier.load(
+            tracks,
+            initialIndex: resolvedIndex >= 0 ? resolvedIndex : index,
+            autoPlay: true,
+          );
+          playlistNotifier.addCollection(options.collectionId);
+          if (options.collection is SonolythSimpleAlbumObject) {
+            historyNotifier
+                .addAlbums([options.collection as SonolythSimpleAlbumObject]);
+          } else {
+            historyNotifier.addPlaylists(
+                [options.collection as SonolythSimplePlaylistObject]);
+          }
         }
       }
     }
