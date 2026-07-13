@@ -6,6 +6,7 @@ import 'package:sonolyth/services/sourced_track/tidal_dash.dart';
 import 'package:sonolyth/services/spotiflac/providers/spotiflac_provider.dart';
 import 'package:sonolyth/services/spotiflac/track_matching.dart';
 import 'package:sonolyth/services/spotiflac/zarz_client.dart';
+import 'package:sonolyth/services/spotiflac/zarz_session.dart';
 
 /// TIDAL lossless source, ported from the SpotiFLAC `tidal-web` extension.
 ///
@@ -22,13 +23,19 @@ import 'package:sonolyth/services/spotiflac/zarz_client.dart';
 /// next provider (Deezer) take the track instead of producing a worse file.
 class TidalProvider extends SpotiFlacProvider {
   static const _searchBase = "https://tidal.com/v1";
-  static const _downloadUrl = "https://api.zarz.moe/v1/dl/tid2";
+  static const _downloadPath = "/dl/tid";
   static const _publicToken = "49YxDN9a2aFV6RTG";
   static const _countryCode = "US";
   static const _locale = "en_US";
   static const _deviceType = "BROWSER";
 
-  /// Download resolution goes through the shared, rate-limited zarz gateway.
+  /// Stream resolution goes through the v2 signed-session gateway
+  /// (`/v2/dl/tid`); the old `/v1/dl/tid2` was retired.
+  final ZarzSession _session;
+
+  /// Kept for API compatibility with existing call sites that inject a playback
+  /// [ZarzClient]; v2 resolution no longer uses it (search hits tidal.com).
+  // ignore: unused_field
   final ZarzClient _client;
 
   /// TIDAL metadata search hits a different host (tidal.com, not the gateway)
@@ -36,8 +43,9 @@ class TidalProvider extends SpotiFlacProvider {
   /// gateway client.
   final Dio _searchDio;
 
-  TidalProvider({ZarzClient? client, Dio? searchDio})
+  TidalProvider({ZarzClient? client, Dio? searchDio, ZarzSession? session})
       : _client = client ?? zarzClient,
+        _session = session ?? ZarzSession.tidal,
         _searchDio = searchDio ??
             Dio(BaseOptions(
               connectTimeout: const Duration(seconds: 15),
@@ -129,11 +137,16 @@ class TidalProvider extends SpotiFlacProvider {
   }) async {
     final Map payload;
     try {
-      payload = await _client.postJson(_downloadUrl, {
-        "id": tidalId,
-        "quality": quality,
-      }) as Map;
+      // The ticket resource hash is derived from the bare track id for Tidal.
+      final ticket = await _session.mintTicket("tid", "track", tidalId);
+      payload = await _session.signedPostJson(
+        _downloadPath,
+        {"id": tidalId, "quality": quality},
+        extraHeaders: {"X-Zarz-Ticket": ticket},
+      );
     } on ZarzRateLimitedException {
+      rethrow;
+    } on ZarzVerificationRequiredException {
       rethrow;
     } catch (_) {
       return null;
@@ -149,7 +162,7 @@ class TidalProvider extends SpotiFlacProvider {
     // bake in a worse copy than a later lossless provider could give. The
     // resolved quality is reported both at top level and inside `data`.
     final audioQuality =
-        (payload["audioQuality"] ?? data["audioQuality"] ?? "")
+        (data["audioQuality"] ?? payload["audioQuality"] ?? "")
             .toString()
             .toUpperCase();
     if (audioQuality.isNotEmpty &&
@@ -159,20 +172,8 @@ class TidalProvider extends SpotiFlacProvider {
       return null;
     }
 
-    // DASH (the common lossless case): for playback, hand back the manifest URL
-    // tagged with [dashUrlMarker] so the playback server fetches and stitches
-    // the FLAC segments into one fMP4 stream for mpv. Downloads still defer (no
-    // file output yet) so the next provider (Deezer) takes the track.
-    final manifestType = payload["manifestType"]?.toString().toLowerCase();
-    final mpdUri = payload["mpdUri"]?.toString();
-    if (manifestType == "dash" || (mpdUri != null && mpdUri.isNotEmpty)) {
-      if (allowDash && mpdUri != null && mpdUri.isNotEmpty) {
-        return markDashUrl(mpdUri);
-      }
-      return null;
-    }
-
-    // BTS manifest: a JSON object with a single direct file URL.
+    // v2 embeds the manifest as base64 inside `data.manifest` — either a "BTS"
+    // JSON (single direct FLAC URL) or a DASH MPD (the common lossless case).
     final manifestB64 = data["manifest"]?.toString();
     if (manifestB64 == null || manifestB64.isEmpty) return null;
 
@@ -184,27 +185,41 @@ class TidalProvider extends SpotiFlacProvider {
     }
 
     final trimmed = manifestText.trimLeft();
-    if (!trimmed.startsWith("{")) return null;
 
-    try {
-      final manifest = jsonDecode(manifestText) as Map;
-      final urls = manifest["urls"];
-      final directUrl = (urls is List && urls.isNotEmpty)
-          ? urls.first?.toString()
-          : null;
-      if (directUrl == null || directUrl.isEmpty) return null;
+    // BTS manifest: a JSON object with a single direct file URL.
+    if (trimmed.startsWith("{")) {
+      try {
+        final manifest = jsonDecode(manifestText) as Map;
+        final urls = manifest["urls"];
+        final directUrl = (urls is List && urls.isNotEmpty)
+            ? urls.first?.toString()
+            : null;
+        if (directUrl == null || directUrl.isEmpty) return null;
 
-      // mp4/m4a containers carry ALAC/AAC, not FLAC — defer so we don't write a
-      // non-FLAC file under a .flac name (the downloader's magic check would
-      // fail it outright instead of trying Deezer).
-      final mime = (manifest["mimeType"]?.toString() ?? "audio/flac")
-          .toLowerCase();
-      if (mime.contains("mp4") || mime.contains("m4a")) return null;
+        // mp4/m4a containers carry ALAC/AAC, not FLAC — defer so we don't write
+        // a non-FLAC file under a .flac name (the downloader's magic check would
+        // fail it outright instead of trying Deezer).
+        final mime = (manifest["mimeType"]?.toString() ?? "audio/flac")
+            .toLowerCase();
+        if (mime.contains("mp4") || mime.contains("m4a")) return null;
 
-      return directUrl;
-    } catch (_) {
-      return null;
+        return directUrl;
+      } catch (_) {
+        return null;
+      }
     }
+
+    // DASH MPD (the common lossless case). For playback, hand the inline
+    // manifest to the server's stitcher as a marked `data:` URI so its FLAC
+    // segments are served as one seekable virtual file for mpv. Downloads can't
+    // consume an .mpd as a file, so they defer to the next provider (Deezer).
+    if (trimmed.startsWith("<")) {
+      if (!allowDash) return null;
+      final reencoded = base64.encode(utf8.encode(manifestText));
+      return markDashUrl("data:application/dash+xml;base64,$reencoded");
+    }
+
+    return null;
   }
 
   Future<String?> _resolveTrackId(SonolythFullTrackObject track) async {

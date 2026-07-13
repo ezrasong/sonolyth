@@ -23,6 +23,7 @@ import 'package:sonolyth/provider/audio_player/qobuz_playback.dart';
 import 'package:sonolyth/provider/audio_player/tidal_playback.dart';
 import 'package:sonolyth/services/spotiflac/track_matching.dart';
 import 'package:sonolyth/services/spotiflac/zarz_client.dart';
+import 'package:sonolyth/services/spotiflac/zarz_session.dart';
 
 /// Markers of audio-first uploads (what we want to play).
 final audioOnlyRegex = RegExp(
@@ -181,6 +182,20 @@ class SourcedTrack extends BasicSourcedTrack {
       // so the block is never felt, without rewriting the cache.
       AppLogger.diag(
         "[resolve] '${query.name}' cached qobuz 429 -> youtube live "
+        "(+${sw.elapsedMilliseconds}ms)",
+      );
+      return _fetchViaPlugin(
+        query: query,
+        ref: ref,
+        pluginAudioSource: audioSource.audioSource,
+        slug: audioSourceConfig.slug,
+      );
+    } on ZarzVerificationRequiredException {
+      // Lossless access isn't verified (no/expired session). Keep the good
+      // cached match — it resumes once the user verifies — and play via the
+      // YouTube plugin right now WITHOUT rewriting the cache.
+      AppLogger.diag(
+        "[resolve] '${query.name}' cached lossless needs verify -> youtube live "
         "(+${sw.elapsedMilliseconds}ms)",
       );
       return _fetchViaPlugin(

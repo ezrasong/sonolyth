@@ -11,7 +11,9 @@ import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/adaptive/adaptive_select_tile.dart';
 import 'package:sonolyth/models/database/database.dart';
 import 'package:sonolyth/modules/settings/playback/edit_connect_port_dialog.dart';
+import 'package:sonolyth/modules/settings/playback/zarz_verify_dialog.dart';
 import 'package:sonolyth/modules/settings/section_card_with_heading.dart';
+import 'package:sonolyth/services/spotiflac/zarz_session.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/modules/settings/youtube_engine_not_installed_dialog.dart';
 import 'package:sonolyth/provider/audio_player/qobuz_playback.dart';
@@ -85,11 +87,19 @@ class SettingsPlaybackSection extends HookConsumerWidget {
           title: const Text("Qobuz lossless playback (experimental)"),
           subtitle: const Text(
             "Match tracks by ISRC and stream lossless FLAC from Qobuz, "
-            "falling back to YouTube when Qobuz doesn't carry the track.",
+            "falling back to YouTube when Qobuz doesn't carry the track. "
+            "Enabling it runs a one-time human check.",
           ),
           trailing: Switch(
             value: qobuzPlaybackEnabled,
-            onChanged: (value) {
+            onChanged: (value) async {
+              // Turning it on needs a verified v2 session first — don't flip the
+              // toggle (and churn the source cache) if the check is cancelled.
+              if (value &&
+                  !await showZarzVerifyDialog(context, ZarzSession.qobuz,
+                      sourceLabel: "Qobuz")) {
+                return;
+              }
               ref
                   .read(qobuzPlaybackEnabledProvider.notifier)
                   .setEnabled(value);
@@ -101,11 +111,17 @@ class SettingsPlaybackSection extends HookConsumerWidget {
           title: const Text("Tidal lossless playback (experimental)"),
           subtitle: const Text(
             "After Qobuz, match by ISRC and stream lossless FLAC from Tidal "
-            "for tracks Qobuz doesn't carry, before falling back to YouTube.",
+            "for tracks Qobuz doesn't carry, before falling back to YouTube. "
+            "Enabling it runs a one-time human check.",
           ),
           trailing: Switch(
             value: tidalPlaybackEnabled,
-            onChanged: (value) {
+            onChanged: (value) async {
+              if (value &&
+                  !await showZarzVerifyDialog(context, ZarzSession.tidal,
+                      sourceLabel: "Tidal")) {
+                return;
+              }
               ref
                   .read(tidalPlaybackEnabledProvider.notifier)
                   .setEnabled(value);

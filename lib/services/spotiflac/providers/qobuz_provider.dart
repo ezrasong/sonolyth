@@ -2,17 +2,24 @@ import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/services/spotiflac/providers/spotiflac_provider.dart';
 import 'package:sonolyth/services/spotiflac/track_matching.dart';
 import 'package:sonolyth/services/spotiflac/zarz_client.dart';
+import 'package:sonolyth/services/spotiflac/zarz_session.dart';
 
-/// Qobuz lossless source. Metadata search and download both run through the
-/// zarz gateway; the returned URL is a direct, unencrypted FLAC stream.
+/// Qobuz lossless source. Metadata/search still run through the gateway's
+/// unsigned v1 endpoint; stream resolution now goes through the **v2
+/// signed-session** API (`/v2/dl/qbz`), which requires a verified session and a
+/// per-download ticket (the old `/v1/dl/qbz` was retired). The returned URL is a
+/// direct, unencrypted FLAC stream.
 class QobuzProvider extends SpotiFlacProvider {
   static const _metadataBase = "https://api.zarz.moe/v1/qbz";
-  static const _downloadUrl = "https://api.zarz.moe/v1/dl/qbz";
+  static const _downloadPath = "/dl/qbz";
   static const _appId = "798273057";
 
   final ZarzClient _client;
+  final ZarzSession _session;
 
-  QobuzProvider([ZarzClient? client]) : _client = client ?? zarzClient;
+  QobuzProvider([ZarzClient? client, ZarzSession? session])
+      : _client = client ?? zarzClient,
+        _session = session ?? ZarzSession.qobuz;
 
   @override
   String get id => "qobuz";
@@ -75,13 +82,23 @@ class QobuzProvider extends SpotiFlacProvider {
   /// walking the quality fallback chain. Shared by the download path
   /// ([resolve]) and the Qobuz playback audio source.
   Future<String?> streamUrlForId(String qobuzTrackId, String quality) async {
+    final trackUrl = "https://open.qobuz.com/track/$qobuzTrackId";
     for (final code in _fallbackChain(quality)) {
       try {
-        final payload = await _client.postJson(_downloadUrl, {
-          "quality": _mapDownloadQuality(code),
-          "upload_to_r2": false,
-          "url": "https://open.qobuz.com/track/$qobuzTrackId",
-        }) as Map;
+        // The ticket's resource hash must match what the gateway derives at
+        // consume time from `body.url` — mint it from the same track URL.
+        final ticket = await _session.mintTicket("qbz", "track", trackUrl);
+        final payload = await _session.signedPostJson(
+          _downloadPath,
+          {
+            "quality": _mapDownloadQuality(code),
+            "upload_to_r2": false,
+            "id": qobuzTrackId,
+            "type": "track",
+            "url": trackUrl,
+          },
+          extraHeaders: {"X-Zarz-Ticket": ticket},
+        );
 
         if (payload["success"] == false) continue;
         final nested = payload["data"] is Map ? payload["data"] as Map : {};
@@ -97,6 +114,10 @@ class QobuzProvider extends SpotiFlacProvider {
         return url;
       } on ZarzRateLimitedException {
         // Lower tiers would hit the same limiter; let the caller report it.
+        rethrow;
+      } on ZarzVerificationRequiredException {
+        // No session — the whole provider is unavailable until the user
+        // verifies; lower tiers won't help. Let the caller fall through.
         rethrow;
       } catch (_) {
         // Try the next quality tier.
