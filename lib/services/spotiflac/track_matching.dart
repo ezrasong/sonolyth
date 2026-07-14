@@ -122,7 +122,11 @@ abstract class TrackMatching {
   }
 
   /// Combined score: title 60%, artist 40%, with duration and
-  /// alternate-version corrections.
+  /// alternate-version corrections. A candidate whose credited artists share
+  /// nothing with the expected ones is treated as a different song outright
+  /// (covers, karaoke, same-title tracks by someone else), not just a weaker
+  /// match: a perfect title alone (0.6 + up to 0.05 duration) would otherwise
+  /// clear the 0.5 acceptance threshold every provider uses.
   static double score({
     required String expectedTitle,
     required String candidateTitle,
@@ -131,8 +135,18 @@ abstract class TrackMatching {
     int expectedDurationMs = 0,
     int candidateDurationMs = 0,
   }) {
+    final artistScore = artistSimilarity(expectedArtists, candidateArtists);
     var value = titleSimilarity(expectedTitle, candidateTitle) * 0.6 +
-        artistSimilarity(expectedArtists, candidateArtists) * 0.4;
+        artistScore * 0.4;
+
+    // Only apply the wrong-artist penalty when the candidate actually reports
+    // artists — some provider payloads omit them, and an absent credit is not
+    // evidence of a mismatch.
+    final candidateHasArtists =
+        candidateArtists.any((a) => normalize(a).isNotEmpty);
+    if (artistScore == 0 && expectedArtists.isNotEmpty && candidateHasArtists) {
+      value -= 0.4;
+    }
 
     // A "(Live)" / "(Remix)" / etc. candidate for a plain studio title is the
     // wrong recording no matter how well the words overlap.

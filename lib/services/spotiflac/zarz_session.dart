@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show HttpDate;
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
@@ -122,6 +123,35 @@ class ZarzSession {
   _SessionRecord? _record;
   Future<void>? _refreshInFlight;
 
+  /// Gateway-vs-device clock offset learned from response `Date` headers.
+  /// Signatures embed a timestamp the gateway checks against a ±300s window;
+  /// a skewed device clock (chronic on the emulator, seen on phones too) made
+  /// every signed request 401 — which then *cleared the session* and forced a
+  /// fresh Turnstile. Signing with server-corrected time removes that failure
+  /// mode entirely.
+  Duration _serverTimeOffset = Duration.zero;
+
+  /// Whether we've already opportunistically refreshed this process run.
+  /// Refreshing once per app session (not only inside the last-hour skew
+  /// window) means every listening session extends the session's life, so it
+  /// only ever expires after a long stretch of not using the app at all.
+  bool _refreshedThisRun = false;
+
+  /// Server-corrected wall clock.
+  DateTime _now() => DateTime.now().toUtc().add(_serverTimeOffset);
+
+  /// Learns the gateway clock from a response's `Date` header.
+  void _syncClock(Response res) {
+    try {
+      final header = res.headers.value("date");
+      if (header == null || header.isEmpty) return;
+      final serverTime = HttpDate.parse(header);
+      _serverTimeOffset = serverTime.difference(DateTime.now().toUtc());
+    } catch (_) {
+      // An unparsable Date header just means no correction.
+    }
+  }
+
   // Counting-semaphore state for the concurrency cap.
   int _inFlight = 0;
   final List<Completer<void>> _waiters = [];
@@ -188,7 +218,7 @@ class ZarzSession {
     final record = await _load();
     if (!record.hasSession) return false;
     final expiry = record.expiry;
-    if (expiry != null && DateTime.now().isAfter(expiry)) return false;
+    if (expiry != null && _now().isAfter(expiry)) return false;
     return true;
   }
 
@@ -227,6 +257,7 @@ class ZarzSession {
         validateStatus: (s) => s != null && s < 500,
       ),
     );
+    _syncClock(res);
 
     final data = res.data is Map ? res.data as Map : {};
 
@@ -345,6 +376,7 @@ class ZarzSession {
 
     await _acquire();
     try {
+      var authRetried = false;
       for (var attempt = 0;; attempt++) {
         final res = await _signedRequest(
           record: record,
@@ -361,8 +393,17 @@ class ZarzSession {
           continue;
         }
         if (status == 401 || status == 428) {
-          // The gateway rejected the session — forget it so the next verify
-          // starts clean, and surface as "needs verification".
+          // Don't nuke the session on the first rejection — that's what made
+          // every transient failure (clock skew before the offset was learned,
+          // a gateway blip, a refresh racing an in-flight request) cost the
+          // user a full Turnstile. Re-sync the clock (done above via the
+          // response's Date header), try one refresh, and retry once; only a
+          // second rejection means the session is genuinely dead.
+          if (!authRetried) {
+            authRetried = true;
+            await _maybeRefresh(record);
+            continue;
+          }
           await clear();
           throw const ZarzVerificationRequiredException();
         }
@@ -415,11 +456,22 @@ class ZarzSession {
     }
     final expiry = record.expiry;
     if (expiry != null) {
-      if (DateTime.now().isAfter(expiry)) {
-        await clear();
-        throw const ZarzVerificationRequiredException();
-      }
-      if (expiry.difference(DateTime.now()) <= _refreshSkew) {
+      if (_now().isAfter(expiry)) {
+        // Grace attempt: the gateway may still honor a refresh from a
+        // just-expired session (and "expired" may itself be device-clock
+        // error). Only give up — and cost the user a Turnstile — if the
+        // refresh leaves us without a live expiry.
+        await _maybeRefresh(record);
+        final refreshed = record.expiry;
+        if (refreshed == null || _now().isAfter(refreshed)) {
+          await clear();
+          throw const ZarzVerificationRequiredException();
+        }
+      } else if (expiry.difference(_now()) <= _refreshSkew ||
+          !_refreshedThisRun) {
+        // Refresh near expiry, and also once per app run regardless — every
+        // listening session then pushes the expiry out, so re-verification
+        // only ever happens after a long stretch of not using the app.
         await _maybeRefresh(record);
       }
     }
@@ -441,6 +493,9 @@ class ZarzSession {
         path: _refreshEndpoint,
         bodyText: jsonEncode({"install_id": record.installId}),
       );
+      // The gateway answered (whatever the verdict) — the once-per-run
+      // opportunistic refresh has done its job for this process.
+      _refreshedThisRun = true;
       if ((res.statusCode ?? 0) < 200 || (res.statusCode ?? 0) >= 300) return;
       final data = res.data is Map ? res.data as Map : {};
       final sessionId = (data["session_id"] ?? "").toString();
@@ -472,13 +527,15 @@ class ZarzSession {
     required String path,
     required String bodyText,
     Map<String, String>? extraHeaders,
-  }) {
+  }) async {
     final uri = _url(path);
     // Dio sends a String body as its verbatim UTF-8 bytes, so hashing those
     // same bytes keeps the Body-SHA256 header consistent with what's sent.
     final bodyBytes = utf8.encode(bodyText);
+    // Server-corrected time: the gateway checks the signed timestamp against
+    // a ±300s window, and a skewed device clock would 401 every request.
     final now = DateTime.fromMillisecondsSinceEpoch(
-      DateTime.now().millisecondsSinceEpoch,
+      _now().millisecondsSinceEpoch,
       isUtc: true,
     );
     final ts = now.toIso8601String(); // e.g. 2026-07-13T14:30:00.123Z
@@ -499,7 +556,7 @@ class ZarzSession {
     final bodyHash = signed.bodyHash;
     final sig = signed.signature;
 
-    return _dio.requestUri(
+    final res = await _dio.requestUri(
       uri,
       data: bodyText,
       options: Options(
@@ -521,6 +578,10 @@ class ZarzSession {
         validateStatus: (s) => s != null && s < 500,
       ),
     );
+    // Every response teaches us the gateway clock, so even the first 401 of a
+    // skewed device self-corrects before the retry.
+    _syncClock(res);
+    return res;
   }
 
   // ---- Signing -----------------------------------------------------------

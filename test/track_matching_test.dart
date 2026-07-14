@@ -130,6 +130,45 @@ void main() {
       expect(close, greaterThan(farOff));
     });
 
+    test('a wrong artist with a perfect title falls below the 0.5 acceptance '
+        'threshold', () {
+      // Same title + same duration but a different artist is a different
+      // song (cover / karaoke / namesake) — it must not be accepted.
+      final wrongArtist = TrackMatching.score(
+        expectedTitle: "Hello",
+        candidateTitle: "Hello",
+        expectedArtists: const ["Adele"],
+        candidateArtists: const ["Lionel Richie"],
+        expectedDurationMs: 295000,
+        candidateDurationMs: 295000,
+      );
+      expect(wrongArtist, lessThan(0.5));
+    });
+
+    test('a candidate with no artist metadata is not penalized', () {
+      final noArtist = TrackMatching.score(
+        expectedTitle: "Hello",
+        candidateTitle: "Hello",
+        expectedArtists: const ["Adele"],
+        candidateArtists: const [],
+        expectedDurationMs: 295000,
+        candidateDurationMs: 295000,
+      );
+      // Title-only score survives the threshold when the provider simply
+      // didn't report artists.
+      expect(noArtist, greaterThanOrEqualTo(0.5));
+    });
+
+    test('partial artist-credit overlap still counts as a match', () {
+      final partial = TrackMatching.score(
+        expectedTitle: "Fortnight",
+        candidateTitle: "Fortnight",
+        expectedArtists: const ["Taylor Swift", "Post Malone"],
+        candidateArtists: const ["Taylor Swift"],
+      );
+      expect(partial, greaterThanOrEqualTo(0.9));
+    });
+
     test('correct artist outranks a wrong artist with the same title', () {
       final right = TrackMatching.score(
         expectedTitle: "Hello",

@@ -141,9 +141,17 @@ class QobuzProvider extends SpotiFlacProvider {
 
   Future<String?> _resolveTrackId(SonolythFullTrackObject track) async {
     if (track.isrc.isNotEmpty) {
-      final byIsrc = await _search(track.isrc, limit: 1);
-      final match = byIsrc.firstOrNull;
-      if (match != null) return match["id"]?.toString();
+      // Only trust an ISRC hit whose returned isrc actually equals ours —
+      // when Qobuz lacks the recording, the search degrades to fuzzy text
+      // matching on the ISRC string and the first hit can be an unrelated
+      // track (wrong artist entirely).
+      final expectedIsrc = track.isrc.trim().toUpperCase();
+      final byIsrc = await _search(track.isrc, limit: 5);
+      for (final candidate in byIsrc) {
+        final candidateIsrc =
+            candidate["isrc"]?.toString().trim().toUpperCase() ?? "";
+        if (candidateIsrc == expectedIsrc) return candidate["id"]?.toString();
+      }
     }
 
     final query = "${track.name} ${track.artists.map((a) => a.name).join(" ")}";

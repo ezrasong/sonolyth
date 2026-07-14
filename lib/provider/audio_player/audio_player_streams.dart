@@ -78,10 +78,6 @@ class AudioPlayerStreamListeners {
   /// skips don't pile up background downloads of tracks you've already passed.
   CancelToken? _bufferAheadToken;
 
-  /// Tracks already pulled into the cache this session, so a stable queue isn't
-  /// re-drained over localhost on every track change.
-  final Set<String> _bufferedAhead = {};
-
   ScrobblerNotifier get scrobbler => ref.read(scrobblerProvider.notifier);
   UserPreferences get preferences => ref.read(userPreferencesProvider);
   DiscordNotifier get discord => ref.read(discordProvider.notifier);
@@ -269,25 +265,40 @@ class AudioPlayerStreamListeners {
     });
   }
 
+  /// How many upcoming tracks to resolve ahead. Sized so a burst of skips
+  /// lands on an already-resolved track: the zarz lanes cap in-flight signed
+  /// requests at 4, so a wider window queues (never floods) the gateway.
+  static const _warmAheadCount = 8;
+
+  /// How many just-played tracks to keep resolved/buffered behind the active
+  /// one, so pressing "previous" is as instant as skipping forward.
+  static const _warmBackCount = 2;
+
   /// Resolves (in parallel) the audio sources of the next few upcoming tracks
-  /// so a manual skip never waits on a source search + stream-manifest round
-  /// trip. Resolutions are cached per track, so overlapping runs only pay for
-  /// tracks not already resolved, and one track failing must not sink the rest
-  /// of the window.
+  /// — and the couple just played, for instant backtracking — so a manual
+  /// skip in either direction never waits on a source search + stream-manifest
+  /// round trip. Resolutions are cached per track, so overlapping runs only
+  /// pay for tracks not already resolved, and one track failing must not sink
+  /// the rest of the window.
   Future<void> _warmUpcomingWindow() async {
-    final upcoming = audioPlayerState.tracks
-        .skip(audioPlayerState.currentIndex + 1)
-        .whereType<SonolythFullTrackObject>()
-        .take(5)
-        .toList();
+    final tracks = audioPlayerState.tracks;
+    final index = audioPlayerState.currentIndex;
+    final window = [
+      ...tracks.skip(index + 1).whereType<SonolythFullTrackObject>().take(
+            _warmAheadCount,
+          ),
+      for (var i = index - 1; i >= 0 && i >= index - _warmBackCount; i--)
+        if (tracks.elementAtOrNull(i) is SonolythFullTrackObject)
+          tracks[i] as SonolythFullTrackObject,
+    ];
 
     final warmSw = Stopwatch()..start();
     AppLogger.diag(
-      "[prefetch] warming ${upcoming.length} upcoming "
-      "after '${audioPlayerState.activeTrack?.name}'",
+      "[prefetch] warming ${window.length} around "
+      "'${audioPlayerState.activeTrack?.name}'",
     );
     await Future.wait(
-      upcoming.map(
+      window.map(
         (track) async {
           try {
             await ref.read(sourcedTrackProvider(track).future);
@@ -303,19 +314,24 @@ class AudioPlayerStreamListeners {
   }
 
   /// How many upcoming tracks to prefix-buffer. Each is only a ~9s head (≈1MB),
-  /// deduped so a track is fetched at most once, so 2-ahead costs roughly the
-  /// same total data as 1-ahead while also covering a quick double-skip.
-  static const _bufferAheadCount = 2;
+  /// deduped server-side so a track is fetched at most once, so a wider window
+  /// costs little extra data while covering a burst of skips.
+  static const _bufferAheadCount = 4;
 
-  /// Prefix-buffers the next couple of tracks (see
-  /// [ServerPlaybackRoutes.prebufferHead]) so a skip starts instantly from the
-  /// in-memory head while the remainder streams.
+  /// Prefix-buffers the next few tracks — and the couple just played, so
+  /// "previous" starts instantly too (see [ServerPlaybackRoutes.prebufferHead]
+  /// for Qobuz heads and [ServerPlaybackRoutes.prewarmDashTrack] for TIDAL
+  /// DASH first-segments) — so a skip in either direction starts from memory
+  /// while the remainder streams.
   ///
-  /// Data-conscious: only the first ~9s of each track is fetched (NOT the whole
-  /// file), so it's safe even on mobile data — and the bytes are the start of a
-  /// track you're about to play. Cancels on every track change so rapid skips
-  /// don't stack fetches; [_bufferedAhead] dedups; a short delay first lets the
-  /// current track open before competing for bandwidth.
+  /// Data-conscious: only the first ~9s / first segment of each track is
+  /// fetched (NOT the whole file), so it's safe even on mobile data — and the
+  /// bytes are the start of a track you're about to play. Cancels on every
+  /// track change so rapid skips don't stack fetches; the server dedups
+  /// (already-buffered and disk-cached tracks are cheap no-ops, and dropping
+  /// the old client-side "buffered once" set means a head the server evicted
+  /// gets re-buffered instead of staying cold forever); a short delay first
+  /// lets the current track open before competing for bandwidth.
   Future<void> _bufferAheadTracks() async {
     _bufferAheadToken?.cancel();
     final token = _bufferAheadToken = CancelToken();
@@ -327,19 +343,27 @@ class AudioPlayerStreamListeners {
     if (token.isCancelled) return;
 
     final routes = ref.read(serverPlaybackRoutesProvider);
-    final upcoming = audioPlayerState.tracks
-        .skip(audioPlayerState.currentIndex + 1)
-        .whereType<SonolythFullTrackObject>()
-        .where((t) => !_bufferedAhead.contains(t.id))
-        .take(_bufferAheadCount)
-        .toList();
+    final tracks = audioPlayerState.tracks;
+    final index = audioPlayerState.currentIndex;
+    // Forward first (the likelier direction), then the just-played couple.
+    final window = [
+      ...tracks.skip(index + 1).whereType<SonolythFullTrackObject>().take(
+            _bufferAheadCount,
+          ),
+      for (var i = index - 1; i >= 0 && i >= index - _warmBackCount; i--)
+        if (tracks.elementAtOrNull(i) is SonolythFullTrackObject)
+          tracks[i] as SonolythFullTrackObject,
+    ];
 
-    for (final track in upcoming) {
+    for (final track in window) {
       if (token.isCancelled) return;
       try {
         final sourced = await ref.read(sourcedTrackProvider(track).future);
-        await routes.prebufferHead(sourced, cancelToken: token);
-        if (!token.isCancelled) _bufferedAhead.add(track.id);
+        if (isDashUrl(sourced.url)) {
+          await routes.prewarmDashTrack(sourced);
+        } else {
+          await routes.prebufferHead(sourced, cancelToken: token);
+        }
       } on DioException catch (e) {
         if (CancelToken.isCancel(e)) return;
       } catch (_) {

@@ -87,8 +87,11 @@ class ServerPlaybackRoutes {
   /// speculative data per track tiny.
   static const _headPrefixBytes = 1 * 1024 * 1024;
 
-  /// Max heads held in memory at once (~8MB worst case).
-  static const _headBufferMax = 4;
+  /// Max heads held in memory at once (~8MB worst case). Sized to cover the
+  /// buffer-ahead window in BOTH directions (next few + previous few) so
+  /// neither fast forward-skipping nor backtracking evicts what the other
+  /// direction needs.
+  static const _headBufferMax = 8;
 
   Future<String> _getTrackCacheFilePath(SourcedTrack track) async {
     return join(
@@ -444,6 +447,18 @@ class ServerPlaybackRoutes {
     if (url == null || isDashUrl(url)) return;
     if (!QobuzAudioSource.ownsMatch(track.info)) return;
 
+    // A fully-cached track is already served instantly from disk (checked
+    // before the head buffer) — don't spend 1MB re-fetching its head. Matters
+    // for backtracking, where the previous track often finished caching. The
+    // cache path only exists once COMPLETE (writes land in a .part first), so
+    // a bare exists() is a valid completeness check.
+    if (userPreferences.cacheMusic) {
+      try {
+        final cacheFile = File(await _getTrackCacheFilePath(track));
+        if (await cacheFile.exists()) return;
+      } catch (_) {/* no cache dir — proceed with the head fetch */}
+    }
+
     try {
       final res = await dio.get<ResponseBody>(
         url,
@@ -631,6 +646,41 @@ class ServerPlaybackRoutes {
   /// the (one-time) segment HEADs instead of re-probing.
   static final Map<String, _DashSegmentMap> _dashMaps = {};
 
+  /// How many sized segment maps to keep. Covers the prefetch window in both
+  /// directions plus the current track — evicting a prewarmed map would throw
+  /// away exactly the manifest+HEAD work the prefetch paid for.
+  static const _dashMapsMax = 12;
+
+  /// Pre-fetched FIRST segments of upcoming/previous TIDAL tracks, keyed by
+  /// segment URL. A DASH skip's startup cost is manifest + per-segment HEADs
+  /// + the first segment fetch; with the map cached ([_dashMaps]) and the
+  /// first segment in RAM, a skip starts as instantly as a Qobuz head-buffer
+  /// hit. Bounded LRU (segments are ~1MB).
+  static final Map<String, List<int>> _dashHeadSegments = {};
+  static const _dashHeadSegmentsMax = 8;
+
+  /// Prepares a TIDAL DASH [track] for an instant future skip: builds (and
+  /// caches) its sized segment map and pulls its first segment into memory.
+  /// The playback-side analogue of [prebufferHead] for Qobuz. Best-effort.
+  Future<void> prewarmDashTrack(SourcedTrack track) async {
+    final url = track.url;
+    if (url == null || !isDashUrl(url)) return;
+    try {
+      final map = await _dashSegmentMap(track);
+      if (map == null || map.urls.isEmpty) return;
+      final firstUrl = map.urls.first;
+      if (_dashHeadSegments.containsKey(firstUrl)) return;
+      final bytes = await _fetchSegmentBytes(firstUrl);
+      if (bytes == null) return;
+      _dashHeadSegments[firstUrl] = bytes;
+      while (_dashHeadSegments.length > _dashHeadSegmentsMax) {
+        _dashHeadSegments.remove(_dashHeadSegments.keys.first);
+      }
+    } catch (_) {
+      // Best effort — a failed prewarm just means a normal cold open on skip.
+    }
+  }
+
   /// Serves a TIDAL DASH track as a SEEKABLE virtual file: it sizes the FLAC
   /// segments once (parallel HEAD), reports the exact total as content-length,
   /// and serves any byte range by fetching just the overlapping segments
@@ -746,7 +796,7 @@ class ServerPlaybackRoutes {
       total: acc,
     );
     _dashMaps[track.info.id] = map;
-    while (_dashMaps.length > 6) {
+    while (_dashMaps.length > _dashMapsMax) {
       _dashMaps.remove(_dashMaps.keys.first);
     }
     return map;
@@ -804,6 +854,11 @@ class ServerPlaybackRoutes {
   }
 
   Future<List<int>?> _fetchSegmentBytes(String url) async {
+    // A prewarmed first segment serves the skip instantly from RAM. Only
+    // prewarm inserts here — caching every streamed segment would balloon
+    // memory during normal playback for bytes that are never re-read.
+    final prewarmed = _dashHeadSegments[url];
+    if (prewarmed != null) return prewarmed;
     try {
       final res = await dio.get<List<int>>(
         url,
