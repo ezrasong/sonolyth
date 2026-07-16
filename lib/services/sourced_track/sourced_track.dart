@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
@@ -108,8 +109,21 @@ class SourcedTrack extends BasicSourcedTrack {
       // permanently pinned to a (often wrong) YouTube match.
       var transient = false;
 
+      // Start both lossless SEARCHES up front so a Qobuz miss doesn't pay
+      // Tidal's search round trip on top of its own — the expensive signed
+      // stream calls (ticket + dl) stay sequential and Qobuz-first, so an
+      // early Qobuz win only wastes one cheap tidal.com search. The pre-read
+      // no-op error handler keeps an early return from leaving an unhandled
+      // async error behind; _tryLosslessSource sees the original failure when
+      // it awaits the future itself.
+      final qobuz = QobuzAudioSource();
+      final tidal = TidalAudioSource();
+      final tidalMatches = tidalEnabled ? tidal.matches(query) : null;
+      if (tidalMatches != null) {
+        unawaited(tidalMatches.then((_) {}, onError: (_, __) {}));
+      }
+
       if (qobuzEnabled) {
-        final qobuz = QobuzAudioSource();
         final result = await _tryLosslessSource(
           label: "qobuz",
           match: () => qobuz.matches(query),
@@ -123,11 +137,10 @@ class SourcedTrack extends BasicSourcedTrack {
         transient = transient || result.transient;
       }
 
-      if (tidalEnabled) {
-        final tidal = TidalAudioSource();
+      if (tidalMatches != null) {
         final result = await _tryLosslessSource(
           label: "tidal",
-          match: () => tidal.matches(query),
+          match: () => tidalMatches,
           stream: tidal.streams,
           query: query,
           ref: ref,
@@ -261,7 +274,7 @@ class SourcedTrack extends BasicSourcedTrack {
     List<SonolythAudioSourceMatchObject> results,
     SonolythFullTrackObject track,
   ) {
-    return results
+    final ranked = results
         .map((sibling) {
           int score = 0;
           final title = sibling.title.toLowerCase();
@@ -327,9 +340,25 @@ class SourcedTrack extends BasicSourcedTrack {
             score -= 4;
           }
 
-          return (sibling: sibling, score: score);
+          // Plausibility: relative ranking alone still plays the "best" of a
+          // set of entirely-wrong results (different song, different length).
+          // A candidate whose title shares nothing with the track AND whose
+          // length is way off is the wrong song outright, not a weaker match.
+          final plausible = ((normalizedTrackName.isNotEmpty &&
+                      normalizedTitle.contains(normalizedTrackName)) ||
+                  TrackMatching.titleSimilarity(sibling.title, track.name) >=
+                      0.45) &&
+              durationDiffSeconds <= 60;
+
+          return (sibling: sibling, score: score, plausible: plausible);
         })
-        .sorted((a, b) => b.score.compareTo(a.score))
+        .sorted((a, b) => b.score.compareTo(a.score));
+
+    // Drop implausible results only when a plausible one exists — an empty
+    // result would mean no playback at all, which is worse than a best-effort
+    // guess when the search returned nothing usable.
+    final plausible = ranked.where((e) => e.plausible).toList();
+    return (plausible.isEmpty ? ranked : plausible)
         .map((e) => e.sibling)
         .toList();
   }

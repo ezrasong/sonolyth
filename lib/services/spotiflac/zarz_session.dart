@@ -431,13 +431,28 @@ class ZarzSession {
     return d;
   }
 
+  /// Zone marker set by [runInteractive]: signed requests made while
+  /// resolving the track the player is asking for RIGHT NOW jump ahead of
+  /// queued prefetch traffic instead of waiting behind an 8-track warm
+  /// fan-out for one of the [_maxConcurrent] slots.
+  static const _interactiveZoneKey = #zarzInteractive;
+
+  /// Runs [body] in a zone whose signed zarz requests get queue priority.
+  /// Wrap the resolve that mpv/the user is actively blocked on.
+  static T runInteractive<T>(T Function() body) =>
+      runZoned(body, zoneValues: const {_interactiveZoneKey: true});
+
   Future<void> _acquire() async {
     if (_inFlight < _maxConcurrent) {
       _inFlight++;
       return;
     }
     final completer = Completer<void>();
-    _waiters.add(completer);
+    if (Zone.current[_interactiveZoneKey] == true) {
+      _waiters.insert(0, completer);
+    } else {
+      _waiters.add(completer);
+    }
     await completer.future;
   }
 
@@ -467,12 +482,20 @@ class ZarzSession {
           await clear();
           throw const ZarzVerificationRequiredException();
         }
-      } else if (expiry.difference(_now()) <= _refreshSkew ||
-          !_refreshedThisRun) {
-        // Refresh near expiry, and also once per app run regardless — every
-        // listening session then pushes the expiry out, so re-verification
-        // only ever happens after a long stretch of not using the app.
+      } else if (expiry.difference(_now()) <= _refreshSkew) {
+        // Refresh near expiry — the session is about to lapse, so this one
+        // has to block.
         await _maybeRefresh(record);
+      } else if (!_refreshedThisRun) {
+        // Once-per-run opportunistic refresh — every listening session pushes
+        // the expiry out, so re-verification only happens after a long
+        // stretch of not using the app. The session is comfortably valid
+        // here, so run it in the background instead of making the first cold
+        // resolve of every app run pay the extra gateway round trip.
+        _refreshedThisRun = true;
+        unawaited(_maybeRefresh(record).catchError((Object e) {
+          AppLogger.reportError(e, StackTrace.current);
+        }));
       }
     }
     return record;

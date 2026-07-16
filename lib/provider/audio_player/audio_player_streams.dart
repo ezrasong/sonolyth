@@ -61,6 +61,7 @@ class AudioPlayerStreamListeners {
       subscribeToPosition(),
       subscribeToNextTrackPrefetch(),
       subscribeToShuffleRewarm(),
+      subscribeToResumeRewarm(),
       subscribeToPlayerError(),
     ];
 
@@ -387,6 +388,28 @@ class AudioPlayerStreamListeners {
       try {
         // Let mpv commit the reshuffled order first, then warm the new window.
         await Future.delayed(const Duration(milliseconds: 200));
+        await _warmUpcomingWindow();
+        unawaited(_bufferAheadTracks());
+      } catch (e, stack) {
+        AppLogger.reportError(e, stack);
+      }
+    });
+  }
+
+  /// Re-warms the upcoming window when playback resumes from pause. While
+  /// paused with the screen off the app drops its foreground service and
+  /// wakelock (androidStopForegroundOnPause), so warms scheduled during the
+  /// pause never ran — or failed with the radio asleep — and pressing play
+  /// from the lock screen landed on a cold (or error-stuck) next track.
+  /// Resolves are cached per track, so when the window is already warm this
+  /// is a no-op.
+  StreamSubscription subscribeToResumeRewarm() {
+    var wasPlaying = false;
+    return audioPlayer.playingStream.listen((playing) async {
+      final resumed = playing && !wasPlaying;
+      wasPlaying = playing;
+      if (!resumed) return;
+      try {
         await _warmUpcomingWindow();
         unawaited(_bufferAheadTracks());
       } catch (e, stack) {

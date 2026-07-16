@@ -24,6 +24,7 @@ import 'package:sonolyth/services/logger/logger.dart';
 import 'package:sonolyth/services/sourced_track/qobuz_audio_source.dart';
 import 'package:sonolyth/services/sourced_track/sourced_track.dart';
 import 'package:sonolyth/services/sourced_track/tidal_dash.dart';
+import 'package:sonolyth/services/spotiflac/zarz_session.dart';
 import 'package:sonolyth/utils/service_utils.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
@@ -103,6 +104,18 @@ class ServerPlaybackRoutes {
   }
 
   Future<SourcedTrack?> _getSourcedTrack(
+    Request request,
+    String trackId,
+  ) {
+    // mpv is blocked on this request RIGHT NOW — any signed zarz calls a cold
+    // resolve makes here must jump ahead of queued prefetch traffic instead
+    // of waiting behind the warm fan-out.
+    return ZarzSession.runInteractive(
+      () => _getSourcedTrackInner(request, trackId),
+    );
+  }
+
+  Future<SourcedTrack?> _getSourcedTrackInner(
     Request request,
     String trackId,
   ) async {

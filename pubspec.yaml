@@ -3,7 +3,7 @@ description: Open source extensible music streaming platform and app, based on B
 
 publish_to: "none"
 
-version: 5.2.63+109
+version: 5.2.64+110
 
 homepage: https://github.com/ezrasong/sonolyth
 repository: https://github.com/ezrasong/sonolyth

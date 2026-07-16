@@ -133,6 +133,18 @@ Future<void> main(List<String> rawArgs) async {
           .setBool('sourceMatchQobuzFirstV1', true);
     }
 
+    // One-time: drop matches picked before v5.2.63's matcher fixes. The old
+    // matcher compared artists by substring containment ("George" matched
+    // "George Hampton") and deleted all non-ASCII characters, so wrong-artist
+    // and wrong-song matches are sitting in the cache and would keep playing
+    // wrong forever. Re-resolving re-matches with the exact-token matcher.
+    if (KVStoreService.sharedPreferences.getBool('sourceMatchExactArtistV1') !=
+        true) {
+      await database.delete(database.sourceMatchTable).go();
+      await KVStoreService.sharedPreferences
+          .setBool('sourceMatchExactArtistV1', true);
+    }
+
     if (kIsDesktop) {
       await localNotifier.setup(appName: "Sonolyth");
       await WindowManagerTools.initialize();
