@@ -113,6 +113,16 @@ class ServerPlaybackRoutes {
         playlist.tracks.firstWhereOrNull((element) => element.id == trackId);
     if (track == null) return null;
 
+    // A resolve that failed while the app was backgrounded (radio asleep,
+    // transient gateway error) is cached as an error and never rebuilt on
+    // its own — mpv would get an error for this track forever. Invalidate it
+    // so this very request re-resolves; activeTrackSourcesProvider watches
+    // the family member, so it recomputes too.
+    if (track is SonolythFullTrackObject &&
+        ref.read(sourcedTrackProvider(track)).hasError) {
+      ref.invalidate(sourcedTrackProvider(track));
+    }
+
     final activeSourcedTrack =
         await ref.read(activeTrackSourcesProvider.future);
 
@@ -129,7 +139,7 @@ class ServerPlaybackRoutes {
     final mediaTrack = spotubeMedia.track;
     if (mediaTrack is! SonolythFullTrackObject) return null;
 
-    return await ref.read(sourcedTrackProvider(mediaTrack).future);
+    return await readSourcedTrack(ref, mediaTrack);
   }
 
   /// Serves a local file (downloaded or cached) honoring single-range Range

@@ -16,7 +16,11 @@ abstract class TrackMatching {
     r"\s+(feat|ft|featuring)\.?\s+.*$",
     caseSensitive: false,
   );
-  static final _nonAlphaNum = RegExp(r"[^a-z0-9\s]");
+  /// Strips punctuation but keeps ALL letters and digits (any script).
+  /// The old `[^a-z0-9\s]` deleted every non-ASCII character, so CJK /
+  /// Cyrillic / Greek / Arabic titles and artists normalized to the empty
+  /// string and text matching failed outright for non-Latin music.
+  static final _nonAlphaNum = RegExp(r"[^\p{L}\p{N}\s]", unicode: true);
   static final _spaces = RegExp(r"\s+");
 
   /// Bracketed release descriptors that DON'T change the recording's identity —
@@ -76,17 +80,49 @@ abstract class TrackMatching {
     return intersection / union;
   }
 
-  /// 1.0 when any expected artist appears among the candidate artists.
+  /// Separators providers use when cramming several collaborators into one
+  /// artist field ("A, B", "A & B", "A feat. B"). NOT split on: "and"
+  /// (handled as a stop token so band names survive) and "x" (too many real
+  /// names contain it — "Lil Nas X").
+  static final _artistSplitRegex = RegExp(
+    r"\s*(?:[,;/+&·]|\bfeat\.?(?=\s)|\bft\.?(?=\s)|\bfeaturing\b|\bwith\b|\bvs\.?(?=\s))\s*",
+    caseSensitive: false,
+  );
+
+  /// Connector words that vary freely between providers' renderings of the
+  /// same name ("Simon & Garfunkel" vs "Simon and Garfunkel" — `&` is
+  /// already stripped as punctuation, so drop "and" too before comparing).
+  static const _artistStopTokens = {"and"};
+
+  static Set<String> _artistTokens(String value) => normalize(value)
+      .split(" ")
+      .where((w) => w.isNotEmpty && !_artistStopTokens.contains(w))
+      .toSet();
+
+  /// 1.0 when any expected artist IS one of the credited candidate artists —
+  /// same normalized token set, not substring containment ("George" must not
+  /// match "George Hampton", and "Sia" must not match "Siavash"). Candidate
+  /// fields that pack several collaborators into one string are also compared
+  /// per collaborator after splitting on the common separators.
   static double artistSimilarity(
     List<String> expected,
     List<String> candidate,
   ) {
     if (expected.isEmpty || candidate.isEmpty) return 0;
-    final normalizedCandidate = candidate.map(normalize).toSet();
-    for (final artist in expected.map(normalize)) {
-      if (artist.isEmpty) continue;
-      for (final other in normalizedCandidate) {
-        if (other.contains(artist) || artist.contains(other)) return 1;
+    final candidateTokenSets = <Set<String>>[];
+    for (final field in candidate) {
+      for (final piece in [field, ...field.split(_artistSplitRegex)]) {
+        final tokens = _artistTokens(piece);
+        if (tokens.isNotEmpty) candidateTokenSets.add(tokens);
+      }
+    }
+    for (final artist in expected) {
+      final tokens = _artistTokens(artist);
+      if (tokens.isEmpty) continue;
+      for (final other in candidateTokenSets) {
+        if (tokens.length == other.length && other.containsAll(tokens)) {
+          return 1;
+        }
       }
     }
     return 0;

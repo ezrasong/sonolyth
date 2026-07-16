@@ -56,3 +56,19 @@ final sourcedTrackProvider = AsyncNotifierProviderFamily<SourcedTrackNotifier,
     SourcedTrack, SonolythFullTrackObject>(
   () => SourcedTrackNotifier(),
 );
+
+/// Reads [sourcedTrackProvider] for [track], retrying once when the cached
+/// state is an error. A resolve that failed transiently (screen-off radio
+/// sleep, gateway hiccup) otherwise sticks as an error forever — the family
+/// provider never rebuilds on its own, so the track could never play until
+/// something else invalidated it.
+Future<SourcedTrack> readSourcedTrack(
+  Ref ref,
+  SonolythFullTrackObject track,
+) {
+  final provider = sourcedTrackProvider(track);
+  if (ref.read(provider).hasError) {
+    ref.invalidate(provider);
+  }
+  return ref.read(provider.future);
+}

@@ -202,9 +202,7 @@ class AudioPlayerStreamListeners {
         }
 
         try {
-          await ref.read(
-            sourcedTrackProvider(nextTrack as SonolythFullTrackObject).future,
-          );
+          await readSourcedTrack(ref, nextTrack as SonolythFullTrackObject);
         } finally {
           lastTrack = nextTrack.id;
         }
@@ -224,14 +222,19 @@ class AudioPlayerStreamListeners {
       try {
         final activeId = audioPlayerState.activeTrack?.id;
         if (activeId == null || activeId == lastPrefetchedFor) return;
-        lastPrefetchedFor = activeId;
 
         // Tiny debounce so a skip burst coalesces on the landing track
         // instead of kicking off a fetch per intermediate track.
         await Future.delayed(const Duration(milliseconds: 200));
         if (audioPlayerState.activeTrack?.id != activeId) return;
 
-        await _warmUpcomingWindow();
+        // Only mark this active track done when the whole window resolved:
+        // a warm that failed (screen-off radio sleep, transient gateway
+        // error) used to be marked complete and never retried, leaving the
+        // upcoming track cold at the transition. Overlapping re-runs are
+        // cheap — resolves are cached per track.
+        final allWarmed = await _warmUpcomingWindow();
+        if (allWarmed) lastPrefetchedFor = activeId;
 
         // Resolution alone isn't enough for instant skips: mpv's
         // prefetch-playlist only opens the next entry near the CURRENT track's
@@ -252,8 +255,7 @@ class AudioPlayerStreamListeners {
             : audioPlayerState.tracks.elementAtOrNull(previousIndex);
         if (previous is SonolythFullTrackObject) {
           try {
-            final sourced =
-                await ref.read(sourcedTrackProvider(previous).future);
+            final sourced = await readSourcedTrack(ref, previous);
             await _ensureStreamAlive(previous, sourced);
           } catch (e, stack) {
             AppLogger.reportError(e, stack);
@@ -279,8 +281,9 @@ class AudioPlayerStreamListeners {
   /// skip in either direction never waits on a source search + stream-manifest
   /// round trip. Resolutions are cached per track, so overlapping runs only
   /// pay for tracks not already resolved, and one track failing must not sink
-  /// the rest of the window.
-  Future<void> _warmUpcomingWindow() async {
+  /// the rest of the window. Returns true when every track in the window
+  /// resolved, so callers can retry a partially-failed window later.
+  Future<bool> _warmUpcomingWindow() async {
     final tracks = audioPlayerState.tracks;
     final index = audioPlayerState.currentIndex;
     final window = [
@@ -297,13 +300,15 @@ class AudioPlayerStreamListeners {
       "[prefetch] warming ${window.length} around "
       "'${audioPlayerState.activeTrack?.name}'",
     );
-    await Future.wait(
+    final results = await Future.wait(
       window.map(
         (track) async {
           try {
-            await ref.read(sourcedTrackProvider(track).future);
+            await readSourcedTrack(ref, track);
+            return true;
           } catch (e, stack) {
             AppLogger.reportError(e, stack);
+            return false;
           }
         },
       ),
@@ -311,6 +316,7 @@ class AudioPlayerStreamListeners {
     AppLogger.diag(
       "[prefetch] window ready in ${warmSw.elapsedMilliseconds}ms",
     );
+    return results.every((ok) => ok);
   }
 
   /// How many upcoming tracks to prefix-buffer. Each is only a ~9s head (≈1MB),
@@ -358,7 +364,7 @@ class AudioPlayerStreamListeners {
     for (final track in window) {
       if (token.isCancelled) return;
       try {
-        final sourced = await ref.read(sourcedTrackProvider(track).future);
+        final sourced = await readSourcedTrack(ref, track);
         if (isDashUrl(sourced.url)) {
           await routes.prewarmDashTrack(sourced);
         } else {

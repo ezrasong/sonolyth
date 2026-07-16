@@ -280,14 +280,21 @@ class SourcedTrack extends BasicSourcedTrack {
               score += 4;
             }
 
-            if (normalizedTitle.contains(TrackMatching.normalize(artist.name))) {
+            // Guard against empty normalizations: contains("") is always
+            // true, which used to hand every sibling free points whenever a
+            // name normalized to nothing.
+            final normalizedArtist = TrackMatching.normalize(artist.name);
+            if (normalizedArtist.isNotEmpty &&
+                normalizedTitle.contains(normalizedArtist)) {
               score += 1;
             }
           }
 
           // Normalized comparison so punctuation/feat. formatting differences
           // ("Song (feat. X)" vs "Song ft. X") don't lose the title match.
-          if (normalizedTitle.contains(TrackMatching.normalize(track.name)) ||
+          final normalizedTrackName = TrackMatching.normalize(track.name);
+          if ((normalizedTrackName.isNotEmpty &&
+                  normalizedTitle.contains(normalizedTrackName)) ||
               TrackMatching.titleSimilarity(sibling.title, track.name) >= 0.8) {
             score += 3;
           }

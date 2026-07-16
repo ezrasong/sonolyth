@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -267,6 +268,12 @@ public class AudioService extends MediaBrowserServiceCompat {
     private FlutterEngine flutterEngine;
     private AudioServiceConfig config;
     private PowerManager.WakeLock wakeLock;
+    // Sonolyth: the partial wakelock keeps the CPU up while playing, but
+    // nothing kept the Wi-Fi radio out of screen-off power-save — the next
+    // track's network open would stall until the screen came back on. Held
+    // and released in lockstep with the wakelock (same as ExoPlayer's
+    // WAKE_MODE_NETWORK).
+    private WifiManager.WifiLock wifiLock;
     private MediaSessionCompat mediaSession;
     private MediaSessionCallback mediaSessionCallback;
     private List<MediaControl> controls = new ArrayList<>();
@@ -324,6 +331,8 @@ public class AudioService extends MediaBrowserServiceCompat {
 
         PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, AudioService.class.getName());
+        WifiManager wm = (WifiManager)getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        wifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, AudioService.class.getName());
 
         // Get max available VM memory, exceeding this amount will throw an
         // OutOfMemory exception. Stored in kilobytes as LruCache takes an
@@ -812,11 +821,15 @@ public class AudioService extends MediaBrowserServiceCompat {
     private void acquireWakeLock() {
         if (!wakeLock.isHeld())
             wakeLock.acquire();
+        if (!wifiLock.isHeld())
+            wifiLock.acquire();
     }
 
     private void releaseWakeLock() {
         if (wakeLock.isHeld())
             wakeLock.release();
+        if (wifiLock.isHeld())
+            wifiLock.release();
     }
 
     private void activateMediaSession() {
