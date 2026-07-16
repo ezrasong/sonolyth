@@ -131,12 +131,26 @@ class QobuzProvider extends SpotiFlacProvider {
   /// objects (the playback audio source needs multiple ranked candidates,
   /// unlike the download path which only needs the single best id).
   Future<List<Map>> searchTracks(SonolythFullTrackObject track) async {
+    var byIsrc = const <Map>[];
     if (track.isrc.isNotEmpty) {
-      final byIsrc = await _search(track.isrc, limit: 5);
-      if (byIsrc.isNotEmpty) return byIsrc;
+      final expectedIsrc = track.isrc.trim().toUpperCase();
+      byIsrc = await _search(track.isrc, limit: 5);
+      final hasExact = byIsrc.any((c) =>
+          (c["isrc"]?.toString().trim().toUpperCase() ?? "") == expectedIsrc);
+      if (hasExact) return byIsrc;
+      // No exact-ISRC hit: when Qobuz lacks the recording its ISRC search
+      // degrades to fuzzy text matching, so whatever came back is junk-prone.
+      // Fall through to the real title+artist search — returning the junk
+      // alone here used to mean the caller's scoring rejected everything and
+      // a track that IS on Qobuz (under a different ISRC) went to YouTube.
     }
     final query = "${track.name} ${track.artists.map((a) => a.name).join(" ")}";
-    return _search(query, limit: 10);
+    final byText = await _search(query, limit: 10);
+    final seen = byIsrc.map((c) => c["id"]?.toString()).toSet();
+    return [
+      ...byIsrc,
+      ...byText.where((c) => !seen.contains(c["id"]?.toString())),
+    ];
   }
 
   Future<String?> _resolveTrackId(SonolythFullTrackObject track) async {

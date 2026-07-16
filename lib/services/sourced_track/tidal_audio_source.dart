@@ -44,8 +44,10 @@ class TidalAudioSource {
 
   /// ISRC-first candidate matches for [track], best first (same ranking rules
   /// as the Qobuz source: exact-ISRC hits jump ahead of fuzzy text matches,
-  /// which still have to clear the 0.5 score threshold).
-  Future<List<SonolythAudioSourceMatchObject>> matches(
+  /// which still have to clear the 0.5 score threshold). `sawResults` reports
+  /// whether the search returned anything at all — see the Qobuz source.
+  Future<({List<SonolythAudioSourceMatchObject> accepted, bool sawResults})>
+      matches(
     SonolythFullTrackObject track,
   ) async {
     final results = await _provider.searchTracks(track);
@@ -74,7 +76,10 @@ class TidalAudioSource {
       if (score >= 0.5) scored.add((match, score));
     }
     scored.sort((a, b) => b.$2.compareTo(a.$2));
-    return scored.map((e) => e.$1).toList();
+    return (
+      accepted: scored.map((e) => e.$1).toList(),
+      sawResults: results.isNotEmpty,
+    );
   }
 
   /// Lossless FLAC stream(s) for a previously matched Tidal track, or an empty

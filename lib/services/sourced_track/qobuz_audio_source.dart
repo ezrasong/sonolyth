@@ -52,8 +52,13 @@ class QobuzAudioSource {
   static bool ownsMatch(SonolythAudioSourceMatchObject match) =>
       match.externalUri.startsWith(externalUriPrefix);
 
-  /// ISRC-first candidate matches for [track], best first.
-  Future<List<SonolythAudioSourceMatchObject>> matches(
+  /// ISRC-first candidate matches for [track], best first. `sawResults`
+  /// reports whether the search returned ANYTHING (accepted or not): a search
+  /// that returned candidates which all failed scoring is a matching miss,
+  /// not proof the catalog lacks the track — the caller must treat it as
+  /// transient rather than permanently caching a YouTube fallback.
+  Future<({List<SonolythAudioSourceMatchObject> accepted, bool sawResults})>
+      matches(
     SonolythFullTrackObject track,
   ) async {
     final results = await _provider.searchTracks(track);
@@ -93,7 +98,10 @@ class QobuzAudioSource {
       if (score >= 0.5) scored.add((match, score));
     }
     scored.sort((a, b) => b.$2.compareTo(a.$2));
-    return scored.map((e) => e.$1).toList();
+    return (
+      accepted: scored.map((e) => e.$1).toList(),
+      sawResults: results.isNotEmpty,
+    );
   }
 
   /// Direct lossless FLAC stream(s) for a previously matched Qobuz track.

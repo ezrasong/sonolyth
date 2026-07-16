@@ -81,18 +81,22 @@ abstract class TrackMatching {
   }
 
   /// Separators providers use when cramming several collaborators into one
-  /// artist field ("A, B", "A & B", "A feat. B"). NOT split on: "and"
-  /// (handled as a stop token so band names survive) and "x" (too many real
-  /// names contain it — "Lil Nas X").
+  /// artist field ("A, B", "A & B", "A feat. B"). Brackets are separators too:
+  /// providers commonly credit an artist as native-plus-romanized —
+  /// "아이유 (IU)" — and each bracketed part must be comparable on its own.
+  /// NOT split on: "and" (handled as a stop token so band names survive) and
+  /// "x" (splitting is simultaneous across all separators, so "Lil Nas X,
+  /// Jack Harlow" would shred the "Lil Nas X" piece).
   static final _artistSplitRegex = RegExp(
-    r"\s*(?:[,;/+&·]|\bfeat\.?(?=\s)|\bft\.?(?=\s)|\bfeaturing\b|\bwith\b|\bvs\.?(?=\s))\s*",
+    r"\s*(?:[,;/+&·()\[\]]|\bfeat\.?(?=\s)|\bft\.?(?=\s)|\bfeaturing\b|\bwith\b|\bvs\.?(?=\s))\s*",
     caseSensitive: false,
   );
 
   /// Connector words that vary freely between providers' renderings of the
   /// same name ("Simon & Garfunkel" vs "Simon and Garfunkel" — `&` is
-  /// already stripped as punctuation, so drop "and" too before comparing).
-  static const _artistStopTokens = {"and"};
+  /// already stripped as punctuation, so drop "and" too before comparing;
+  /// "The Chainsmokers" vs "Chainsmokers" likewise for "the").
+  static const _artistStopTokens = {"and", "the"};
 
   static Set<String> _artistTokens(String value) => normalize(value)
       .split(" ")
@@ -123,9 +127,52 @@ abstract class TrackMatching {
         if (tokens.length == other.length && other.containsAll(tokens)) {
           return 1;
         }
+        if (_subsetWithForeignLeftovers(tokens, other)) return 1;
       }
     }
     return 0;
+  }
+
+  static final _latinToken = RegExp(r"[a-z0-9]");
+
+  /// Same-artist "native + romanized" credits whose own name contains
+  /// brackets — "(여자)아이들 ((G)I-DLE)" — can't be recovered by splitting
+  /// (the split shreds the bracketed name itself). Accept a candidate that
+  /// contains ALL expected tokens when every leftover token is in a different
+  /// script: the leftovers are then the same name written natively, not a
+  /// different artist. "George" vs "George Hampton" stays rejected — the
+  /// leftover "hampton" is the same script.
+  static bool _subsetWithForeignLeftovers(
+    Set<String> expected,
+    Set<String> candidate,
+  ) {
+    if (expected.isEmpty || !candidate.containsAll(expected)) return false;
+    final leftovers = candidate.difference(expected);
+    if (leftovers.isEmpty) return false;
+    bool latin(String t) => _latinToken.hasMatch(t);
+    if (expected.every(latin)) return leftovers.every((t) => !latin(t));
+    if (expected.every((t) => !latin(t))) return leftovers.every(latin);
+    return false;
+  }
+
+  /// Whether a fallback candidate is even plausibly the same song: its title
+  /// shares real material with the expected one AND its length is roughly
+  /// right. Used to keep an all-wrong search result set from being played
+  /// "best first" and to avoid pinning such a pick permanently.
+  static bool plausibleCandidate({
+    required String expectedTitle,
+    required String candidateTitle,
+    required int expectedDurationMs,
+    required int candidateDurationMs,
+  }) {
+    final normalizedExpected = normalize(expectedTitle);
+    final normalizedCandidate = normalize(candidateTitle);
+    final titleRelated = (normalizedExpected.isNotEmpty &&
+            normalizedCandidate.contains(normalizedExpected)) ||
+        titleSimilarity(expectedTitle, candidateTitle) >= 0.45;
+    final durationDiffSeconds =
+        ((expectedDurationMs - candidateDurationMs) ~/ 1000).abs();
+    return titleRelated && durationDiffSeconds <= 60;
   }
 
   /// Alternate-version markers. A candidate carrying one of these when the

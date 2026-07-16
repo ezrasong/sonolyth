@@ -47,6 +47,8 @@ import 'package:sonolyth/services/cli/cli.dart';
 import 'package:sonolyth/services/kv_store/encrypted_kv_store.dart';
 import 'package:sonolyth/services/kv_store/kv_store.dart';
 import 'package:sonolyth/services/logger/logger.dart';
+import 'package:sonolyth/services/sourced_track/qobuz_audio_source.dart';
+import 'package:sonolyth/services/sourced_track/tidal_audio_source.dart';
 import 'package:sonolyth/services/wm_tools/wm_tools.dart';
 import 'package:sonolyth/utils/migrations/sandbox.dart';
 import 'package:sonolyth/utils/platform.dart';
@@ -143,6 +145,30 @@ Future<void> main(List<String> rawArgs) async {
       await database.delete(database.sourceMatchTable).go();
       await KVStoreService.sharedPreferences
           .setBool('sourceMatchExactArtistV1', true);
+    }
+
+    // One-time: v5.2.64's over-strict matcher (no bracketed alt-script artist
+    // handling, Qobuz text search skipped after junk ISRC results) rejected
+    // lossless matches and permanently pinned YouTube fallbacks — often the
+    // wrong song. Drop ONLY the YouTube-pinned rows; lossless matches are
+    // ISRC-verified/scored and stay, so this doesn't re-trigger a full
+    // re-resolve storm.
+    if (KVStoreService.sharedPreferences.getBool('sourceMatchYtRepinV1') !=
+        true) {
+      final rows = await database.select(database.sourceMatchTable).get();
+      final youtubePinned = rows
+          .where((row) =>
+              !row.sourceInfo.contains(QobuzAudioSource.externalUriPrefix) &&
+              !row.sourceInfo.contains(TidalAudioSource.externalUriPrefix))
+          .map((row) => row.id)
+          .toList();
+      if (youtubePinned.isNotEmpty) {
+        await (database.delete(database.sourceMatchTable)
+              ..where((s) => s.id.isIn(youtubePinned)))
+            .go();
+      }
+      await KVStoreService.sharedPreferences
+          .setBool('sourceMatchYtRepinV1', true);
     }
 
     if (kIsDesktop) {

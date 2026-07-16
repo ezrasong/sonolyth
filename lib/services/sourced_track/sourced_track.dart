@@ -344,11 +344,12 @@ class SourcedTrack extends BasicSourcedTrack {
           // set of entirely-wrong results (different song, different length).
           // A candidate whose title shares nothing with the track AND whose
           // length is way off is the wrong song outright, not a weaker match.
-          final plausible = ((normalizedTrackName.isNotEmpty &&
-                      normalizedTitle.contains(normalizedTrackName)) ||
-                  TrackMatching.titleSimilarity(sibling.title, track.name) >=
-                      0.45) &&
-              durationDiffSeconds <= 60;
+          final plausible = TrackMatching.plausibleCandidate(
+            expectedTitle: track.name,
+            candidateTitle: sibling.title,
+            expectedDurationMs: track.durationMs,
+            candidateDurationMs: sibling.duration.inMilliseconds,
+          );
 
           return (sibling: sibling, score: score, plausible: plausible);
         })
@@ -379,7 +380,7 @@ class SourcedTrack extends BasicSourcedTrack {
     var qobuzMatches = const <SonolythAudioSourceMatchObject>[];
     if (await ref.read(qobuzPlaybackEnabledProvider.future)) {
       try {
-        qobuzMatches = await QobuzAudioSource().matches(query);
+        qobuzMatches = (await QobuzAudioSource().matches(query)).accepted;
       } catch (_) {
         // Qobuz lookup failed (rate limit/network) — fall back to the plugin.
       }
@@ -449,7 +450,10 @@ class SourcedTrack extends BasicSourcedTrack {
   /// `transient: false` (the source genuinely doesn't carry the track).
   static Future<({SourcedTrack? sourced, bool transient})> _tryLosslessSource({
     required String label,
-    required Future<List<SonolythAudioSourceMatchObject>> Function() match,
+    required Future<
+            ({List<SonolythAudioSourceMatchObject> accepted, bool sawResults})>
+        Function()
+        match,
     required Future<List<SonolythAudioSourceStreamObject>> Function(
             SonolythAudioSourceMatchObject)
         stream,
@@ -459,13 +463,16 @@ class SourcedTrack extends BasicSourcedTrack {
     required Stopwatch sw,
   }) async {
     var candidates = const <SonolythAudioSourceMatchObject>[];
+    var sawResults = false;
     var rateLimited = false;
     var matchError = false;
     try {
-      candidates = await match();
+      final result = await match();
+      candidates = result.accepted;
+      sawResults = result.sawResults;
       AppLogger.diag(
         "[resolve] '${query.name}' $label matches=${candidates.length} "
-        "(+${sw.elapsedMilliseconds}ms)",
+        "(raw=${sawResults ? "some" : "none"}, +${sw.elapsedMilliseconds}ms)",
       );
     } on ZarzRateLimitedException {
       rateLimited = true;
@@ -516,9 +523,13 @@ class SourcedTrack extends BasicSourcedTrack {
       );
     }
 
+    // `sawResults` counts as transient: the search returned candidates that
+    // all failed scoring, which is a matching miss (romanized credits, junk
+    // ISRC results), NOT proof the catalog lacks the track. Caching a YouTube
+    // fallback for it would permanently pin what may be the wrong song.
     return (
       sourced: null,
-      transient: rateLimited || matchError || candidates.isNotEmpty,
+      transient: rateLimited || matchError || sawResults,
     );
   }
 
@@ -563,7 +574,15 @@ class SourcedTrack extends BasicSourcedTrack {
       try {
         final streams = await pluginAudioSource.streams(candidate);
         if (streams.isNotEmpty) {
-          if (cache) {
+          // Never pin an implausible last-resort pick: caching it makes a
+          // wrong song permanent. Play it now; re-search on a later play.
+          if (cache &&
+              TrackMatching.plausibleCandidate(
+                expectedTitle: query.name,
+                candidateTitle: candidate.title,
+                expectedDurationMs: query.durationMs,
+                candidateDurationMs: candidate.duration.inMilliseconds,
+              )) {
             await _cacheMatch(ref, query.id, slug, candidate);
           }
           return SourcedTrack(
