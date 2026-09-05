@@ -82,12 +82,20 @@ class TidalProvider extends SpotiFlacProvider {
   static String labelFor(String quality) =>
       _qualityLabels[quality] ?? "Lossless";
 
-  /// Lossless-only fallback within TIDAL. We never drop to HIGH/LOW here — a
-  /// lossy fallback is the job of the YouTube provider at the end of the chain.
+  /// Fallback within TIDAL.
+  ///
+  /// Downloads never drop below LOSSLESS: a download is kept, and writing AAC
+  /// under a `.flac` name is the bug the container checks below exist to stop.
+  /// The one tier that may go lossy is HIGH, which only the *streaming* path
+  /// asks for and only when the user has chosen the data-saver setting; even
+  /// then LOSSLESS sits behind it, so a refusal costs quality rather than
+  /// playback.
   List<String> _fallbackChain(String quality) {
     switch (quality) {
       case "HI_RES_LOSSLESS":
         return const ["HI_RES_LOSSLESS", "LOSSLESS"];
+      case "HIGH":
+        return const ["HIGH", "LOSSLESS"];
       default:
         return const ["LOSSLESS"];
     }
@@ -130,10 +138,32 @@ class TidalProvider extends SpotiFlacProvider {
   /// (downloads, which can't fetch an .mpd as a file) DASH is deferred so the
   /// next provider (Deezer) handles it. The rarer "BTS" response carries a
   /// single direct FLAC URL usable by both.
+  /// [allowLossy] opens the guard below to AAC. It is passed only by the
+  /// streaming path with the data-saver tier selected, never by downloads.
   Future<String?> streamUrlForId(
     String tidalId,
     String quality, {
     bool allowDash = false,
+    bool allowLossy = false,
+  }) async =>
+      (await streamForId(
+        tidalId,
+        quality,
+        allowDash: allowDash,
+        allowLossy: allowLossy,
+      ))
+          ?.url;
+
+  /// As [streamUrlForId], but also reports whether what came back is **lossy**.
+  ///
+  /// The player describes the stream it got, and only this method can tell:
+  /// a DASH manifest is always FLAC segments however the request was phrased,
+  /// while a BTS manifest carrying an mp4/m4a mime is AAC.
+  Future<({String url, bool lossy})?> streamForId(
+    String tidalId,
+    String quality, {
+    bool allowDash = false,
+    bool allowLossy = false,
   }) async {
     final Map payload;
     try {
@@ -158,9 +188,11 @@ class TidalProvider extends SpotiFlacProvider {
     if ((data["assetPresentation"]?.toString().toUpperCase()) == "PREVIEW") {
       return null;
     }
-    // A downgraded tier means TIDAL handed back lossy AAC; defer rather than
-    // bake in a worse copy than a later lossless provider could give. The
-    // resolved quality is reported both at top level and inside `data`.
+    // A downgraded tier means TIDAL handed back lossy AAC. For a download that
+    // is a defer: baking in a worse copy than a later lossless provider could
+    // give is a permanent loss. For a stream with data saver on it is exactly
+    // what was asked for. The resolved quality is reported both at top level
+    // and inside `data`.
     final audioQuality =
         (data["audioQuality"] ?? payload["audioQuality"] ?? "")
             .toString()
@@ -168,7 +200,8 @@ class TidalProvider extends SpotiFlacProvider {
     if (audioQuality.isNotEmpty &&
         audioQuality != "LOSSLESS" &&
         audioQuality != "HI_RES" &&
-        audioQuality != "HI_RES_LOSSLESS") {
+        audioQuality != "HI_RES_LOSSLESS" &&
+        !allowLossy) {
       return null;
     }
 
@@ -196,14 +229,17 @@ class TidalProvider extends SpotiFlacProvider {
             : null;
         if (directUrl == null || directUrl.isEmpty) return null;
 
-        // mp4/m4a containers carry ALAC/AAC, not FLAC — defer so we don't write
-        // a non-FLAC file under a .flac name (the downloader's magic check would
-        // fail it outright instead of trying Deezer).
+        // mp4/m4a containers carry ALAC/AAC, not FLAC. For a download that is a
+        // defer: we must not write a non-FLAC file under a .flac name, and the
+        // downloader's magic check would fail it outright instead of trying
+        // Deezer. A data-saver stream is never written to disk under any name,
+        // so the same container is the point rather than the problem.
         final mime = (manifest["mimeType"]?.toString() ?? "audio/flac")
             .toLowerCase();
-        if (mime.contains("mp4") || mime.contains("m4a")) return null;
+        final lossy = mime.contains("mp4") || mime.contains("m4a");
+        if (lossy && !allowLossy) return null;
 
-        return directUrl;
+        return (url: directUrl, lossy: lossy);
       } catch (_) {
         return null;
       }
@@ -216,7 +252,11 @@ class TidalProvider extends SpotiFlacProvider {
     if (trimmed.startsWith("<")) {
       if (!allowDash) return null;
       final reencoded = base64.encode(utf8.encode(manifestText));
-      return markDashUrl("data:application/dash+xml;base64,$reencoded");
+      // Always FLAC segments, whatever tier was requested.
+      return (
+        url: markDashUrl("data:application/dash+xml;base64,$reencoded"),
+        lossy: false,
+      );
     }
 
     return null;

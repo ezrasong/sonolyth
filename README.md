@@ -19,16 +19,17 @@ is served by plugins. Two are bundled: a patched build of the unofficial Spotify
 plugin, and MusicBrainz/ListenBrainz. Any other service can be added by writing
 one.
 
-**Audio** is lossless FLAC. Streaming resolves through Qobuz, then Tidal;
-downloads can also use Deezer. There is no lossy fallback and no YouTube, so a
-track neither catalog carries simply does not play.
+**Audio** is FLAC by default. Streaming resolves through Qobuz, then Tidal;
+downloads can also use Deezer, and are always lossless. There is no YouTube, so
+a track neither catalog carries simply does not play.
 
 ## Features
 
-- **Lossless only.** Streaming is 16-bit/44.1kHz FLAC, chosen for a fast start
-  over the hi-res tiers. Downloads take their own quality per source, up to
-  24-bit, in a priority order you set. Nothing is transcoded and nothing drops
-  to a lower quality without telling you.
+- **Quality you choose.** Streaming defaults to 16-bit/44.1kHz FLAC, with
+  Hi-Res above it and a data-saver tier below for when mobile data matters.
+  Downloads take their own quality per source, up to 24-bit, in a priority
+  order you set. Nothing is transcoded, and the player always names the tier
+  that was actually served rather than the one that was asked for.
 - **Plugin-powered metadata.** Bring any music service through a plugin. The
   bundled Spotify plugin is patched to return items nested inside Spotify
   folders and to retry on rate limits (HTTP 429).

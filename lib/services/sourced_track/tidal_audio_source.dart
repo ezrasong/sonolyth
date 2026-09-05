@@ -1,4 +1,6 @@
 import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/spotiflac/streaming_quality.dart';
+import 'package:sonolyth/services/sourced_track/tidal_dash.dart';
 import 'package:sonolyth/services/spotiflac/providers/tidal_provider.dart';
 import 'package:sonolyth/services/spotiflac/track_matching.dart';
 import 'package:sonolyth/services/spotiflac/zarz_client.dart';
@@ -29,9 +31,10 @@ class TidalAudioSource {
   /// match model.
   static const externalUriPrefix = "https://tidal.com/browse/track/";
 
-  /// CD-lossless FLAC for a fast start (Tidal "LOSSLESS" tier). Downloads use
-  /// their own (higher) per-provider quality from the download settings.
-  static const _streamingQuality = "LOSSLESS";
+  /// The tier streaming asks for comes from Settings now. It used to be the
+  /// constant `"LOSSLESS"` (CD quality, chosen for a fast start), which is
+  /// still the default and still what the store reports before it has loaded.
+  /// Downloads keep their own per-provider quality.
 
   final TidalProvider _provider;
 
@@ -97,22 +100,34 @@ class TidalAudioSource {
     // allowDash: TIDAL serves lossless as a DASH manifest. The marked `.mpd`
     // URL is stitched into a single fMP4 FLAC stream by the playback server
     // (downloads can't consume an .mpd as a file, so they don't set this).
-    final url = await _provider.streamUrlForId(
+    final tier = StreamingQualityStore.current;
+    final resolved = await _provider.streamForId(
       match.id,
-      _streamingQuality,
+      tier.tidalTier,
       allowDash: true,
+      // Only ever true for the data-saver tier, and only for a stream: the
+      // provider's container and audioQuality guards stay closed for
+      // downloads, which must not write AAC under a .flac name.
+      allowLossy: tier.lossy,
     );
+    final url = resolved?.url;
     if (url == null || url.isEmpty) return const [];
+
+    // Reported by the provider, which is the only place that can tell: a DASH
+    // manifest is FLAC segments however the request was phrased.
+    final servedLossy = resolved!.lossy;
 
     return [
       SonolythAudioSourceStreamObject(
         url: url,
-        container: "flac",
-        type: SonolythMediaCompressionType.lossless,
-        codec: "flac",
-        // TIDAL "LOSSLESS" tier is CD quality (16-bit / 44.1kHz).
-        bitDepth: 16,
-        sampleRate: 44100,
+        container: servedLossy ? "m4a" : "flac",
+        type: servedLossy
+            ? SonolythMediaCompressionType.lossy
+            : SonolythMediaCompressionType.lossless,
+        codec: servedLossy ? "aac" : "flac",
+        bitDepth: servedLossy ? null : (tier.bitDepth ?? 16),
+        sampleRate:
+            servedLossy ? null : (tier.sampleRate ?? 44100).toDouble(),
       ),
     ];
   }

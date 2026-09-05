@@ -1316,6 +1316,22 @@ class AppLocalizationsEu extends AppLocalizations {
   String get clear_cache_confirmation => 'Cachea garbitu nahi al duzu?';
 
   @override
+  String get streaming_quality => 'Streaming quality';
+
+  @override
+  String get streaming_quality_hi_res => 'Hi-Res';
+
+  @override
+  String get streaming_quality_lossless => 'Lossless';
+
+  @override
+  String get streaming_quality_data_saver => 'Data saver';
+
+  @override
+  String get streaming_quality_description =>
+      'What to ask Qobuz and Tidal for when streaming. Downloads keep their own quality.';
+
+  @override
   String get clear_play_history => 'Clear play history';
 
   @override

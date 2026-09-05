@@ -1,4 +1,5 @@
 import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/provider/spotiflac/streaming_quality.dart';
 import 'package:sonolyth/services/spotiflac/providers/qobuz_provider.dart';
 import 'package:sonolyth/services/spotiflac/track_matching.dart';
 import 'package:sonolyth/services/spotiflac/zarz_client.dart';
@@ -37,11 +38,6 @@ class QobuzAudioSource {
   /// field on the shared, plugin-serialized match model.
   static const externalUriPrefix = "https://open.qobuz.com/track/";
 
-  /// Streaming uses CD-lossless (16-bit/44.1kHz, Qobuz quality "6") for a fast
-  /// start and modest bandwidth — still lossless, but a fraction of the bytes
-  /// of 24-bit hi-res, which keeps playback instant. Downloads keep their own
-  /// (higher) per-provider quality from the download settings.
-  static const _streamingQuality = "6";
 
   final QobuzProvider _provider;
 
@@ -109,24 +105,38 @@ class QobuzAudioSource {
     );
   }
 
-  /// Direct lossless FLAC stream(s) for a previously matched Qobuz track.
-  /// Returns an empty list if the gateway can't resolve a URL, so the caller
-  /// can fall back to the plugin source rather than hard-failing playback.
+  /// Stream(s) for a previously matched Qobuz track, at whichever tier the
+  /// streaming setting asks for and the catalog agrees to serve. Returns an
+  /// empty list if the gateway can't resolve a URL, so the caller can fall
+  /// back rather than hard-failing playback.
   Future<List<SonolythAudioSourceStreamObject>> streams(
     SonolythAudioSourceMatchObject match,
   ) async {
-    final url = await _provider.streamUrlForId(match.id, _streamingQuality);
+    final tier = StreamingQualityStore.current;
+    final resolved = await _provider.streamForId(match.id, tier.qobuzCode);
+    final url = resolved?.url;
     if (url == null || url.isEmpty) return const [];
 
+    // The tier that *answered*, not the one that was asked for. Qobuz's
+    // fallback chain resolves a data-saver request as CD lossless when it will
+    // not serve MP3, and describing that as "mp3" would be the same shape of
+    // lie the meta chip was fixed for twice already.
+    final served = StreamingQuality.values.firstWhere(
+      (q) => q.qobuzCode == resolved!.code,
+      orElse: () => StreamingQuality.lossless,
+    );
+    final servedLossy = served.lossy;
     return [
       SonolythAudioSourceStreamObject(
         url: url,
-        container: "flac",
-        type: SonolythMediaCompressionType.lossless,
-        codec: "flac",
-        // Streaming quality "6" is CD lossless (16-bit / 44.1kHz).
-        bitDepth: 16,
-        sampleRate: 44100,
+        container: servedLossy ? "mp3" : "flac",
+        type: servedLossy
+            ? SonolythMediaCompressionType.lossy
+            : SonolythMediaCompressionType.lossless,
+        codec: servedLossy ? "mp3" : "flac",
+        bitDepth: servedLossy ? null : (served.bitDepth ?? 16),
+        sampleRate:
+            servedLossy ? null : (served.sampleRate ?? 44100).toDouble(),
       ),
     ];
   }

@@ -2511,6 +2511,36 @@ abstract class AppLocalizations {
   /// **'Do you want to clear the cache?'**
   String get clear_cache_confirmation;
 
+  /// No description provided for @streaming_quality.
+  ///
+  /// In en, this message translates to:
+  /// **'Streaming quality'**
+  String get streaming_quality;
+
+  /// No description provided for @streaming_quality_hi_res.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi-Res'**
+  String get streaming_quality_hi_res;
+
+  /// No description provided for @streaming_quality_lossless.
+  ///
+  /// In en, this message translates to:
+  /// **'Lossless'**
+  String get streaming_quality_lossless;
+
+  /// No description provided for @streaming_quality_data_saver.
+  ///
+  /// In en, this message translates to:
+  /// **'Data saver'**
+  String get streaming_quality_data_saver;
+
+  /// No description provided for @streaming_quality_description.
+  ///
+  /// In en, this message translates to:
+  /// **'What to ask Qobuz and Tidal for when streaming. Downloads keep their own quality.'**
+  String get streaming_quality_description;
+
   /// No description provided for @clear_play_history.
   ///
   /// In en, this message translates to:

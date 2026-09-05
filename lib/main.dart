@@ -25,6 +25,7 @@ import 'package:sonolyth/modules/settings/color_scheme_picker_dialog.dart';
 import 'package:sonolyth/provider/audio_player/audio_player_streams.dart';
 import 'package:sonolyth/provider/database/database.dart';
 import 'package:sonolyth/provider/history/retention.dart';
+import 'package:sonolyth/provider/spotiflac/streaming_quality.dart';
 import 'package:sonolyth/provider/audio_player/track_trim.dart';
 import 'package:sonolyth/provider/downloaded_tracks_provider.dart';
 import 'package:sonolyth/provider/glance/glance.dart';
@@ -248,6 +249,11 @@ class SonolythApp extends HookConsumerWidget {
     ref.listen(audioSourcePluginProvider, (_, __) {});
     ref.listen(metadataPluginUpdateCheckerProvider, (_, __) {});
     ref.listen(audioSourcePluginUpdateCheckerProvider, (_, __) {});
+    // Load the streaming tier up front: the audio sources read it
+    // synchronously from a static, and until it lands they report the
+    // default. That is the safe answer rather than the chosen one, so
+    // the first resolve after launch should not have to take it.
+    ref.listen(streamingQualityProvider, (_, __) {});
 
     useAndroidDisplaySetup();
     useDisableBatteryOptimizations();

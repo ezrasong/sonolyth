@@ -48,6 +48,12 @@ class QobuzProvider extends SpotiFlacProvider {
         return const ["27", "7", "6"];
       case "7":
         return const ["7", "6"];
+      case "5":
+        // The data-saver streaming tier. "6" behind it is what makes asking
+        // for lossy safe: if the gateway will not serve MP3 for this track the
+        // next attempt is ordinary CD lossless, so the worst case is the
+        // bandwidth we were already using rather than silence.
+        return const ["5", "6"];
       default:
         return const ["6"];
     }
@@ -59,6 +65,8 @@ class QobuzProvider extends SpotiFlacProvider {
         return "hi-res-max";
       case "7":
         return "hi-res";
+      case "5":
+        return "mp3";
       default:
         return "cd";
     }
@@ -81,7 +89,20 @@ class QobuzProvider extends SpotiFlacProvider {
   /// Resolves a direct, unencrypted FLAC URL for a specific Qobuz track id,
   /// walking the quality fallback chain. Shared by the download path
   /// ([resolve]) and the Qobuz playback audio source.
-  Future<String?> streamUrlForId(String qobuzTrackId, String quality) async {
+  Future<String?> streamUrlForId(String qobuzTrackId, String quality) async =>
+      (await streamForId(qobuzTrackId, quality))?.url;
+
+  /// As [streamUrlForId], but also reports **which tier actually answered**.
+  ///
+  /// The fallback chain means the code that came back is not always the code
+  /// that was asked for: a data-saver request Qobuz will not serve as MP3
+  /// resolves as CD lossless instead. The player describes the stream it got,
+  /// so it needs to be told, rather than inferring the format from a signed
+  /// CDN URL that need not carry an extension at all.
+  Future<({String url, String code})?> streamForId(
+    String qobuzTrackId,
+    String quality,
+  ) async {
     final trackUrl = "https://open.qobuz.com/track/$qobuzTrackId";
     for (final code in _fallbackChain(quality)) {
       try {
@@ -111,7 +132,7 @@ class QobuzProvider extends SpotiFlacProvider {
             ?.toString();
         if (url == null || url.isEmpty) continue;
 
-        return url;
+        return (url: url, code: code);
       } on ZarzRateLimitedException {
         // Lower tiers would hit the same limiter; let the caller report it.
         rethrow;

@@ -20,6 +20,7 @@ import 'package:sonolyth/modules/settings/section_card_with_heading.dart';
 import 'package:sonolyth/services/spotiflac/zarz_session.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/history/history.dart';
+import 'package:sonolyth/provider/spotiflac/streaming_quality.dart';
 import 'package:sonolyth/provider/local_tracks/local_tracks_provider.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 
@@ -46,11 +47,10 @@ class SettingsPlaybackSection extends HookConsumerWidget {
           leading: const Icon(SonolythIcons.audioQuality),
           title: Text(context.l10n.streaming_music_format),
           subtitle: const Text(
-            "Lossless FLAC via Qobuz, then Tidal. Tracks neither catalog "
-            "carries won't play.",
+            "Qobuz, then Tidal. Tracks neither catalog carries won't play.",
           ),
-          trailing: const ZenithValueChip(child: Text("FLAC · Lossless")),
         ),
+        const _StreamingQualityTile(),
         const _ZarzAccessTile(
           session: _ZarzSourceKind.qobuz,
         ),
@@ -472,6 +472,66 @@ class _PlayHistoryTile extends HookConsumerWidget {
           rows == null ? "—" : context.l10n.count_plays_kept(rows),
         ),
       ),
+    );
+  }
+}
+
+
+/// The streaming tier, which used to be two hardcoded constants with no way to
+/// change either (Qobuz `"6"`, TIDAL `"LOSSLESS"`).
+///
+/// Separate from the per-provider quality in the download section on purpose:
+/// a download is kept and wants the best the catalog has, while a stream is
+/// heard once and costs mobile data every time it is heard.
+///
+/// **Data saver is offered honestly.** Neither catalog is obliged to hand a
+/// lossy tier to this gateway; when it refuses, the provider falls back to
+/// lossless rather than failing, and the player's meta chip reads the stream
+/// that was actually resolved. So the row promises a request, not an outcome,
+/// and the outcome is visible on the player where it matters.
+class _StreamingQualityTile extends HookConsumerWidget {
+  const _StreamingQualityTile();
+
+  static String labelOf(BuildContext context, StreamingQuality quality) =>
+      switch (quality) {
+        StreamingQuality.hiRes => context.l10n.streaming_quality_hi_res,
+        StreamingQuality.lossless => context.l10n.streaming_quality_lossless,
+        StreamingQuality.dataSaver => context.l10n.streaming_quality_data_saver,
+      };
+
+  /// What each tier costs, so the choice is a number rather than a mood.
+  /// Bitrates are the tiers' nominal figures; FLAC varies with the material.
+  static String detailOf(StreamingQuality quality) => switch (quality) {
+        StreamingQuality.hiRes => "24-bit FLAC, around 2-4 Mbps",
+        StreamingQuality.lossless => "16-bit/44.1kHz FLAC, around 900 kbps",
+        StreamingQuality.dataSaver =>
+          "Lossy, around 320 kbps. Falls back to lossless if the source "
+              "refuses.",
+      };
+
+  @override
+  Widget build(BuildContext context, ref) {
+    final quality = ref.watch(streamingQualityProvider);
+    final notifier = ref.read(streamingQualityProvider.notifier);
+    // Before the preference has loaded the store is already reporting the
+    // default, so showing it here is the truth rather than a placeholder.
+    final current = quality.valueOrNull ?? StreamingQualityStore.current;
+
+    return AdaptiveSelectTile<StreamingQuality>(
+      secondary: const Icon(SonolythIcons.audioQuality),
+      title: Text(context.l10n.streaming_quality),
+      subtitle: Text(detailOf(current)),
+      value: current,
+      options: [
+        for (final option in StreamingQuality.values)
+          SelectItemButton(
+            value: option,
+            child: Text(labelOf(context, option)),
+          ),
+      ],
+      onChanged: (value) {
+        if (value != null) notifier.set(value);
+      },
     );
   }
 }
