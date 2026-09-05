@@ -10,12 +10,6 @@ A personal fork of [Spotube](https://github.com/KRTirtho/spotube).
 
 ---
 
-<div align="center">
-
-![Sonolyth on Android](assets/branding/mobile-screenshots/combined.jpg)
-
-</div>
-
 ## What it is
 
 Sonolyth separates where the music list comes from and where the audio comes from.
@@ -45,9 +39,6 @@ not play.
 - **Local files.** Folders you add are first-class, browsed and queued and
   played like anything else.
 - **Connect.** Control playback from another device on the same network.
-- **Poweramp-style interface.** The UI is rebuilt against the Proxima "Dark
-  Zenith" skin: an achromatic, black-backed player laid out to the skin's own
-  measurements.
 - **No telemetry**, no diagnostics, no user-data collection. See
   [PRIVACY_POLICY.md](PRIVACY_POLICY.md).
 
@@ -95,9 +86,9 @@ contributors. The plugin runtime, the metadata system, routing and much of the
 component layer are upstream work, and the credit for them is theirs.
 
 What this fork adds: the lossless audio-source stack and its session handling,
-the track matcher, the Proxima Dark Zenith interface, the native FLAC download
-pipeline, the crossfade engine, and an Android-only build with the desktop and
-web platforms removed. App updates are pulled from upstream as described in
+the track matcher, a rebuilt interface, the native FLAC download pipeline, the
+crossfade engine, and an Android-only build with the desktop and web platforms
+removed. App updates are pulled from upstream as described in
 [MONOREPO.md](MONOREPO.md).
 
 ## Maintainer

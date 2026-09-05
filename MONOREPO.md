@@ -7,7 +7,7 @@ plugin are versioned together and both stay easy to update from upstream.
 ## Layout
 
 ```
-sonolyth/                              the app — fork of KRTirtho/spotube
+sonolyth/                              the app, a fork of KRTirtho/spotube
   lib/  android/  assets/  ...
   plugins/
     spotube-plugin-spotify/           git subtree of sonic-liberation/spotube-plugin-spotify @ main
@@ -17,8 +17,13 @@ sonolyth/                              the app — fork of KRTirtho/spotube
         hetu_spotify_gql_client/      git subtree @ pinned 32f3a26  (carries our flatten patch)
 ```
 
-Everything is vendored with `git subtree` — one `git clone`, no submodule init.
-Our edits (e.g. the folder-flatten fix) are normal commits in this repo.
+Everything is vendored with `git subtree`, so one `git clone` is enough and
+there is no submodule init. Our edits, such as the folder-flatten fix, are
+normal commits in this repo.
+
+The MusicBrainz/ListenBrainz plugin is bundled too, but as a prebuilt
+`.smplug` under `assets/plugins/`, not as a subtree. Only the Spotify plugin is
+vendored as source, because it is the one this fork patches.
 
 ## Git remotes
 
@@ -47,11 +52,11 @@ git subtree pull --prefix plugins/spotube-plugin-spotify \
   https://github.com/sonic-liberation/spotube-plugin-spotify.git main --squash
 ```
 
-**⚠️ gql client is pinned on purpose.** `hetu_spotify_gql_client` is pinned to
+**The gql client is pinned on purpose.** `hetu_spotify_gql_client` is pinned to
 commit `32f3a26` because that revision ships the Hetu assets
 (`lib/assets/hetu/spotify_gql_api_client.ht`) the plugin imports. Upstream `main`
 has since migrated the gql client to TypeScript and **no longer ships those Hetu
-files** — pulling `main` will break the plugin build. Only bump this pin when the
+files**, so pulling `main` will break the plugin build. Only bump this pin when the
 plugin's upstream realigns with a newer gql client revision. To bump deliberately:
 ```bash
 git subtree pull --prefix plugins/spotube-plugin-spotify/dependencies/hetu_spotify_gql_client \
@@ -62,8 +67,8 @@ git subtree pull --prefix plugins/spotube-plugin-spotify/dependencies/hetu_spoti
 ## Our plugin patch
 
 `dependencies/hetu_spotify_gql_client/lib/assets/hetu/user.ht` sets
-`"flatten": true` (3×: savedPlaylists / savedAlbums / savedArtists) so items
-inside Spotify folders are returned instead of being dropped.
+`"flatten": true` in three places (savedPlaylists, savedAlbums, savedArtists)
+so items inside Spotify folders are returned instead of being dropped.
 
 ## Rebuilding the `.smplug`
 
@@ -79,7 +84,8 @@ cd plugins/spotube-plugin-spotify
 dart pub global run hetu_script_dev_tools:cli_tool compile src/plugin.ht build/plugin.out
 ```
 
-Package the `.smplug` (the bundled `zip` is missing on Windows — use PowerShell):
+Package the `.smplug`. The bundled `zip` is missing on Windows, so use
+PowerShell:
 ```powershell
 # plugin.json + plugin.out + assets/logo.png must sit at the archive ROOT
 Compress-Archive -Path build\plugin.out, plugin.json, assets\logo.png -DestinationPath build\plugin.zip -Force

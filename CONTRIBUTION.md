@@ -1,8 +1,8 @@
 # Contributing to Sonolyth
 
-First off, thanks for taking the time to contribute! ❤️
+First off, thanks for taking the time to contribute.
 
-All types of contributions are encouraged and valued. See the [Table of Contents](#table-of-contents) for different ways to help and details about how this project handles them. Please make sure to read the relevant section before making your contribution. It will make it a lot easier for the maintainer and smooth out the experience for all involved. 🎉
+All types of contributions are encouraged and valued. See the [Table of Contents](#table-of-contents) for different ways to help and details about how this project handles them. Please make sure to read the relevant section before making your contribution. It will make it a lot easier for the maintainer and smooth out the experience for all involved.
 
 > And if you like the project but just don't have time to contribute, that's fine. There are other easy ways to support the project and show your appreciation, which would also be very welcome:
 >
@@ -63,8 +63,9 @@ A good bug report shouldn't leave others needing to chase you up for more inform
 - Also make sure to search the internet (including Stack Overflow) to see if users outside of the GitHub community have discussed the issue.
 - Collect information about the bug:
 - Stack trace (Traceback)
-- OS, Platform and Version (Windows, Linux, macOS, x86, ARM)
-- Version of the interpreter, compiler, SDK, runtime environment, package manager, depending on what seems relevant.
+- Your Android version, device model, and the Sonolyth version and flavor
+  (stable or nightly) from Settings, About Sonolyth
+- Flutter, Dart and Android SDK versions, if you are building from source
 - Possibly your input and the output
 - Can you reliably reproduce the issue? And can you also reproduce it with older versions?
 
@@ -81,9 +82,9 @@ We use GitHub issues to track bugs and errors. If you run into an issue with the
 
 Once it's filed:
 
-- The project team will label the issue accordingly.
-- A team member will try to reproduce the issue with your provided steps. If there are no reproduction steps or no obvious way to reproduce the issue, the team will ask you for those steps and mark the issue as `needs-repro`. Bugs with the `needs-repro` tag will not be addressed until they are reproduced.
-- If the team is able to reproduce the issue, it will be marked `needs-fix`, as well as possibly other tags (such as `critical`), and the issue will be left to be [implemented by someone](#your-first-code-contribution).
+- The issue will be labelled accordingly.
+- Someone will try to reproduce it with your steps. If there are no reproduction steps, or no obvious way to reproduce the issue, you will be asked for those steps and the issue marked `needs-repro`. Bugs with the `needs-repro` tag are not addressed until they are reproduced.
+- Once reproduced it is marked `needs-fix`, possibly with other tags such as `critical`, and left to be [implemented by someone](#your-first-code-contribution).
 
 ### Suggesting Enhancements
 
@@ -111,7 +112,7 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/ezraso
 Do the following:
 
 - Install [Flutter](https://docs.flutter.dev/get-started/install) (the SDK in `.tooling/` is what this repo is built with) plus the Android SDK and a connected device or emulator.
-- Clone the repo. The Spotify plugin is vendored in-tree as git subtrees — no submodule init needed; see [MONOREPO.md](MONOREPO.md).
+- Clone the repo. The Spotify plugin is vendored in-tree as git subtrees, so no submodule init is needed. See [MONOREPO.md](MONOREPO.md).
 - Create a `.env` in the root of the project following the `.env.example` template.
 - Bootstrap the project:
   ```bash
@@ -122,7 +123,12 @@ Do the following:
   flutter run --flavor stable -d <android-device-id>
   ```
 
-Do debugging/testing/build, then open a PR against `master` and it'll be reviewed.
+Do the debugging, testing and build, then open a PR against `master` and it will be reviewed.
+
+One thing worth knowing before you start: Sonolyth streams lossless FLAC from
+Qobuz, Tidal and Deezer, and those sources require a one-time human check before
+they will serve audio. Until it passes, only local files and completed downloads
+will play. See the [README](README.md#one-thing-to-expect).
 
 ### Submit Translations
 
