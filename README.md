@@ -19,15 +19,16 @@ is served by plugins. Two are bundled: a patched build of the unofficial Spotify
 plugin, and MusicBrainz/ListenBrainz. Any other service can be added by writing
 one.
 
-**Audio** is lossless FLAC, from Qobuz, then Tidal, then Deezer. There is no
-lossy fallback and no YouTube, so a track neither catalog carries simply does
-not play.
+**Audio** is lossless FLAC. Streaming resolves through Qobuz, then Tidal;
+downloads can also use Deezer. There is no lossy fallback and no YouTube, so a
+track neither catalog carries simply does not play.
 
 ## Features
 
-- **Lossless only.** FLAC from Qobuz, Tidal and Deezer, with a per-source
-  priority order you control. Nothing is transcoded and nothing drops to a lower
-  quality without telling you.
+- **Lossless only.** Streaming is 16-bit/44.1kHz FLAC, chosen for a fast start
+  over the hi-res tiers. Downloads take their own quality per source, up to
+  24-bit, in a priority order you set. Nothing is transcoded and nothing drops
+  to a lower quality without telling you.
 - **Plugin-powered metadata.** Bring any music service through a plugin. The
   bundled Spotify plugin is patched to return items nested inside Spotify
   folders and to retry on rate limits (HTTP 429).
@@ -35,7 +36,8 @@ not play.
   adaptive buffering, and edge-silence trimming for local files.
 - **Lyrics.** Time-synced from LRCLib, and read straight out of the file when a
   FLAC carries its own tags or an `.lrc` sits beside it.
-- **Downloads.** Tracks are saved as tagged FLAC and play offline.
+- **Downloads.** Tracks are saved as tagged FLAC from Qobuz, Tidal or Deezer,
+  and play offline.
 - **Local files.** Folders you add are first-class, browsed and queued and
   played like anything else.
 - **Connect.** Control playback from another device on the same network.
