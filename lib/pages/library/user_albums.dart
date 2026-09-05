@@ -15,11 +15,14 @@ import 'package:sonolyth/components/playbutton_view/playbutton_view.dart';
 import 'package:sonolyth/modules/album/album_card.dart';
 import 'package:sonolyth/components/inter_scrollbar/inter_scrollbar.dart';
 import 'package:sonolyth/components/fallbacks/anonymous_fallback.dart';
+import 'package:sonolyth/components/adaptive/adaptive_pop_sheet_list.dart';
+import 'package:sonolyth/components/ui/zenith_list_header.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/metadata_plugin/core/auth.dart';
 import 'package:sonolyth/provider/metadata_plugin/library/albums.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:sonolyth/services/metadata/errors/exceptions.dart';
+import 'package:sonolyth/components/fallbacks/zenith_illustration.dart';
 
 @RoutePage()
 class UserAlbumsPage extends HookConsumerWidget {
@@ -36,6 +39,12 @@ class UserAlbumsPage extends HookConsumerWidget {
     final controller = useScrollController();
 
     final searchText = useState('');
+
+    // Poweramp keeps the view mode in the list header's menu; null = decide
+
+    // from the width, as `PlaybuttonView` always did.
+
+    final viewGrid = useState<bool?>(null);
 
     final albums = useMemoized(() {
       if (searchText.value.isEmpty) {
@@ -86,25 +95,27 @@ class UserAlbumsPage extends HookConsumerWidget {
             child: CustomScrollView(
               controller: controller,
               slivers: [
-                SliverAppBar(
-                  automaticallyImplyLeading: false,
-                  backgroundColor: Theme.of(context).colorScheme.background,
-                  floating: true,
-                  flexibleSpace: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: SizedBox(
-                      height: 48,
-                      child: TextField(
-                        onChanged: (value) => searchText.value = value,
-                        features: const [
-                          InputFeature.leading(Icon(SonolythIcons.filter))
-                        ],
-                        placeholder: Text(context.l10n.filter_albums),
+                // `merge_item_text_header`: the filter behind the search
+                // glyph, view mode in the header menu.
+                SliverToBoxAdapter(
+                  child: ZenithListToolbar(
+                    filterPlaceholder: context.l10n.filter_albums,
+                    onFilterChanged: (value) => searchText.value = value,
+                    menuItems: (context) => [
+                      AdaptiveMenuButton(
+                        value: "grid",
+                        leading: const Icon(SonolythIcons.grid),
+                        child: Text(context.l10n.grid_view),
                       ),
-                    ),
+                      AdaptiveMenuButton(
+                        value: "list",
+                        leading: const Icon(SonolythIcons.list),
+                        child: Text(context.l10n.list_view),
+                      ),
+                    ],
+                    onMenuSelected: (value) => viewGrid.value = value == "grid",
                   ),
                 ),
-                const SliverGap(10),
                 if (albums.isEmpty &&
                     !albumsQuery.isLoading &&
                     searchText.value.isEmpty)
@@ -115,10 +126,9 @@ class UserAlbumsPage extends HookConsumerWidget {
                         mainAxisSize: MainAxisSize.min,
                         spacing: 10,
                         children: [
-                          Undraw(
+                          ZenithIllustration(
                             height: 200 * context.theme.scaling,
                             illustration: UndrawIllustration.followMeDrone,
-                            color: Theme.of(context).colorScheme.primary,
                           ),
                           Text(
                             context.l10n.no_favorite_albums_yet,
@@ -132,6 +142,8 @@ class UserAlbumsPage extends HookConsumerWidget {
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     sliver: PlaybuttonView(
+                      isGrid: viewGrid.value,
+                      showViewToggle: false,
                       controller: controller,
                       itemCount: albums.length,
                       hasMore: albumsQuery.asData?.value.hasMore == true,

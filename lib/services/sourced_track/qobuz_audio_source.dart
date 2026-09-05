@@ -87,6 +87,11 @@ class QobuzAudioSource {
         continue;
       }
 
+      // Fuzzy path only: an exact-ISRC hit above IS the same recording, but a
+      // text match must never land on a live / cover / piano / instrumental
+      // rendition of the requested song.
+      if (TrackMatching.isVariantMismatch(track.name, match.title)) continue;
+
       final score = TrackMatching.score(
         expectedTitle: track.name,
         candidateTitle: match.title,

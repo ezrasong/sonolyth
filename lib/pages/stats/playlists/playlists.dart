@@ -1,7 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:sonolyth/collections/formatters.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
 import 'package:sonolyth/modules/stats/common/playlist_item.dart';
 import 'package:sonolyth/extensions/context.dart';
@@ -50,10 +49,7 @@ class StatsPlaylistsPage extends HookConsumerWidget {
               final playlist = playlistsData[index];
               return StatsPlaylistItem(
                 playlist: playlist.playlist,
-                info: Text(
-                  context.l10n.count_plays(
-                      compactNumberFormatter.format(playlist.count)),
-                ),
+                info: Text(context.l10n.count_plays(playlist.count)),
               );
             },
           ),

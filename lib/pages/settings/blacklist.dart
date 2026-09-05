@@ -12,9 +12,11 @@ import 'package:sonolyth/components/fallbacks/error_box.dart';
 import 'package:sonolyth/components/inter_scrollbar/inter_scrollbar.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
 import 'package:sonolyth/components/ui/button_tile.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/blacklist_provider.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
 
 @RoutePage()
 class BlackListPage extends HookConsumerWidget {
@@ -64,6 +66,9 @@ class BlackListPage extends HookConsumerWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
+                // `searchbar_bg`: fully round, page-coloured,
+                // no stroke. See `zenithSearchField`.
+                decoration: zenithSearchField(context.theme.colorScheme),
                 onChanged: (value) => searchText.value = value,
                 placeholder: Text(context.l10n.search),
                 // prefixIcon: const Icon(SonolythIcons.search),
@@ -108,22 +113,25 @@ class BlackListPage extends HookConsumerWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        trailing: IconButton.ghost(
-                          icon: Icon(
-                            SonolythIcons.trash,
-                            color: context.theme.colorScheme.destructive,
+                        trailing: ZenithTooltip(
+                          message: context.l10n.remove_from_blacklist,
+                          child: IconButton.ghost(
+                            icon: Icon(
+                              SonolythIcons.trash,
+                              color: context.theme.colorScheme.destructive,
+                            ),
+                            onPressed: () async {
+                              final confirmed = await showPromptDialog(
+                                context: context,
+                                title: context.l10n.remove_from_blacklist,
+                                message: context.l10n.are_you_sure,
+                              );
+                              if (!confirmed) return;
+                              ref
+                                  .read(blacklistProvider.notifier)
+                                  .remove(item.elementId);
+                            },
                           ),
-                          onPressed: () async {
-                            final confirmed = await showPromptDialog(
-                              context: context,
-                              title: context.l10n.remove_from_blacklist,
-                              message: context.l10n.are_you_sure,
-                            );
-                            if (!confirmed) return;
-                            ref
-                                .read(blacklistProvider.notifier)
-                                .remove(item.elementId);
-                          },
                         ),
                       );
                     },

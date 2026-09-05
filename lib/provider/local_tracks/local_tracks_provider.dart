@@ -6,7 +6,6 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/services/logger/logger.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:metadata_god/metadata_god.dart';
 import 'package:mime/mime.dart';
@@ -47,7 +46,6 @@ typedef MetadataFile = ({
 final localTracksProvider =
     FutureProvider<Map<String, List<SonolythLocalTrackObject>>>((ref) async {
   try {
-    if (kIsWeb) return {};
     final Map<String, List<SonolythLocalTrackObject>> libraryToTracks = {};
 
     final downloadLocation = ref.watch(

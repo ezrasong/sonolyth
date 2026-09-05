@@ -1,91 +1,79 @@
 import 'package:flutter/gestures.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
-import 'package:sonolyth/components/image/universal_image.dart';
-import 'package:sonolyth/extensions/constrains.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
+import 'package:sonolyth/components/ui/zenith_popup_card.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/metadata_plugin/artist/wikipedia.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+/// The artist's Wikipedia blurb.
+///
+/// It used to be a 300dp block with the artist's photo darkened 50% behind the
+/// text and a `Colors.sky[300]` "read more" link — the last coloured link and
+/// the last decorative image-behind-text in the app. Proxima is achromatic and
+/// its text surfaces are flat `popup_bg`, so the blurb is a `ZenithPopupCard`
+/// and the link is the primary colour like every other link.
 class ArtistPageFooter extends ConsumerWidget {
   final SonolythFullArtistObject artist;
   const ArtistPageFooter({super.key, required this.artist});
 
   @override
   Widget build(BuildContext context, ref) {
-    final ThemeData(:typography) = Theme.of(context);
-    final mediaQuery = MediaQuery.of(context);
-
-    final artistImage = artist.images.asUrlString(
-      placeholder: ImagePlaceholder.artist,
-    );
+    final colorScheme = context.theme.colorScheme;
     final summary = ref.watch(artistWikipediaSummaryProvider(artist));
-    if (summary.asData?.value == null) return const SizedBox.shrink();
+    final extract = summary.asData?.value?.extract;
+    if (extract == null || extract.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      margin: const EdgeInsets.all(8),
-      padding: mediaQuery.smAndDown
-          ? const EdgeInsets.all(20)
-          : const EdgeInsets.all(30),
-      constraints: const BoxConstraints(minHeight: 300),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        image: DecorationImage(
-          colorFilter: ColorFilter.mode(
-            Colors.black.withValues(alpha: 0.5),
-            BlendMode.darken,
-          ),
-          image: UniversalImage.imageProvider(
-            summary.asData?.value!.thumbnail?.source_ ?? artistImage,
-            height: summary.asData?.value!.thumbnail?.height.toDouble(),
-            width: summary.asData?.value!.thumbnail?.width.toDouble(),
-          ),
-          fit: BoxFit.cover,
-          alignment: Alignment.center,
-        ),
-      ),
-      alignment: Alignment.center,
-      child: RichText(
-        text: TextSpan(
-          style: typography.semiBold.copyWith(
-            color: Colors.white,
-          ),
-          children: [
-            // icon
-            const WidgetSpan(
-              child: Icon(
+    return ZenithPopupCard(
+      margin: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+      padding: const EdgeInsets.all(20),
+      maxWidth: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Icon(
                 SonolythIcons.wikipedia,
-                color: Colors.white,
-                size: 30,
+                color: colorScheme.foreground,
+                size: 20,
               ),
-            ),
+              const Gap(8),
+              Text("Wikipedia", style: zenithSubhead(colorScheme)),
+            ],
+          ),
+          const Gap(12),
+          Text.rich(
             TextSpan(
-              text: " Wikipedia",
-              style: typography.large.copyWith(
-                color: Colors.white,
-              ),
+              children: [
+                TextSpan(text: extract),
+                TextSpan(
+                  text: "\n\nRead more on Wikipedia",
+                  style: TextStyle(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () async {
+                      await launchUrlString(
+                        "https://en.wikipedia.org/wiki?curid="
+                        "${summary.asData?.value?.pageid}",
+                      );
+                    },
+                ),
+              ],
             ),
-            const TextSpan(text: '\n\n'),
-            TextSpan(
-              text: summary.asData?.value!.extract,
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.5,
+              color: colorScheme.mutedForeground,
             ),
-            TextSpan(
-              text: '\n...read more at wikipedia',
-              style: typography.semiBold.copyWith(
-                color: Colors.sky[300],
-                decoration: TextDecoration.underline,
-                decorationColor: Colors.sky[300],
-              ),
-              recognizer: TapGestureRecognizer()
-                ..onTap = () async {
-                  await launchUrlString(
-                    "http://en.wikipedia.org/wiki?curid=${summary.asData?.value?.pageid}",
-                  );
-                },
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -1,3 +1,5 @@
+import 'package:sonolyth/services/spotiflac/name_romanization.dart';
+
 /// Title/artist normalization and scoring used to pick the right provider
 /// track when an ISRC lookup misses. Mirrors the matching the SpotiFLAC
 /// extensions do (loose title compare + artist overlap + duration proximity).
@@ -98,10 +100,28 @@ abstract class TrackMatching {
   /// "The Chainsmokers" vs "Chainsmokers" likewise for "the").
   static const _artistStopTokens = {"and", "the"};
 
-  static Set<String> _artistTokens(String value) => normalize(value)
+  /// Comparable tokens of one artist name, in the order written. Duplicates
+  /// are kept — "Duran Duran" is not "Duran".
+  static List<String> _artistTokenList(String value) => normalize(value)
       .split(" ")
       .where((w) => w.isNotEmpty && !_artistStopTokens.contains(w))
-      .toSet();
+      .toList();
+
+  static Set<String> _artistTokens(String value) =>
+      _artistTokenList(value).toSet();
+
+  /// Every individually comparable name in a credit list: each field as
+  /// written, plus each collaborator once the field is split on the common
+  /// separators.
+  static List<String> _artistPieces(List<String> fields) {
+    final pieces = <String>[];
+    for (final field in fields) {
+      for (final piece in [field, ...field.split(_artistSplitRegex)]) {
+        if (_artistTokenList(piece).isNotEmpty) pieces.add(piece);
+      }
+    }
+    return pieces;
+  }
 
   /// 1.0 when any expected artist IS one of the credited candidate artists —
   /// same normalized token set, not substring containment ("George" must not
@@ -113,24 +133,122 @@ abstract class TrackMatching {
     List<String> candidate,
   ) {
     if (expected.isEmpty || candidate.isEmpty) return 0;
-    final candidateTokenSets = <Set<String>>[];
-    for (final field in candidate) {
-      for (final piece in [field, ...field.split(_artistSplitRegex)]) {
-        final tokens = _artistTokens(piece);
-        if (tokens.isNotEmpty) candidateTokenSets.add(tokens);
-      }
-    }
+    final candidatePieces = _artistPieces(candidate);
     for (final artist in expected) {
       final tokens = _artistTokens(artist);
       if (tokens.isEmpty) continue;
-      for (final other in candidateTokenSets) {
-        if (tokens.length == other.length && other.containsAll(tokens)) {
+      for (final other in candidatePieces) {
+        final otherTokens = _artistTokens(other);
+        if (tokens.length == otherTokens.length &&
+            otherTokens.containsAll(tokens)) {
           return 1;
         }
-        if (_subsetWithForeignLeftovers(tokens, other)) return 1;
+        if (_subsetWithForeignLeftovers(tokens, otherTokens)) return 1;
+        if (_sameNameWrittenDifferently(artist, other)) return 1;
       }
     }
     return 0;
+  }
+
+  /// Minimum length, in letters with every space removed, before the
+  /// spelling-tolerant comparisons below may fire. Short names reassemble into
+  /// one another far too easily ("Lee Hi", "Sia"), and pinning the wrong
+  /// artist is worse than failing to match at all.
+  static const _minComparableNameLength = 6;
+
+  /// Providers spell the same artist differently in three ways that plain text
+  /// comparison reads as three different people:
+  ///
+  ///  * **spacing** — "LEE MU JIN" against "Lee Mujin";
+  ///  * **name order** — some catalogs credit given-name-first, "Mujin Lee";
+  ///  * **script** — the metadata provider credits "이무진" natively while the
+  ///    lossless catalog romanizes it.
+  ///
+  /// All three are handled the same way: reduce both names to their plausible
+  /// romanizations (a Latin name romanizes to itself), then ask whether one
+  /// side's pieces spell the other side out exactly.
+  static bool _sameNameWrittenDifferently(String expected, String candidate) {
+    final expectedForms = _romanizations(expected);
+    final candidateForms = _romanizations(candidate);
+    if (expectedForms == null || candidateForms == null) return false;
+    for (final a in expectedForms) {
+      for (final b in candidateForms) {
+        if (_formsAgree(a, b)) return true;
+        // Only if the exact spellings disagree: the competing romanization
+        // systems ("Jeong"/"Jung"/"Chung") reduce to a common form.
+        if (_formsAgree(a.folded, b.folded)) return true;
+      }
+    }
+    return false;
+  }
+
+  static List<RomanizedName>? _romanizations(String name) =>
+      NameRomanization.candidates(_artistTokenList(name).join(" "));
+
+  static bool _formsAgree(RomanizedName a, RomanizedName b) {
+    final left = a.joined;
+    final right = b.joined;
+    if (left.length != right.length) return false;
+    if (left.length < _minComparableNameLength) return false;
+    if (left == right) return true;
+    return _piecesSpell(a.pieces, right) || _piecesSpell(b.pieces, left);
+  }
+
+  /// Whether [pieces] can be concatenated, in some order, to spell [target]
+  /// exactly.
+  ///
+  /// Deliberately stricter than comparing sorted letters: "Silent" and
+  /// "Listen" are anagrams, but neither spells the other out of whole pieces,
+  /// so they stay different artists.
+  static bool _piecesSpell(List<String> pieces, String target) {
+    if (pieces.isEmpty) return target.isEmpty;
+    if (pieces.length > _maxReorderablePieces) return false;
+    for (var i = 0; i < pieces.length; i++) {
+      final piece = pieces[i];
+      if (piece.isEmpty || !target.startsWith(piece)) continue;
+      final rest = [...pieces]..removeAt(i);
+      if (_piecesSpell(rest, target.substring(piece.length))) return true;
+    }
+    return false;
+  }
+
+  /// Caps the reordering search — names this long are not being re-ordered,
+  /// and the permutation count would stop being free.
+  static const _maxReorderablePieces = 6;
+
+  /// Whether the two credit lists carry no comparable information: every
+  /// expected/candidate pairing puts a Latin name against a native-script one.
+  ///
+  /// This is NOT the same as disagreeing. Romanization is best-effort — an
+  /// artist's own chosen spelling routinely departs from any system ("헤이즈"
+  /// romanizes to "heijeu" but is credited "Heize") — so a failed romanization
+  /// is silence, not a verdict, and [score] softens the wrong-artist penalty
+  /// rather than rejecting outright. [_sameNameWrittenDifferently] only ever
+  /// ADDS evidence: it can turn a non-match into a match, never the reverse.
+  static bool artistsAreIncomparable(
+    List<String> expected,
+    List<String> candidate,
+  ) {
+    final expectedNames =
+        expected.where((a) => _artistTokenList(a).isNotEmpty).toList();
+    final candidateNames = _artistPieces(candidate);
+    if (expectedNames.isEmpty || candidateNames.isEmpty) return false;
+    for (final a in expectedNames) {
+      for (final b in candidateNames) {
+        if (!_scriptsIncomparable(a, b)) return false;
+      }
+    }
+    return true;
+  }
+
+  /// Latin against native script. Two names in the SAME script were compared
+  /// as text and genuinely disagree, so that stays real evidence.
+  static bool _scriptsIncomparable(String a, String b) =>
+      _isLatinName(a) != _isLatinName(b);
+
+  static bool _isLatinName(String name) {
+    final text = _artistTokenList(name).join();
+    return text.isNotEmpty && !text.runes.any((r) => r > 0x7F);
   }
 
   static final _latinToken = RegExp(r"[a-z0-9]");
@@ -172,37 +290,122 @@ abstract class TrackMatching {
         titleSimilarity(expectedTitle, candidateTitle) >= 0.45;
     final durationDiffSeconds =
         ((expectedDurationMs - candidateDurationMs) ~/ 1000).abs();
+    // An alternate version (live/cover/piano/instrumental/...) is never a
+    // plausible stand-in for the studio recording, however close the title
+    // and length happen to be.
+    if (isVariantMismatch(expectedTitle, candidateTitle)) return false;
     return titleRelated && durationDiffSeconds <= 60;
   }
 
   /// Alternate-version markers. A candidate carrying one of these when the
-  /// expected title doesn't is almost always the wrong recording, even when
-  /// every other word matches.
+  /// expected title doesn't is a DIFFERENT RECORDING, and is rejected
+  /// outright — never merely penalised (see [isVariantMismatch]).
   static const variantWords = {
-    "live",
-    "remix",
-    "cover",
-    "acoustic",
-    "instrumental",
-    "karaoke",
-    "sped",
-    "slowed",
-    "nightcore",
-    "reverb",
-    "mashup",
-    "demo",
-    "unplugged",
+    // performance context
+    "live", "unplugged", "concert", "tour", "session", "sessions",
+    "bootleg", "rehearsal", "soundcheck", "encore",
+    // re-performance by someone else
+    "cover", "covered", "tribute", "karaoke", "rendition", "reinterpretation",
+    // arrangement / instrumentation
+    "instrumental", "acoustic", "piano", "orchestral", "orchestra",
+    "symphonic", "strings", "guitar", "violin", "cello", "flute",
+    "saxophone", "harp", "ukulele", "acapella", "accapella", "cappella",
+    "lullaby", "musicbox", "chiptune", "8bit",
+    // derivative edits
+    "remix", "remixed", "mashup", "rework", "reworked", "reimagined",
+    "stripped", "demo", "sped", "slowed", "nightcore", "reverb",
+    "daycore", "8d", "vip",
+    // vocal-removed / backing
+    "backing", "playback", "minus",
   };
 
-  /// Variant markers present in [candidate] but not in [expected]
-  /// (normalized word-wise).
-  static Set<String> mismatchedVariants(String expected, String candidate) {
-    final expectedWords = normalize(expected).split(" ").toSet();
-    final candidateWords = normalize(candidate).split(" ").toSet();
-    return variantWords
-        .where((w) => candidateWords.contains(w) && !expectedWords.contains(w))
-        .toSet();
+  /// Multi-word markers that identify a non-original recording no matter where
+  /// they appear in the title — these phrases essentially never occur in a
+  /// genuine studio track name, so they don't need to sit in a decoration
+  /// segment to be conclusive.
+  static const _variantPhrases = [
+    "made famous by",
+    "in the style of",
+    "originally performed by",
+    "as made popular by",
+    "backing track",
+    "karaoke version",
+    "instrumental version",
+    "piano version",
+    "acoustic version",
+    "live version",
+    "cover version",
+    "8d audio",
+    "sped up",
+    "slowed down",
+    "slowed reverb",
+    "tribute to",
+    "music box",
+    "live at",
+    "live from",
+    "live in",
+    "live on",
+    "recorded live",
+  ];
+
+  /// Splits a title into its "decoration" segments: bracketed groups
+  /// (`(Live)`, `[Acoustic]`) and any dash-separated trailing part
+  /// (`Song - 2011 Remaster`). Variant markers are only conclusive when they
+  /// decorate the title — otherwise "Live and Let Die" or "Piano Man" would
+  /// reject themselves, and a word-set comparison can't tell the difference
+  /// (the marker appears in BOTH titles, so it cancels out).
+  static List<String> _decorationSegments(String title) {
+    final segments = <String>[];
+    for (final match
+        in RegExp(r"[\(\[]([^\)\]]*)[\)\]]").allMatches(title)) {
+      segments.add(match.group(1) ?? "");
+    }
+    // Everything after the first " - " is a trailing descriptor.
+    final dash = RegExp(r"\s[-–—]\s").firstMatch(title);
+    if (dash != null) segments.add(title.substring(dash.end));
+    return segments;
   }
+
+  /// Variant markers decorating [title], as normalized words.
+  static Set<String> _decorationVariants(String title) {
+    final found = <String>{};
+    for (final segment in _decorationSegments(title)) {
+      final words = normalize(segment).split(" ").toSet();
+      found.addAll(variantWords.where(words.contains));
+    }
+    return found;
+  }
+
+  /// Normalized whole-title text used for phrase probing.
+  static String _phraseText(String title) => normalize(title);
+
+  static Set<String> _phraseVariants(String title) {
+    final text = _phraseText(title);
+    return _variantPhrases.where(text.contains).toSet();
+  }
+
+  /// Variant markers present in [candidate] but not in [expected].
+  ///
+  /// Compares DECORATION segments rather than raw word sets, so a marker that
+  /// is part of the song's real name ("Live and Let Die", "Piano Man",
+  /// "Cover Me") is never treated as a variant, while "Song (Live)" and
+  /// "Song - Piano Version" are.
+  static Set<String> mismatchedVariants(String expected, String candidate) {
+    final expectedMarkers = _decorationVariants(expected)
+      ..addAll(_phraseVariants(expected));
+    final candidateMarkers = _decorationVariants(candidate)
+      ..addAll(_phraseVariants(candidate));
+    return candidateMarkers.difference(expectedMarkers);
+  }
+
+  /// HARD gate: true when [candidate] is an alternate version (live, cover,
+  /// karaoke, piano/instrumental, remix, sped-up, ...) of a track the user did
+  /// NOT ask for. Callers must reject such a candidate outright rather than
+  /// score it down — a score penalty alone still lets a strong title+artist
+  /// match clear the acceptance threshold, which is exactly how live and
+  /// piano renditions kept getting matched and downloaded.
+  static bool isVariantMismatch(String expectedTitle, String candidateTitle) =>
+      mismatchedVariants(expectedTitle, candidateTitle).isNotEmpty;
 
   /// Combined score: title 60%, artist 40%, with duration and
   /// alternate-version corrections. A candidate whose credited artists share
@@ -219,8 +422,8 @@ abstract class TrackMatching {
     int candidateDurationMs = 0,
   }) {
     final artistScore = artistSimilarity(expectedArtists, candidateArtists);
-    var value = titleSimilarity(expectedTitle, candidateTitle) * 0.6 +
-        artistScore * 0.4;
+    final titleScore = titleSimilarity(expectedTitle, candidateTitle);
+    var value = titleScore * 0.6 + artistScore * 0.4;
 
     // Only apply the wrong-artist penalty when the candidate actually reports
     // artists — some provider payloads omit them, and an absent credit is not
@@ -228,7 +431,15 @@ abstract class TrackMatching {
     final candidateHasArtists =
         candidateArtists.any((a) => normalize(a).isNotEmpty);
     if (artistScore == 0 && expectedArtists.isNotEmpty && candidateHasArtists) {
-      value -= 0.4;
+      // A credit in another script is silence, not disagreement, so the full
+      // penalty would reject correct tracks on no evidence. Soften it — but
+      // only for a title that matches EXACTLY. With no usable artist evidence
+      // the title is all that is left, and a merely-similar one is not enough
+      // to pin a track to the wrong artist. A same-title, same-length
+      // candidate then still clears the 0.5 threshold; nothing weaker does.
+      final noArtistEvidence = titleScore == 1 &&
+          artistsAreIncomparable(expectedArtists, candidateArtists);
+      value -= noArtistEvidence ? 0.1 : 0.4;
     }
 
     // A "(Live)" / "(Remix)" / etc. candidate for a plain studio title is the

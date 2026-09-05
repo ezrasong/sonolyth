@@ -4,6 +4,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
+import 'package:sonolyth/extensions/context.dart';
 
 class VolumeSlider extends HookConsumerWidget {
   final bool fullWidth;
@@ -55,26 +57,29 @@ class VolumeSlider extends HookConsumerWidget {
       mainAxisAlignment:
           !fullWidth ? MainAxisAlignment.center : MainAxisAlignment.start,
       children: [
-        IconButton(
-          variance: ButtonVariance.ghost,
-          icon: Icon(
-            value == 0
-                ? SonolythIcons.volumeMute
-                : value <= 0.2
-                    ? SonolythIcons.volumeLow
-                    : value <= 0.6
-                        ? SonolythIcons.volumeMedium
-                        : SonolythIcons.volumeHigh,
-            size: 16,
+        ZenithTooltip(
+          message: value == 0 ? context.l10n.unmute : context.l10n.mute,
+          child: IconButton(
+            variance: ButtonVariance.ghost,
+            icon: Icon(
+              value == 0
+                  ? SonolythIcons.volumeMute
+                  : value <= 0.2
+                      ? SonolythIcons.volumeLow
+                      : value <= 0.6
+                          ? SonolythIcons.volumeMedium
+                          : SonolythIcons.volumeHigh,
+              size: 16,
+            ),
+            onPressed: () {
+              if (value == 0) {
+                onChanged(preMuteVolume.value);
+              } else {
+                preMuteVolume.value = value;
+                onChanged(0);
+              }
+            },
           ),
-          onPressed: () {
-            if (value == 0) {
-              onChanged(preMuteVolume.value);
-            } else {
-              preMuteVolume.value = value;
-              onChanged(0);
-            }
-          },
         ),
         if (fullWidth) Expanded(child: slider) else slider,
       ],

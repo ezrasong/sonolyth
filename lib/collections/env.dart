@@ -1,5 +1,4 @@
 import 'package:envied/envied.dart';
-import 'package:sonolyth/utils/platform.dart';
 
 part 'env.g.dart';
 
@@ -31,8 +30,5 @@ abstract class Env {
       ? ReleaseChannel.stable
       : ReleaseChannel.nightly;
 
-  static bool get enableUpdateChecker =>
-      kIsFlatpak || _enableUpdateChecker == "1";
-
-  static String discordAppId = "1176718791388975124";
+  static bool get enableUpdateChecker => _enableUpdateChecker == "1";
 }

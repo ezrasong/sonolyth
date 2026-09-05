@@ -14,6 +14,7 @@ import 'package:sonolyth/models/database/database.steps.dart';
 import 'package:sonolyth/models/lyrics.dart';
 import 'package:sonolyth/models/metadata/market.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/models/playback/crossfade.dart';
 import 'package:sonolyth/services/kv_store/encrypted_kv_store.dart';
 import 'package:sonolyth/services/kv_store/kv_store.dart';
 import 'package:flutter/widgets.dart' hide Table, Key, View;
@@ -39,6 +40,7 @@ part 'tables/audio_player_state.dart';
 part 'tables/history.dart';
 part 'tables/lyrics.dart';
 part 'tables/metadata_plugins.dart';
+part 'tables/track_trim.dart';
 
 part 'typeconverters/color.dart';
 part 'typeconverters/locale.dart';
@@ -60,13 +62,22 @@ part 'typeconverters/subtitle.dart';
     HistoryTable,
     LyricsTable,
     PluginsTable,
+    TrackTrimTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
+  /// Opens the real schema and migrations over a caller-supplied executor.
+  /// Exists so `test/drift/app_db/migration_test.dart` can run the migration
+  /// ladder against an in-memory database — the default constructor always
+  /// opens the on-device file, which is exactly what a migration test must not
+  /// touch.
+  @visibleForTesting
+  AppDatabase.forTesting(super.executor);
+
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration {
@@ -225,6 +236,24 @@ class AppDatabase extends _$AppDatabase {
           await m
               .dropColumn(schema.preferencesTable, "invidious_instance")
               .catchError((e, stack) => AppLogger.reportError(e, stack));
+          // The v10 snapshot records preferences_table gaining
+          // `audio_source_id` and losing four source/codec columns at this
+          // step. It never did either, so an install that migrated 9 -> 10
+          // has no `audio_source_id` at all and any full-row UPDATE against
+          // it fails with `no such column`. Installs already past 10 are
+          // repaired in `from11To12`; this keeps a v9 install from arriving
+          // broken in the first place.
+          await m
+              .addColumn(
+                schema.preferencesTable,
+                schema.preferencesTable.audioSourceId,
+              )
+              .catchError((e, stack) => AppLogger.reportError(e, stack));
+          for (final dead in _preferencesColumnsDroppedAtV10) {
+            await m
+                .dropColumn(schema.preferencesTable, dead)
+                .catchError((e, stack) => AppLogger.reportError(e, stack));
+          }
           await m
               .addColumn(
                 schema.sourceMatchTable,
@@ -237,8 +266,93 @@ class AppDatabase extends _$AppDatabase {
               .dropColumn(schema.sourceMatchTable, "source_id")
               .catchError((e, stack) => AppLogger.reportError(e, stack));
         },
+        from10To11: (m, schema) async {
+          await m
+              .addColumn(
+                schema.preferencesTable,
+                schema.preferencesTable.crossfadeDuration,
+              )
+              .catchError((e, stack) => AppLogger.reportError(e, stack));
+          await m
+              .addColumn(
+                schema.preferencesTable,
+                schema.preferencesTable.crossfadeCurve,
+              )
+              .catchError((e, stack) => AppLogger.reportError(e, stack));
+        },
+        from11To12: (m, schema) async {
+          await m
+              .createTable(schema.trackTrimTable)
+              .catchError((e, stack) => AppLogger.reportError(e, stack));
+
+          // Convergence repair for the `from9To10` defect above. Schema 11 and
+          // 12 have not shipped, so every install still on 10 passes through
+          // here exactly once. Guarded on the live column list rather than
+          // let-it-throw, so a database that is already correct (any fresh
+          // v10+ install) does no work and logs no errors.
+          final columns = await _columnsOf("preferences_table");
+          if (!columns.contains("audio_source_id")) {
+            await m
+                .addColumn(
+                  schema.preferencesTable,
+                  schema.preferencesTable.audioSourceId,
+                )
+                .catchError((e, stack) => AppLogger.reportError(e, stack));
+          }
+          for (final dead in _preferencesColumnsDroppedAtV10) {
+            if (!columns.contains(dead)) continue;
+            await m
+                .dropColumn(schema.preferencesTable, dead)
+                .catchError((e, stack) => AppLogger.reportError(e, stack));
+          }
+        },
+        from12To13: (m, schema) async {
+          // Re-declares `uniq_track_match`, the unique index `from9To10` had
+          // to drop when `source_id` went away and nobody ever replaced. Until
+          // now the "one match per (track, source)" rule lived only in the two
+          // writers' delete-then-insert transactions, so any older duplicate —
+          // or any pair that raced before those transactions existed — is
+          // still sitting in the table.
+          //
+          // Order matters: de-duplicate first, or `CREATE UNIQUE INDEX`
+          // throws and the index is silently never created.
+          //
+          // A database created fresh at v10 carries an index of the SAME NAME
+          // over the old three columns (the v10 snapshot still recorded it),
+          // so drop by name before creating.
+          await customStatement("DROP INDEX IF EXISTS uniq_track_match;")
+              .catchError((e, stack) => AppLogger.reportError(e, stack));
+          await customStatement(
+            "DELETE FROM source_match_table WHERE id NOT IN ("
+            "SELECT MAX(id) FROM source_match_table "
+            "GROUP BY track_id, source_type)",
+          ).catchError((e, stack) => AppLogger.reportError(e, stack));
+          await m
+              .createIndex(schema.uniqTrackMatch)
+              .catchError((e, stack) => AppLogger.reportError(e, stack));
+        },
       ),
     );
+  }
+
+  /// The preferences columns the v10 schema record says went away with the
+  /// audio-source rework. They are `NOT NULL` with defaults, so leaving them
+  /// behind is survivable — but it leaves the table permanently different from
+  /// its own recorded shape, which is how the missing `audio_source_id` stayed
+  /// invisible.
+  static const _preferencesColumnsDroppedAtV10 = [
+    "audio_quality",
+    "audio_source",
+    "stream_music_codec",
+    "download_music_codec",
+  ];
+
+  /// Live column names of [table], straight from sqlite. Used by migrations
+  /// that have to repair a database whose actual shape is not knowable from
+  /// its schema version alone.
+  Future<Set<String>> _columnsOf(String table) async {
+    final rows = await customSelect("PRAGMA table_info('$table')").get();
+    return {for (final row in rows) row.read<String>("name")};
   }
 }
 

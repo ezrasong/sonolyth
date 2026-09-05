@@ -9,8 +9,10 @@ import 'package:sonolyth/models/database/database.dart';
 import 'package:sonolyth/models/lyrics.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/database/database.dart';
+import 'package:sonolyth/provider/downloaded_tracks_provider.dart';
 import 'package:sonolyth/services/dio/dio.dart';
 import 'package:sonolyth/services/logger/logger.dart';
+import 'package:sonolyth/services/lyrics/embedded_lyrics.dart';
 
 class SyncedLyricsNotifier
     extends FamilyAsyncNotifier<SubtitleSimple, SonolythTrackObject?> {
@@ -87,6 +89,20 @@ class SyncedLyricsNotifier
     );
   }
 
+  /// The audio file playback would read for [track], if any: a local library
+  /// track carries its path; a streamed track that has been downloaded is in
+  /// the registry. Watching the registry entry re-runs the lookup when a
+  /// download lands or is removed while the lyrics page is open.
+  Future<String?> _backingFile(SonolythTrackObject track) async {
+    if (track is SonolythLocalTrackObject) return track.path;
+    ref.watch(downloadedTracksProvider.select((paths) => paths[track.id]));
+    final downloads = ref.read(downloadedTracksProvider.notifier);
+    // Cold start: the registry is read asynchronously, and deciding before it
+    // lands would send a downloaded track to LRCLib.
+    await downloads.ready;
+    return downloads.pathFor(track.id);
+  }
+
   @override
   FutureOr<SubtitleSimple> build(track) async {
     try {
@@ -94,6 +110,18 @@ class SyncedLyricsNotifier
 
       if (track == null) {
         throw "No track currently";
+      }
+
+      // The file wins: lyrics the user tagged into a local track or dropped
+      // beside it as an .lrc are theirs. They are not written to the cache —
+      // the file is the cache, and its tags may change under us.
+      final filePath = await _backingFile(track);
+      if (filePath != null) {
+        final embedded = await EmbeddedLyrics.forFile(
+          filePath,
+          trackName: track.name,
+        );
+        if (embedded != null) return embedded;
       }
 
       final cachedLyrics = await (database.select(database.lyricsTable)

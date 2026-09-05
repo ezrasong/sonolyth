@@ -185,4 +185,99 @@ void main() {
       expect(right, greaterThan(wrong));
     });
   });
+
+  group('variant hard gate', () {
+    const studio = "Someone Like You";
+    const artists = ["Adele"];
+
+    for (final bad in <String>[
+      "Someone Like You (Live)",
+      "Someone Like You - Live at the Royal Albert Hall",
+      "Someone Like You (Piano Version)",
+      "Someone Like You [Instrumental]",
+      "Someone Like You (Acoustic)",
+      "Someone Like You (Karaoke Version)",
+      "Someone Like You - Cover",
+      "Someone Like You (Orchestral)",
+      "Someone Like You (Sped Up)",
+      "Someone Like You (Slowed + Reverb)",
+      "Someone Like You (Remix)",
+      "Someone Like You - Made Famous By Adele",
+      "Someone Like You (Music Box)",
+      "Someone Like You (Tribute to Adele)",
+      "Someone Like You (Backing Track)",
+    ]) {
+      test('rejects "$bad"', () {
+        expect(
+          TrackMatching.isVariantMismatch(studio, bad),
+          isTrue,
+          reason: '$bad must not match $studio',
+        );
+        expect(
+          TrackMatching.plausibleCandidate(
+            expectedTitle: studio,
+            candidateTitle: bad,
+            expectedDurationMs: 285000,
+            candidateDurationMs: 285000,
+          ),
+          isFalse,
+        );
+      });
+    }
+
+    test('accepts the plain studio title and harmless descriptors', () {
+      for (final good in <String>[
+        "Someone Like You",
+        "Someone Like You (Remastered 2021)",
+        "Someone Like You - 2011 Remaster",
+        "Someone Like You [Deluxe Edition]",
+      ]) {
+        expect(
+          TrackMatching.isVariantMismatch(studio, good),
+          isFalse,
+          reason: '$good is the same recording',
+        );
+      }
+    });
+
+    test('a marker inside the real song name is not a variant', () {
+      // The word is part of the title itself, not a decoration.
+      expect(
+        TrackMatching.isVariantMismatch("Live and Let Die", "Live and Let Die"),
+        isFalse,
+      );
+      expect(TrackMatching.isVariantMismatch("Piano Man", "Piano Man"), isFalse);
+      expect(TrackMatching.isVariantMismatch("Cover Me", "Cover Me"), isFalse);
+      // ...but decorating that same title still is.
+      expect(
+        TrackMatching.isVariantMismatch("Piano Man", "Piano Man (Live)"),
+        isTrue,
+      );
+    });
+
+    test('asking for the live take accepts the live take', () {
+      expect(
+        TrackMatching.isVariantMismatch(
+          "Someone Like You (Live)",
+          "Someone Like You [Live]",
+        ),
+        isFalse,
+      );
+    });
+
+    test('score keeps studio ahead of every rendition', () {
+      double s(String candidate) => TrackMatching.score(
+            expectedTitle: studio,
+            candidateTitle: candidate,
+            expectedArtists: artists,
+            candidateArtists: artists,
+            expectedDurationMs: 285000,
+            candidateDurationMs: 285000,
+          );
+      final base = s(studio);
+      for (final bad in ["Someone Like You (Live)", "Someone Like You (Piano Version)"]) {
+        expect(s(bad), lessThan(base));
+      }
+    });
+  });
 }

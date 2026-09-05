@@ -21,14 +21,12 @@ class ShimmerLyrics extends HookWidget {
             "Sed",
             "Sed non risus",
           ]..shuffle();
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (final text in texts) ...[
-                Text(text),
-                if (text != texts.last) const Gap(10),
-              ],
-            ],
+          // Wrap, not Row: four fixed words in a Row overflowed by 11px once
+          // the sidebar rail took 70dp of a phone's width.
+          return Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 10,
+            children: [for (final text in texts) Text(text)],
           );
         },
       ),

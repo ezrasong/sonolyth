@@ -4,12 +4,15 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path/path.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/image/universal_image.dart';
 import 'package:sonolyth/components/playbutton_view/playbutton_card.dart';
 import 'package:sonolyth/components/playbutton_view/playbutton_tile.dart';
 import 'package:sonolyth/components/track_presentation/presentation_actions.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/extensions/string.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
@@ -28,7 +31,7 @@ class LocalFolderItem extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final ThemeData(:colorScheme) = Theme.of(context);
+    final colorScheme = context.theme.colorScheme;
 
     final downloadFolder =
         ref.watch(userPreferencesProvider.select((s) => s.downloadLocation));
@@ -137,6 +140,7 @@ class LocalFolderItem extends HookConsumerWidget {
         title: title,
         description: description,
         onTap: onTap,
+        onLongPress: isRemovable ? showRemoveMenu : null,
         onPlaybuttonPressed: onPlaybuttonPressed,
         onAddToQueuePressed: onAddToQueuePressed,
       );
@@ -144,39 +148,31 @@ class LocalFolderItem extends HookConsumerWidget {
       return Row(
         children: [
           Expanded(child: tile),
-          IconButton.ghost(
-            icon: const Icon(SonolythIcons.moreVertical),
-            size: ButtonSize.small,
-            onPressed: showRemoveMenu,
+          ZenithTooltip(
+            message: context.l10n.more_actions,
+            child: IconButton.ghost(
+              icon: const Icon(SonolythIcons.moreVertical),
+              size: ButtonSize.small,
+              onPressed: showRemoveMenu,
+            ),
           ),
         ],
       );
     }
 
-    final card = PlaybuttonCard(
+    // No button over the art: Proxima puts nothing on a grid item but the
+    // item. "Remove from library" is the card's long-press menu instead — the
+    // same gesture a track row uses for its own options.
+    return PlaybuttonCard(
       image: image,
       isPlaying: isPlaying,
       isLoading: trackSnapshot.isLoading,
       title: title,
       description: description,
       onTap: onTap,
+      onLongPress: isRemovable ? showRemoveMenu : null,
       onPlaybuttonPressed: onPlaybuttonPressed,
       onAddToQueuePressed: onAddToQueuePressed,
-    );
-    if (!isRemovable) return card;
-    return Stack(
-      children: [
-        card,
-        Positioned(
-          right: 5,
-          top: 5,
-          child: IconButton.secondary(
-            icon: const Icon(SonolythIcons.moreVertical),
-            size: ButtonSize.small,
-            onPressed: showRemoveMenu,
-          ),
-        ),
-      ],
     );
   }
 }
@@ -189,7 +185,7 @@ class _FolderArtCollage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData(:colorScheme) = Theme.of(context);
+    final colorScheme = context.theme.colorScheme;
 
     final arts = tracks
         .take(4)
@@ -201,13 +197,21 @@ class _FolderArtCollage extends StatelessWidget {
         .toList();
 
     if (arts.isEmpty) {
-      return Container(
-        color: colorScheme.secondary,
-        child: Center(
-          child: Icon(
-            SonolythIcons.folder,
-            size: 60,
-            color: colorScheme.mutedForeground,
+      // No scanned tracks yet: `colorAABgColor`, the well every thumbnail
+      // sits on, with the folder glyph at half the box. Sized from the box
+      // rather than a fixed 60dp, because this same widget is a 48dp list
+      // thumbnail and a 134dp grid cover, and a fixed glyph spilled out of
+      // the former over the row's title.
+      return ColoredBox(
+        color: zenithArtWell(colorScheme),
+        child: LayoutBuilder(
+          builder: (context, constraints) => Center(
+            child: Icon(
+              SonolythIcons.folder,
+              size:
+                  constraints.hasBoundedWidth ? constraints.maxWidth * 0.5 : 24,
+              color: colorScheme.mutedForeground,
+            ),
           ),
         ),
       );

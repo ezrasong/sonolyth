@@ -13,6 +13,18 @@ class UniversalImage extends HookWidget {
   final double scale;
   final String? placeholder;
   final BoxFit? fit;
+
+  /// What a screen reader should call this image.
+  ///
+  /// Null — the default — means the image is decorative and is dropped from
+  /// the semantics tree entirely. That is the right answer nearly everywhere
+  /// here: cover art in this app always sits beside the title it belongs to,
+  /// so announcing it a second time as an image only adds a stop to swipe
+  /// through. (Rows and cards paint their art as a `DecorationImage`, which
+  /// emits no semantics at all — this keeps the widget consistent with them.)
+  /// Pass a label where the image really is the only thing carrying meaning.
+  final String? semanticLabel;
+
   const UniversalImage({
     required this.path,
     this.height,
@@ -20,6 +32,7 @@ class UniversalImage extends HookWidget {
     this.placeholder,
     this.fit,
     this.scale = 1,
+    this.semanticLabel,
     super.key,
   });
 
@@ -47,6 +60,12 @@ class UniversalImage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final image = _buildImage(context);
+    if (semanticLabel == null) return ExcludeSemantics(child: image);
+    return Semantics(image: true, label: semanticLabel, child: image);
+  }
+
+  Widget _buildImage(BuildContext context) {
     if (path.startsWith("http")) {
       return FadeInImage(
         image: CachedNetworkImageProvider(

@@ -1041,7 +1041,20 @@ public class AudioService extends MediaBrowserServiceCompat {
             @SuppressWarnings("deprecation")
             final KeyEvent event = (KeyEvent)mediaButtonEvent.getExtras().getParcelable(Intent.EXTRA_KEY_EVENT);
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                switch (event.getKeyCode()) {
+                final int keyCode = event.getKeyCode();
+                // Sonolyth patch: a held key auto-repeats ACTION_DOWN every
+                // 50ms once the long-press timeout passes, and every repeat
+                // used to count as a full press below — holding "previous"
+                // (or an emulator key whose UP lagged past the threshold)
+                // walked the queue straight back to index 0. Only the first
+                // DOWN of a click key is a click. Fast-forward and rewind are
+                // the one place a held key repeating is the intent.
+                if (event.getRepeatCount() > 0
+                        && keyCode != KeyEvent.KEYCODE_MEDIA_FAST_FORWARD
+                        && keyCode != KeyEvent.KEYCODE_MEDIA_REWIND) {
+                    return true;
+                }
+                switch (keyCode) {
                 case KEYCODE_BYPASS_PLAY:
                     onPlay();
                     break;

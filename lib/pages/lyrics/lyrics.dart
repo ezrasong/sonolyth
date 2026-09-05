@@ -1,20 +1,28 @@
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' hide Consumer;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 
+import 'package:sonolyth/collections/zenith_theme.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
-import 'package:sonolyth/components/image/universal_image.dart';
+import 'package:sonolyth/components/ui/zenith_filter_chip.dart';
 import 'package:sonolyth/extensions/context.dart';
-import 'package:sonolyth/hooks/utils/use_palette_color.dart';
-import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/pages/lyrics/plain_lyrics.dart';
 import 'package:sonolyth/pages/lyrics/synced_lyrics.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/lyrics/synced.dart';
-import 'package:sonolyth/utils/platform.dart';
+import 'package:sonolyth/services/lyrics/embedded_lyrics.dart';
 import 'package:auto_route/auto_route.dart';
 
+/// The lyrics screen.
+///
+/// It used to paint the album art blurred across the whole page with a
+/// palette-derived tint over it, and colour its type from the same palette.
+/// None of that has a source in Proxima — the skin is achromatic and its ground
+/// is `colorBgPrimary` everywhere — and the palette text colours were computed
+/// for the album's dark-muted tone, so on a dark cover the title came out
+/// near-black on near-black and the "not available" notice vanished with it.
+/// The page is now the ground and its type is the scheme's.
 @RoutePage()
 class LyricsPage extends HookConsumerWidget {
   static const name = "lyrics";
@@ -23,25 +31,28 @@ class LyricsPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final playlist = ref.watch(audioPlayerProvider);
-    String albumArt = useMemoized(
-      () => (playlist.activeTrack?.album.images).asUrlString(
-        index: (playlist.activeTrack?.album.images.length ?? 1) - 1,
-        placeholder: ImagePlaceholder.albumArt,
-      ),
-      [playlist.activeTrack?.album.images],
-    );
-    final palette = usePaletteColor(albumArt, ref);
+    final colorScheme = context.theme.colorScheme;
     final selectedIndex = useState(0);
 
+    // `TopSearchCatButton` — the one category-selector idiom the app has.
+    // Poweramp defines no tab indicator anywhere (see `library.dart`), so the
+    // Material underline tabs this replaced had no source.
     Widget tabbar = Padding(
-      padding: const EdgeInsets.all(10),
-      child: Tabs(
-        index: selectedIndex.value,
-        onChanged: (index) => selectedIndex.value = index,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: ZenithFilterChip.gap,
         children: [
-          TabItem(child: Text(context.l10n.synced)),
-          TabItem(child: Text(context.l10n.plain)),
+          ZenithFilterChip(
+            label: context.l10n.synced,
+            selected: selectedIndex.value == 0,
+            onPressed: () => selectedIndex.value = 0,
+          ),
+          ZenithFilterChip(
+            label: context.l10n.plain,
+            selected: selectedIndex.value == 1,
+            onPressed: () => selectedIndex.value = 1,
+          ),
         ],
       ),
     );
@@ -60,59 +71,49 @@ class LyricsPage extends HookConsumerWidget {
               return const SizedBox.shrink();
             }
 
-            return Align(
-              alignment: Alignment.bottomRight,
-              child: Text(context.l10n.powered_by_provider(providerName)),
+            // Lyrics read out of the file are nobody's service.
+            final label = switch (providerName) {
+              EmbeddedLyrics.providerTags =>
+                context.l10n.lyrics_from_file_tags,
+              EmbeddedLyrics.providerSidecar =>
+                context.l10n.lyrics_from_lrc_file,
+              _ => context.l10n.powered_by_provider(providerName),
+            };
+
+            return Text(
+              label,
+              // `ItemSubheadTracksMetaTitle` — 10sp at `colorTrackMeta`:
+              // metadata about the list, not a heading. Explicit, because
+              // `TitleBar` wraps its title in the 29sp header style.
+              style: TextStyle(
+                fontSize: 10,
+                color: zenithTrackMeta(colorScheme),
+              ),
             );
           },
         ),
-        const Gap(5),
+        const Gap(12),
       ],
     );
 
     return SafeArea(
       bottom: false,
       child: Scaffold(
-        floatingHeader: true,
         headers: [
-          !kIsMacOS
-              ? TitleBar(
-                  backgroundColor: Colors.transparent,
-                  title: tabbar,
-                  height: 58 * context.theme.scaling,
-                  surfaceBlur: 0,
-                  automaticallyImplyLeading: false,
-                )
-              : tabbar
+          TitleBar(
+            backgroundColor: Colors.transparent,
+            title: tabbar,
+            height: 58 * context.theme.scaling,
+            surfaceBlur: 0,
+            automaticallyImplyLeading: false,
+          )
         ],
-        child: Container(
-          clipBehavior: Clip.hardEdge,
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: UniversalImage.imageProvider(albumArt),
-              fit: BoxFit.cover,
-            ),
-          ),
-          margin: const EdgeInsets.only(bottom: 10),
-          child: SurfaceCard(
-            surfaceBlur: context.theme.surfaceBlur,
-            surfaceOpacity: context.theme.surfaceOpacity,
-            padding: EdgeInsets.zero,
-            borderRadius: BorderRadius.zero,
-            borderWidth: 0,
-            child: ColoredBox(
-              color: palette.color.withValues(alpha: .7),
-              child: SafeArea(
-                child: IndexedStack(
-                  index: selectedIndex.value,
-                  children: [
-                    SyncedLyrics(palette: palette, isModal: false),
-                    PlainLyrics(palette: palette, isModal: false),
-                  ],
-                ),
-              ),
-            ),
-          ),
+        child: IndexedStack(
+          index: selectedIndex.value,
+          children: const [
+            SyncedLyrics(isModal: false),
+            PlainLyrics(isModal: false),
+          ],
         ),
       ),
     );

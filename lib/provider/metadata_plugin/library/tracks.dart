@@ -3,6 +3,7 @@ import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/metadata_plugin/core/auth.dart';
 import 'package:sonolyth/provider/metadata_plugin/utils/common.dart';
 import 'package:sonolyth/provider/metadata_plugin/utils/paginated.dart';
+import 'package:sonolyth/services/logger/logger.dart';
 
 class MetadataPluginSavedTracksNotifier
     extends AutoDisposePaginatedAsyncNotifier<SonolythFullTrackObject> {
@@ -14,6 +15,11 @@ class MetadataPluginSavedTracksNotifier
           offset: offset,
           limit: limit,
         );
+    AppLogger.diag(
+      "[library] savedTracks offset=$offset limit=$limit -> "
+      "${tracks.items.length} items, total=${tracks.total}, "
+      "hasMore=${tracks.hasMore}, nextOffset=${tracks.nextOffset}",
+    );
 
     return tracks;
   }

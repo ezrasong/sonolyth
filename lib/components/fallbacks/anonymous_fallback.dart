@@ -11,6 +11,7 @@ import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart'
 import 'package:sonolyth/services/logger/logger.dart';
 
 import 'package:sonolyth/utils/platform.dart';
+import 'package:sonolyth/components/fallbacks/zenith_illustration.dart';
 
 class AnonymousFallback extends ConsumerWidget {
   final Widget? child;
@@ -38,12 +39,11 @@ class AnonymousFallback extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         spacing: 10,
         children: [
-          Undraw(
+          ZenithIllustration(
             illustration: kIsMobile
                 ? UndrawIllustration.accessDenied
                 : UndrawIllustration.secureLogin,
             height: 200 * context.theme.scaling,
-            color: context.theme.colorScheme.primary,
           ),
           Text(context.l10n.not_logged_in),
           Button.primary(

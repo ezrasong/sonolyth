@@ -5,7 +5,9 @@ import 'package:dio/dio.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
+import 'package:sonolyth/provider/audio_player/network_health.dart';
 import 'package:sonolyth/provider/audio_player/smart_shuffle.dart';
+import 'package:sonolyth/provider/audio_player/track_trim.dart';
 import 'package:sonolyth/provider/audio_player/state.dart';
 import 'package:sonolyth/provider/discord_provider.dart';
 import 'package:sonolyth/provider/history/history.dart';
@@ -46,6 +48,10 @@ class AudioPlayerStreamListeners {
     // The shuffle->smart transition doesn't change the player's shuffle flag,
     // so no audio_player stream fires — poke the notification directly to
     // swap the shuffle button icon.
+    // Stall detection needs to be running whenever playback is, not only
+    // while some widget happens to watch it.
+    ref.listen(playbackNetworkHealthProvider, (_, __) {});
+
     ref.listen(smartShuffleProvider, (previous, next) {
       try {
         notificationService?.mobile?.refreshPlaybackState();
@@ -61,6 +67,7 @@ class AudioPlayerStreamListeners {
       subscribeToPosition(),
       subscribeToNextTrackPrefetch(),
       subscribeToShuffleRewarm(),
+      subscribeToLocalFileTrimScan(),
       subscribeToResumeRewarm(),
       subscribeToPlayerError(),
     ];
@@ -161,7 +168,19 @@ class AudioPlayerStreamListeners {
         /// The [Track] from Playlist.getTracks doesn't contain artist images
         /// so we need to fetch them from the API
         var activeTrack = audioPlayerState.activeTrack!;
-        if (activeTrack.artists.any((a) => a.images == null)) {
+        if (activeTrack is SonolythLocalTrackObject) {
+          // A local file's artist "ids" are the names read from its tags —
+          // the metadata plugin has nothing to resolve them against and threw
+          // `getArtist` on every local track that reached the scrobble point,
+          // which also kept the track out of history because the write below
+          // never ran. Give them the empty image list `addTrack` asserts on.
+          activeTrack = activeTrack.copyWith(
+            artists: [
+              for (final artist in activeTrack.artists)
+                artist.copyWith(images: artist.images ?? const []),
+            ],
+          );
+        } else if (activeTrack.artists.any((a) => a.images == null)) {
           final metadataPlugin = await ref.read(metadataPluginProvider.future);
           final artists = await Future.wait(
             activeTrack.artists
@@ -343,6 +362,11 @@ class AudioPlayerStreamListeners {
     _bufferAheadToken?.cancel();
     final token = _bufferAheadToken = CancelToken();
 
+    // On a struggling connection the speculative heads compete with the
+    // stream the user is actually hearing — and losing that race is a stall.
+    // Resolution (metadata-sized) still runs; only the byte prefetch stops.
+    if (ref.read(playbackNetworkHealthProvider).isDegraded) return;
+
     // A brief settle so a skip burst coalesces on the landing track, but short
     // enough that the next track's head is ready before the user skips again.
     // The head is only ~1MB so it doesn't meaningfully contend with playback.
@@ -448,6 +472,32 @@ class AudioPlayerStreamListeners {
           .read(sourcedTrackProvider(track).notifier)
           .refreshStreamingUrl();
     }
+  }
+
+  /// Measures the edge silence of queued tracks that play from a local file
+  /// (local library and downloaded tracks), so album transitions and
+  /// crossfades aren't padded by dead air.
+  ///
+  /// Streamed tracks are skipped: their media URI is the in-app proxy, whose
+  /// bytes depend on which source the track currently resolves to, so no
+  /// measurement can be bound to them safely.
+  ///
+  /// A measurement is applied when the media is CONSTRUCTED, so a freshly
+  /// scanned file plays trimmed from the next time it's queued — the scan
+  /// never disturbs what's playing now.
+  StreamSubscription subscribeToLocalFileTrimScan() {
+    return audioPlayer.playlistStream.listen((playlist) {
+      try {
+        final trim = ref.read(trackTrimProvider.notifier);
+        for (final media in playlist.medias) {
+          final uri = media.uri;
+          if (uri.startsWith("http://") || uri.startsWith("https://")) continue;
+          trim.scheduleScan(uri);
+        }
+      } catch (e, stack) {
+        AppLogger.reportError(e, stack);
+      }
+    });
   }
 
   StreamSubscription subscribeToPlayerError() {

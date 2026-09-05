@@ -4,6 +4,7 @@ import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart'
 import 'package:sonolyth/provider/metadata_plugin/utils/family_paginated.dart';
 import 'package:sonolyth/provider/metadata_plugin/utils/common.dart';
 import 'package:sonolyth/services/cache/playlist_tracks_cache.dart';
+import 'package:sonolyth/services/metadata/endpoints/artist.dart';
 import 'package:sonolyth/services/logger/logger.dart';
 
 class MetadataPluginArtistTopTracksNotifier
@@ -33,7 +34,18 @@ class MetadataPluginArtistTopTracksNotifier
     // Top tracks shift slowly; a day of disk cache makes artist pages load
     // instantly without burning the provider's rate limit on every visit.
     final cached = await _cache.read(arg, maxAge: const Duration(days: 1));
-    if (cached != null) return cached;
+    // Entries written before the "unknown" album placeholder was stripped
+    // (see `MetadataPluginArtistEndpoint.withoutPlaceholderAlbumName`) live on
+    // for a day; normalise on the way out rather than dropping every cached
+    // listing — invalidating the whole namespace costs a provider round trip
+    // on every collection page.
+    if (cached != null) {
+      return cached.copyWith(
+        items: cached.items
+            .map(MetadataPluginArtistEndpoint.withoutPlaceholderAlbumName)
+            .toList(),
+      );
+    }
 
     final first = await fetch(0, 20);
     Future(() async {

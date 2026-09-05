@@ -14,21 +14,31 @@ class PresentationState {
   final List<SonolythTrackObject> presentationTracks;
   final SortBy sortBy;
 
+  /// Poweramp's selection mode, entered from the header's "Select" button
+  /// (`cmd_list_toggle_selection_mode`): every row shows its checkbox even
+  /// while nothing is ticked yet. A long-press selection implies it.
+  final bool selectionMode;
+
   const PresentationState({
     required this.selectedTracks,
     required this.presentationTracks,
     required this.sortBy,
+    this.selectionMode = false,
   });
+
+  bool get isSelecting => selectionMode || selectedTracks.isNotEmpty;
 
   PresentationState copyWith({
     List<SonolythTrackObject>? selectedTracks,
     List<SonolythTrackObject>? presentationTracks,
     SortBy? sortBy,
+    bool? selectionMode,
   }) {
     return PresentationState(
       selectedTracks: selectedTracks ?? this.selectedTracks,
       presentationTracks: presentationTracks ?? this.presentationTracks,
       sortBy: sortBy ?? this.sortBy,
+      selectionMode: selectionMode ?? this.selectionMode,
     );
   }
 }
@@ -40,7 +50,8 @@ class PresentationStateNotifier
     // Apply (and re-apply once it loads from prefs / the user changes it) the
     // sort the user last picked, instead of always starting unsorted.
     final savedSort = ref.watch(playlistSortProvider);
-    if (arg case SonolythSimplePlaylistObject() || SonolythSimpleAlbumObject()) {
+    if (arg
+        case SonolythSimplePlaylistObject() || SonolythSimpleAlbumObject()) {
       if (isSavedTrackPlaylist) {
         ref.listen(
           metadataPluginSavedTracksProvider,
@@ -141,7 +152,18 @@ class PresentationStateNotifier
   void deselectAllTracks() {
     state = state.copyWith(
       selectedTracks: [],
+      selectionMode: false,
     );
+  }
+
+  /// The header's "Select": on with nothing selected shows the checkboxes;
+  /// off clears the selection and the checkboxes with it.
+  void toggleSelectionMode() {
+    if (state.isSelecting) {
+      deselectAllTracks();
+    } else {
+      state = state.copyWith(selectionMode: true);
+    }
   }
 
   /// Optimistically drop a track from the visible list (and any selection) so a

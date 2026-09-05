@@ -1,19 +1,21 @@
-import 'dart:convert';
-
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sonolyth/services/logger/logger.dart';
 
-final logsProvider = StreamProvider.autoDispose((ref) async* {
+/// The whole of `.spotube_logs` as one string.
+///
+/// This used to be a `StreamProvider` that yielded every decoded chunk of
+/// `openRead()` as its own value, so the Logs page rendered only the file's
+/// last ~64 KB and the copy button copied a single chunk. Reading it whole
+/// is safe now that the file is capped (see `log_file_trimmer.dart`).
+///
+/// Throws [StateError] for an empty file — the page shows its "no logs"
+/// state on that.
+final logsProvider = FutureProvider.autoDispose<String>((ref) async {
   final file = await AppLogger.getLogsPath();
-  // Check if file is empty or non-existent
 
   if (await file.length() == 0) {
     throw StateError("Logs file is empty or non-existent");
   }
 
-  final stream = file.openRead().transform(utf8.decoder);
-
-  await for (final line in stream) {
-    yield line;
-  }
+  return file.readAsString();
 });

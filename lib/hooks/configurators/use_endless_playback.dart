@@ -1,3 +1,4 @@
+import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
 import 'package:sonolyth/services/logger/logger.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -20,9 +21,16 @@ void useEndlessPlayback(WidgetRef ref) {
       void listener(int index) async {
         try {
           final playlist = ref.read(audioPlayerProvider);
+          // An empty queue makes `length - 1` == -1, which the index can
+          // legitimately equal when playback stops or the queue is cleared —
+          // `.last` then threw "Bad state: No element".
+          if (playlist.tracks.isEmpty) return;
           if (index != playlist.tracks.length - 1) return;
 
           final track = playlist.tracks.last;
+          // A local file has no provider id to seed a radio from; asking the
+          // metadata plugin threw every time such a queue neared its end.
+          if (track is SonolythLocalTrackObject) return;
 
           final tracks = await (await metadataPlugin)?.track.radio(track.id);
 
@@ -44,7 +52,8 @@ void useEndlessPlayback(WidgetRef ref) {
       // Sometimes user can change settings for which the currentIndexChanged
       // might not be called. So we need to check if the current track is the
       // last track and if it is then we need to call the listener manually.
-      if (audioPlayerState.currentIndex == audioPlayerState.tracks.length - 1 &&
+      if (audioPlayerState.tracks.isNotEmpty &&
+          audioPlayerState.currentIndex == audioPlayerState.tracks.length - 1 &&
           audioPlayer.isPlaying) {
         listener(audioPlayerState.currentIndex);
       }

@@ -1,7 +1,9 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
+import 'package:sonolyth/collections/zenith_motion.dart';
 import 'package:sonolyth/components/heart_button/use_track_toggle_like.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/metadata_plugin/core/auth.dart';
@@ -33,29 +35,31 @@ class HeartButton extends HookConsumerWidget {
 
     if (authenticated.asData?.value != true) return const SizedBox.shrink();
 
-    return Tooltip(
-      tooltip: TooltipContainer(child: Text(tooltip ?? "")).call,
+    return ZenithTooltip(
+      // The glyph is the only thing on screen, so it always needs a name —
+      // an empty tooltip used to leave it unlabelled to a screen reader.
+      message: tooltip ??
+          (isLiked
+              ? context.l10n.remove_from_favorites
+              : context.l10n.save_as_favorite),
       child: IconButton(
         variance: variance,
         size: size,
         enabled: onPressed != null,
+        // Proxima swaps state with a linear alpha fade; the stock
+        // scale-from-zero pop is a Material idiom with no skin source.
         icon: AnimatedSwitcher(
-          switchInCurve: Curves.fastOutSlowIn,
-          switchOutCurve: Curves.fastOutSlowIn,
-          duration: const Duration(milliseconds: 300),
-          transitionBuilder: (child, animation) {
-            return ScaleTransition(
-              scale: animation,
-              child: child,
-            );
-          },
+          switchInCurve: ZenithMotion.fadeCurve,
+          switchOutCurve: ZenithMotion.fadeCurve,
+          duration: ZenithMotion.fade,
           child: Icon(
             icon ??
                 (isLiked
                     ? Icons.favorite_rounded
                     : Icons.favorite_outline_rounded),
             key: ValueKey(isLiked),
-            color: color ?? (isLiked ? color ?? Colors.red : null),
+            color: color ??
+                (isLiked ? Theme.of(context).colorScheme.foreground : null),
           ),
         ),
         onPressed: onPressed,

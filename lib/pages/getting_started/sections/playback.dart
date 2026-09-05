@@ -1,6 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
 import 'package:sonolyth/components/ui/button_tile.dart';
 import 'package:sonolyth/modules/getting_started/blur_card.dart';
 import 'package:sonolyth/extensions/context.dart';
@@ -44,7 +45,11 @@ class GettingStartedPagePlaybackSection extends HookConsumerWidget {
               children: [
                 const Icon(SonolythIcons.album, size: 16),
                 const Gap(8),
-                Text(context.l10n.playback).semiBold().large(),
+                // `DialogTitle_Text` — 19sp bold.
+                Text(
+                  context.l10n.playback,
+                  style: zenithDialogTitle(Theme.of(context).colorScheme),
+                ),
               ],
             ),
             const Gap(16),
@@ -88,6 +93,8 @@ class GettingStartedPagePlaybackSection extends HookConsumerWidget {
             // ).small().muted(),
             const Gap(16),
             ButtonTile(
+              // `item_bg`: a row has no border.
+              style: ButtonVariance.ghost,
               title: Text(context.l10n.endless_playback),
               subtitle: Text(
                 context.l10n.endless_playback_description,
@@ -107,14 +114,17 @@ class GettingStartedPagePlaybackSection extends HookConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Button.secondary(
+                // Negative: `ripple_rounded_mini`, no fill.
+                Button.ghost(
                   leading: const Icon(SonolythIcons.angleLeft),
                   onPressed: onPrevious,
                   child: Text(context.l10n.previous),
                 ),
                 Directionality(
                   textDirection: TextDirection.rtl,
-                  child: Button.primary(
+                  // Positive — see [zenithPositiveButton].
+                  child: Button(
+                    style: zenithPositiveButton(Theme.of(context).colorScheme),
                     leading: const Icon(SonolythIcons.angleRight),
                     onPressed: onNext,
                     child: Text(context.l10n.next),

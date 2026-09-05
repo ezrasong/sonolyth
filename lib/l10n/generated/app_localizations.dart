@@ -723,6 +723,18 @@ abstract class AppLocalizations {
   /// **'Next track'**
   String get next_track;
 
+  /// No description provided for @seek_back_10s.
+  ///
+  /// In en, this message translates to:
+  /// **'Back 10 seconds'**
+  String get seek_back_10s;
+
+  /// No description provided for @seek_forward_10s.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward 10 seconds'**
+  String get seek_forward_10s;
+
   /// No description provided for @pause_playback.
   ///
   /// In en, this message translates to:
@@ -2043,6 +2055,18 @@ abstract class AppLocalizations {
   /// **'Select'**
   String get select;
 
+  /// No description provided for @grid_view.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid view'**
+  String get grid_view;
+
+  /// No description provided for @list_view.
+  ///
+  /// In en, this message translates to:
+  /// **'List view'**
+  String get list_view;
+
   /// No description provided for @connect_client_alert.
   ///
   /// In en, this message translates to:
@@ -2235,6 +2259,18 @@ abstract class AppLocalizations {
   /// **'Powered by {providerName}'**
   String powered_by_provider(Object providerName);
 
+  /// No description provided for @lyrics_from_file_tags.
+  ///
+  /// In en, this message translates to:
+  /// **'From the file\'s tags'**
+  String get lyrics_from_file_tags;
+
+  /// No description provided for @lyrics_from_lrc_file.
+  ///
+  /// In en, this message translates to:
+  /// **'From the .lrc file'**
+  String get lyrics_from_lrc_file;
+
   /// No description provided for @email.
   ///
   /// In en, this message translates to:
@@ -2298,13 +2334,13 @@ abstract class AppLocalizations {
   /// No description provided for @count_plays.
   ///
   /// In en, this message translates to:
-  /// **'{count} plays'**
-  String count_plays(Object count);
+  /// **'{count, plural, =1{{count} play} other{{count} plays}}'**
+  String count_plays(int count);
 
   /// No description provided for @streaming_fees_hypothetical.
   ///
   /// In en, this message translates to:
-  /// **'Streaming fees (hypothetical)'**
+  /// **'Streaming fees'**
   String get streaming_fees_hypothetical;
 
   /// No description provided for @minutes_listened.
@@ -2340,20 +2376,20 @@ abstract class AppLocalizations {
   /// No description provided for @hipotetical_calculation.
   ///
   /// In en, this message translates to:
-  /// **'*This is calculated based on average online music streaming platform\'s per stream\npayout of \$0.003 to \$0.005. This is a hypothetical\ncalculation to give user insight about how much they\nwould have paid to the artists if they were to listen\ntheir song in different music streaming platform.'**
+  /// **'*This is calculated based on average online music streaming platform\'s per stream payout of \$0.003 to \$0.005. This is a hypothetical calculation to give user insight about how much they would have paid to the artists if they were to listen their song in different music streaming platform.'**
   String get hipotetical_calculation;
 
   /// No description provided for @count_mins.
   ///
   /// In en, this message translates to:
-  /// **'{minutes} mins'**
-  String count_mins(Object minutes);
+  /// **'{minutes, plural, =1{{minutes} min} other{{minutes} mins}}'**
+  String count_mins(int minutes);
 
   /// No description provided for @summary_minutes.
   ///
   /// In en, this message translates to:
-  /// **'minutes'**
-  String get summary_minutes;
+  /// **'{count, plural, =1{minute} other{minutes}}'**
+  String summary_minutes(int count);
 
   /// No description provided for @summary_listened_to_music.
   ///
@@ -2364,8 +2400,8 @@ abstract class AppLocalizations {
   /// No description provided for @summary_songs.
   ///
   /// In en, this message translates to:
-  /// **'songs'**
-  String get summary_songs;
+  /// **'{count, plural, =1{song} other{songs}}'**
+  String summary_songs(int count);
 
   /// No description provided for @summary_streamed_overall.
   ///
@@ -2382,8 +2418,8 @@ abstract class AppLocalizations {
   /// No description provided for @summary_artists.
   ///
   /// In en, this message translates to:
-  /// **'artist\'s'**
-  String get summary_artists;
+  /// **'{count, plural, =1{artist} other{artists}}'**
+  String summary_artists(int count);
 
   /// No description provided for @summary_music_reached_you.
   ///
@@ -2394,8 +2430,8 @@ abstract class AppLocalizations {
   /// No description provided for @summary_full_albums.
   ///
   /// In en, this message translates to:
-  /// **'full albums'**
-  String get summary_full_albums;
+  /// **'{count, plural, =1{full album} other{full albums}}'**
+  String summary_full_albums(int count);
 
   /// No description provided for @summary_got_your_love.
   ///
@@ -2406,8 +2442,8 @@ abstract class AppLocalizations {
   /// No description provided for @summary_playlists.
   ///
   /// In en, this message translates to:
-  /// **'playlists'**
-  String get summary_playlists;
+  /// **'{count, plural, =1{playlist} other{playlists}}'**
+  String summary_playlists(int count);
 
   /// No description provided for @summary_were_on_repeat.
   ///
@@ -2474,6 +2510,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Do you want to clear the cache?'**
   String get clear_cache_confirmation;
+
+  /// No description provided for @clear_play_history.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear play history'**
+  String get clear_play_history;
+
+  /// No description provided for @clear_play_history_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything the Stats page counts. Plays older than two years are removed on their own.'**
+  String get clear_play_history_description;
+
+  /// No description provided for @clear_play_history_confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear your play history? The Stats page starts again from zero.'**
+  String get clear_play_history_confirmation;
+
+  /// No description provided for @count_plays_kept.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No plays} =1{1 play} other{{count} plays}}'**
+  String count_plays_kept(int count);
 
   /// No description provided for @export_cache_files.
   ///
@@ -3060,7 +3120,7 @@ abstract class AppLocalizations {
   /// No description provided for @lossless_downloads_description.
   ///
   /// In en, this message translates to:
-  /// **'Tracks download in-app — FLAC from Qobuz and Deezer, with YouTube as a lossy fallback. Providers are tried top-to-bottom until one has the track.'**
+  /// **'Tracks download in-app as FLAC from Qobuz, Tidal and Deezer. Providers are tried top-to-bottom until one has the track; there is no lossy fallback.'**
   String get lossless_downloads_description;
 
   /// No description provided for @priority_count.
@@ -3302,6 +3362,228 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Connect Last.fm to keep a record of what you listen to'**
   String get audio_scrobblers_description;
+
+  /// No description provided for @off.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get off;
+
+  /// No description provided for @crossfade.
+  ///
+  /// In en, this message translates to:
+  /// **'Crossfade'**
+  String get crossfade;
+
+  /// No description provided for @crossfade_seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracks overlap for {seconds} seconds'**
+  String crossfade_seconds(Object seconds);
+
+  /// No description provided for @crossfade_off_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracks follow each other without a gap'**
+  String get crossfade_off_description;
+
+  /// No description provided for @crossfade_curve.
+  ///
+  /// In en, this message translates to:
+  /// **'Crossfade curve'**
+  String get crossfade_curve;
+
+  /// No description provided for @crossfade_curve_description.
+  ///
+  /// In en, this message translates to:
+  /// **'How the volume moves during the overlap'**
+  String get crossfade_curve_description;
+
+  /// No description provided for @crossfade_curve_equal_power.
+  ///
+  /// In en, this message translates to:
+  /// **'Equal power (recommended)'**
+  String get crossfade_curve_equal_power;
+
+  /// No description provided for @crossfade_curve_linear.
+  ///
+  /// In en, this message translates to:
+  /// **'Linear'**
+  String get crossfade_curve_linear;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @clear_filter.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filter'**
+  String get clear_filter;
+
+  /// No description provided for @increase_x.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase {what}'**
+  String increase_x(Object what);
+
+  /// No description provided for @decrease_x.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease {what}'**
+  String decrease_x(Object what);
+
+  /// No description provided for @text_size.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get text_size;
+
+  /// No description provided for @lyrics_delay.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics delay'**
+  String get lyrics_delay;
+
+  /// No description provided for @mute.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute'**
+  String get mute;
+
+  /// No description provided for @unmute.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute'**
+  String get unmute;
+
+  /// No description provided for @scroll_to_current_track.
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll to current track'**
+  String get scroll_to_current_track;
+
+  /// No description provided for @move_up.
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get move_up;
+
+  /// No description provided for @move_down.
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get move_down;
+
+  /// No description provided for @show_password.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get show_password;
+
+  /// No description provided for @hide_password.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get hide_password;
+
+  /// No description provided for @refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refresh;
+
+  /// No description provided for @cancel_download.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel download'**
+  String get cancel_download;
+
+  /// No description provided for @retry_download.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry download'**
+  String get retry_download;
+
+  /// No description provided for @retry_failed_downloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry failed downloads'**
+  String get retry_failed_downloads;
+
+  /// No description provided for @clear_download_queue.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear download queue'**
+  String get clear_download_queue;
+
+  /// No description provided for @connect_to_a_device.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to a device'**
+  String get connect_to_a_device;
+
+  /// No description provided for @disconnect_device.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect device'**
+  String get disconnect_device;
+
+  /// No description provided for @exit_selection.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit selection'**
+  String get exit_selection;
+
+  /// No description provided for @choose_folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose folder'**
+  String get choose_folder;
+
+  /// No description provided for @clear_logs.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear logs'**
+  String get clear_logs;
+
+  /// No description provided for @remove_image.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove image'**
+  String get remove_image;
+
+  /// No description provided for @minimize.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimize'**
+  String get minimize;
+
+  /// No description provided for @maximize.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximize'**
+  String get maximize;
+
+  /// No description provided for @restore_window.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore window'**
+  String get restore_window;
+
+  /// No description provided for @artwork_for.
+  ///
+  /// In en, this message translates to:
+  /// **'Artwork for {name}'**
+  String artwork_for(Object name);
+
+  /// No description provided for @seek.
+  ///
+  /// In en, this message translates to:
+  /// **'Seek'**
+  String get seek;
 }
 
 class _AppLocalizationsDelegate

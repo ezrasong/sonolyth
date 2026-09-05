@@ -3,9 +3,12 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
 import 'package:sonolyth/components/button/back_button.dart';
+import 'package:sonolyth/components/ui/zenith_popup_card.dart';
 import 'package:sonolyth/components/dialogs/prompt_dialog.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/scrobbler/scrobbler.dart';
 import 'package:auto_route/auto_route.dart';
@@ -45,8 +48,11 @@ class LastFMLoginPage extends HookConsumerWidget {
               constraints: const BoxConstraints(maxWidth: 400),
               alignment: Alignment.center,
               padding: const EdgeInsets.all(16),
-              child: Card(
-                padding: const EdgeInsets.all(16.0),
+              // `popup_bg`: flat `popover` at radius 20, no stroke. Data-entry
+              // fields inside keep their boxes (Poweramp's own settings
+              // dialogs have bordered edit boxes).
+              child: ZenithPopupCard(
+                margin: EdgeInsets.zero,
                 child: Form(
                   onSubmit: (context, values) async {
                     try {
@@ -76,19 +82,19 @@ class LastFMLoginPage extends HookConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     spacing: 10,
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          color: const Color.fromARGB(255, 186, 0, 0),
-                        ),
-                        padding: const EdgeInsets.all(12),
-                        child: const Icon(
-                          SonolythIcons.lastFm,
-                          color: Colors.white,
-                          size: 60,
-                        ),
+                      // Achromatic. The Last.fm red is a brand hue, and the
+                      // skin's one sanctioned hue is `destructive`; a bare
+                      // glyph at `colorIconPrimary`, like every other icon.
+                      Icon(
+                        SonolythIcons.lastFm,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: 60,
                       ),
-                      const Text("last.fm").h3(),
+                      // `DialogTitle_Text` — 19sp bold.
+                      Text(
+                        "last.fm",
+                        style: zenithDialogTitle(Theme.of(context).colorScheme),
+                      ),
                       Text(context.l10n.login_with_your_lastfm),
                       AutofillGroup(
                         child: Column(
@@ -122,14 +128,19 @@ class LastFMLoginPage extends HookConsumerWidget {
                                 placeholder: Text(context.l10n.password),
                                 features: [
                                   InputFeature.trailing(
-                                    IconButton.ghost(
-                                      icon: Icon(
-                                        passwordVisible.value
-                                            ? SonolythIcons.eye
-                                            : SonolythIcons.noEye,
+                                    ZenithTooltip(
+                                      message: passwordVisible.value
+                                          ? context.l10n.hide_password
+                                          : context.l10n.show_password,
+                                      child: IconButton.ghost(
+                                        icon: Icon(
+                                          passwordVisible.value
+                                              ? SonolythIcons.eye
+                                              : SonolythIcons.noEye,
+                                        ),
+                                        onPressed: () => passwordVisible.value =
+                                            !passwordVisible.value,
                                       ),
-                                      onPressed: () => passwordVisible.value =
-                                          !passwordVisible.value,
                                     ),
                                   ),
                                 ],
@@ -139,7 +150,12 @@ class LastFMLoginPage extends HookConsumerWidget {
                         ),
                       ),
                       FormErrorBuilder(builder: (context, errors, child) {
-                        return Button.primary(
+                        // `DialogPositiveButtonStyle` — see
+                        // [zenithPositiveButton].
+                        return Button(
+                          style: zenithPositiveButton(
+                            Theme.of(context).colorScheme,
+                          ),
                           onPressed: () => context.submitForm(),
                           enabled: errors.isEmpty && !isLoading.value,
                           child: Text(context.l10n.login),

@@ -10,7 +10,11 @@ import 'package:sonolyth/pages/search/search.dart';
 import 'package:sonolyth/provider/metadata_plugin/search/albums.dart';
 
 class SearchPageAlbumsTab extends HookConsumerWidget {
-  const SearchPageAlbumsTab({super.key});
+  const SearchPageAlbumsTab({super.key, this.isGrid});
+
+  /// View mode from the search header's `header_menu`; null lets the width
+  /// decide, as before. The view's own switch is off — the menu owns it.
+  final bool? isGrid;
 
   @override
   Widget build(BuildContext context, ref) {
@@ -42,6 +46,8 @@ class SearchPageAlbumsTab extends HookConsumerWidget {
         child: CustomScrollView(
           slivers: [
             PlaybuttonView(
+              isGrid: isGrid,
+              showViewToggle: false,
               controller: controller,
               itemCount: searchAlbums.length,
               hasMore: searchAlbumsSnapshot.asData?.value.hasMore == true,

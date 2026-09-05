@@ -3,6 +3,7 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/ui/button_tile.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/modules/connect/local_devices.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
 import 'package:sonolyth/extensions/context.dart';
@@ -62,11 +63,14 @@ class ConnectPage extends HookConsumerWidget {
                           )
                         : null,
                     trailing: selected
-                        ? IconButton.outline(
-                            icon: const Icon(SonolythIcons.power),
-                            size: ButtonSize.small,
-                            onPressed: () =>
-                                connectClientsNotifier.clearResolvedService(),
+                        ? ZenithTooltip(
+                            message: context.l10n.disconnect_device,
+                            child: IconButton.outline(
+                              icon: const Icon(SonolythIcons.power),
+                              size: ButtonSize.small,
+                              onPressed: () =>
+                                  connectClientsNotifier.clearResolvedService(),
+                            ),
                           )
                         : null,
                     onPressed: () {

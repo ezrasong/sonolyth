@@ -1,13 +1,15 @@
 import 'package:collection/collection.dart';
-
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
 import 'package:sonolyth/components/dialogs/prompt_dialog.dart';
 import 'package:sonolyth/components/dialogs/select_device_dialog.dart';
 import 'package:sonolyth/components/track_tile/track_tile.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/models/connect/connect.dart';
 import 'package:sonolyth/pages/search/search.dart';
+import 'package:sonolyth/pages/search/search_results_header.dart';
 import 'package:sonolyth/provider/connect/connect.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/metadata_plugin/search/all.dart';
@@ -25,6 +27,8 @@ class SearchTracksSection extends HookConsumerWidget {
     final playlistNotifier = ref.watch(audioPlayerProvider.notifier);
     final playlist = ref.watch(audioPlayerProvider);
     final theme = Theme.of(context);
+    final selection = ref.watch(searchSelectionProvider);
+    final selectionNotifier = ref.read(searchSelectionProvider.notifier);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -35,7 +39,7 @@ class SearchTracksSection extends HookConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
               context.l10n.songs,
-              style: theme.typography.h4,
+              style: zenithSubhead(theme.colorScheme),
             ),
           ),
         if (search.isLoading)
@@ -46,6 +50,21 @@ class SearchTracksSection extends HookConsumerWidget {
               index: i,
               track: track,
               playlist: playlist,
+              selected: selection.contains(track),
+              selectionMode: selection.selectionMode,
+              onChanged: !selection.isSelecting
+                  ? null
+                  : (isSelected) {
+                      if (isSelected == true) {
+                        selectionNotifier.select(track);
+                      } else {
+                        selectionNotifier.deselect(track);
+                      }
+                    },
+              onLongPress: () {
+                selectionNotifier.select(track);
+                HapticFeedback.selectionClick();
+              },
               onTap: () async {
                 final isRemoteDevice =
                     await showSelectDeviceDialog(context, ref);

@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
@@ -83,11 +82,10 @@ class AppRouter extends RootStackRouter {
               path: "settings/blacklist",
               page: BlackListRoute.page,
             ),
-            if (!kIsWeb)
-              AutoRoute(
-                path: "settings/logs",
-                page: LogsRoute.page,
-              ),
+            AutoRoute(
+              path: "settings/logs",
+              page: LogsRoute.page,
+            ),
             AutoRoute(
               path: "settings/about",
               page: AboutSonolythRoute.page,
@@ -191,11 +189,6 @@ class AppRouter extends RootStackRouter {
           reverseDurationInMilliseconds: 200,
           path: "/player/lyrics",
           page: PlayerLyricsRoute.page,
-        ),
-        AutoRoute(
-          path: "/mini-player",
-          page: MiniLyricsRoute.page,
-          // parentNavigatorKey: rootNavigatorKey,
         ),
         AutoRoute(
           path: "/getting-started",

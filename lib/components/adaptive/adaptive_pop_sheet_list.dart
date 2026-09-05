@@ -1,6 +1,7 @@
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/constrains.dart';
 
 class AdaptiveMenuButton<T> extends MenuButton {
@@ -143,10 +144,8 @@ class AdaptivePopSheetList<T> extends StatelessWidget {
     final mediaQuery = MediaQuery.of(context);
 
     if (mediaQuery.mdAndUp) {
-      return Tooltip(
-        tooltip: TooltipContainer(
-          child: Text(tooltip),
-        ).call,
+      return ZenithTooltip(
+        message: tooltip,
         child: IconButton(
           variance: variance,
           icon: icon ?? const Icon(SonolythIcons.moreVertical),
@@ -169,8 +168,8 @@ class AdaptivePopSheetList<T> extends StatelessWidget {
     }
 
     if (child != null) {
-      return Tooltip(
-        tooltip: TooltipContainer(child: Text(tooltip)).call,
+      return ZenithTooltip(
+        message: tooltip,
         child: Button(
           onPressed: () => showDropdownMenu(context, Offset.zero),
           style: variance,
@@ -179,8 +178,8 @@ class AdaptivePopSheetList<T> extends StatelessWidget {
       );
     }
 
-    return Tooltip(
-      tooltip: TooltipContainer(child: Text(tooltip)).call,
+    return ZenithTooltip(
+      message: tooltip,
       child: IconButton(
         variance: variance,
         icon: icon ?? const Icon(SonolythIcons.moreVertical),

@@ -1,28 +1,28 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 
 import 'package:sonolyth/collections/assets.gen.dart';
-import 'package:sonolyth/collections/routes.gr.dart';
-import 'package:sonolyth/collections/sonolyth_icons.dart';
-import 'package:sonolyth/models/database/database.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
-import 'package:sonolyth/modules/player/player_actions.dart';
 import 'package:sonolyth/modules/player/player_overlay.dart';
-import 'package:sonolyth/modules/player/player_track_details.dart';
-import 'package:sonolyth/modules/player/player_controls.dart';
-import 'package:sonolyth/modules/player/volume_slider.dart';
-import 'package:sonolyth/extensions/constrains.dart';
-import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
-import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 
-import 'package:sonolyth/provider/volume_provider.dart';
-import 'package:sonolyth/utils/platform.dart';
-import 'package:window_manager/window_manager.dart';
-
+/// The footer slot that holds playback: always the phone's sliding
+/// [PlayerOverlay], at every width.
+///
+/// It used to branch. Above 820dp (or whenever the Layout Mode setting said
+/// "extended") this drew a desktop three-column bar instead — art and titles,
+/// the transport, then the actions over a 250dp volume slider — the partner of
+/// the desktop sidebar. Both are gone (§38): Poweramp has no wide layout to
+/// replicate, `layout-sw600dp` in the decompiled tree is two Material
+/// snackbars and `layout-land` is its billing screens, and the desktop
+/// platforms were deleted when the fork was established. Keeping the bar
+/// without the sidebar would have left every width above 820dp with a desktop
+/// player bar, no sidebar and no navbar.
+///
+/// This stays a widget rather than folding into `root_app.dart` because the
+/// overlay wants the active track's largest cover, and that is a `useMemoized`
+/// on the track.
 class BottomPlayer extends HookConsumerWidget {
   const BottomPlayer({super.key});
 
@@ -30,12 +30,8 @@ class BottomPlayer extends HookConsumerWidget {
   Widget build(BuildContext context, ref) {
     final activeTrack =
         ref.watch(audioPlayerProvider.select((s) => s.activeTrack));
-    final layoutMode =
-        ref.watch(userPreferencesProvider.select((s) => s.layoutMode));
 
-    final mediaQuery = MediaQuery.of(context);
-
-    String albumArt = useMemoized(
+    final albumArt = useMemoized(
       () => activeTrack?.album.images.isNotEmpty == true
           ? (activeTrack?.album.images).asUrlString(
               index: (activeTrack?.album.images.length ?? 1) - 1,
@@ -45,91 +41,8 @@ class BottomPlayer extends HookConsumerWidget {
       [activeTrack?.album.images],
     );
 
-    // returning an empty non spacious Container as the overlay will take
-    // place in the global overlay stack aka [_entries]
-    if (layoutMode == LayoutMode.compact ||
-        ((mediaQuery.mdAndDown) && layoutMode == LayoutMode.adaptive)) {
-      return PlayerOverlay(albumArt: albumArt);
-    }
-
-    return SurfaceCard(
-      borderRadius: BorderRadius.zero,
-      surfaceBlur: context.theme.surfaceBlur,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: PlayerTrackDetails(track: activeTrack),
-          ),
-          // controls
-          const Flexible(
-            flex: 3,
-            child: Padding(
-              padding: EdgeInsets.only(top: 5),
-              child: PlayerControls(),
-            ),
-          ),
-          // add to saved tracks
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              PlayerActions(
-                extraActions: [
-                  // Mini-player relies on window_manager and only works on
-                  // desktop; hide it elsewhere instead of a silent no-op.
-                  if (kIsDesktop)
-                    Tooltip(
-                      tooltip: TooltipContainer(
-                              child: Text(context.l10n.mini_player))
-                          .call,
-                      child: IconButton(
-                        variance: ButtonVariance.ghost,
-                        icon: const Icon(SonolythIcons.miniPlayer),
-                        onPressed: () async {
-                          final prevSize = await windowManager.getSize();
-                          await windowManager.setMinimumSize(
-                            const Size(300, 300),
-                          );
-                          await windowManager.setAlwaysOnTop(true);
-                          if (!kIsLinux) {
-                            await windowManager.setHasShadow(false);
-                          }
-                          await windowManager.setAlignment(Alignment.topRight);
-                          await windowManager.setSize(const Size(400, 500));
-                          await Future.delayed(
-                            const Duration(milliseconds: 100),
-                            () async {
-                              if (context.mounted) {
-                                context.navigateTo(
-                                  MiniLyricsRoute(prevSize: prevSize),
-                                );
-                              }
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                ],
-              ),
-              Container(
-                height: 40,
-                constraints: const BoxConstraints(maxWidth: 250),
-                padding: const EdgeInsets.only(right: 10),
-                child: Consumer(builder: (context, ref, _) {
-                  final volume = ref.watch(volumeProvider);
-                  return VolumeSlider(
-                    fullWidth: true,
-                    value: volume,
-                    onChanged: (value) {
-                      ref.read(volumeProvider.notifier).setVolume(value);
-                    },
-                  );
-                }),
-              )
-            ],
-          ),
-        ],
-      ),
-    );
+    // Returns an empty, non-spacious widget: the overlay itself lives in the
+    // global overlay stack, not in this slot.
+    return PlayerOverlay(albumArt: albumArt);
   }
 }

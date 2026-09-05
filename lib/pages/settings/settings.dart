@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Material, MaterialType;
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -8,13 +7,11 @@ import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/pages/settings/sections/about.dart';
 import 'package:sonolyth/pages/settings/sections/accounts.dart';
 import 'package:sonolyth/pages/settings/sections/appearance.dart';
-import 'package:sonolyth/pages/settings/sections/desktop.dart';
 import 'package:sonolyth/pages/settings/sections/developers.dart';
 import 'package:sonolyth/pages/settings/sections/downloads.dart';
 import 'package:sonolyth/pages/settings/sections/language_region.dart';
 import 'package:sonolyth/pages/settings/sections/playback.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
-import 'package:sonolyth/utils/platform.dart';
 import 'package:auto_route/auto_route.dart';
 
 @RoutePage()
@@ -51,8 +48,7 @@ class SettingsPage extends HookConsumerWidget {
                     const SettingsAppearanceSection(),
                     const SettingsPlaybackSection(),
                     const SettingsDownloadsSection(),
-                    if (kIsDesktop) const SettingsDesktopSection(),
-                    if (!kIsWeb) const SettingsDevelopersSection(),
+                    const SettingsDevelopersSection(),
                     const SettingsAboutSection(),
                     Center(
                       child: Button.destructive(
@@ -63,7 +59,8 @@ class SettingsPage extends HookConsumerWidget {
                               title: Text(context.l10n.restore_defaults),
                               content: Text(context.l10n.are_you_sure),
                               actions: [
-                                Button.outline(
+                                // Negative: `ripple_rounded_mini`, no fill.
+                                Button.ghost(
                                   onPressed: () {
                                     Navigator.of(context).pop(false);
                                   },

@@ -10,11 +10,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
 
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/form/checkbox_form_field.dart';
 import 'package:sonolyth/components/form/text_form_field.dart';
 import 'package:sonolyth/components/image/universal_image.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/metadata_plugin/library/playlists.dart';
@@ -151,13 +154,16 @@ class PlaylistCreateDialog extends HookConsumerWidget {
             : context.l10n.create_a_playlist,
       ),
       actions: [
-        Button.outline(
+        Button.ghost(
           child: Text(context.l10n.cancel),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        Button.primary(
+        // `DialogPositiveButtonStyle`: the translucent `colorBgPositive`
+        // fill, never a white-filled primary.
+        Button(
+          style: zenithPositiveButton(context.theme.colorScheme),
           onPressed: onCreate,
           enabled: !playlist.isLoading & !isSubmitting.value,
           child: Text(
@@ -198,12 +204,23 @@ class PlaylistCreateDialog extends HookConsumerWidget {
                   return Column(
                     spacing: 10,
                     children: [
-                      UniversalImage(
-                        path: field.value?.path ??
-                            (updatingPlaylist?.images).asUrlString(
-                              placeholder: ImagePlaceholder.collection,
-                            ),
-                        height: 200,
+                      // The cover sits in the `colorAABgColor` well at the
+                      // skin's art radius, with the same dark note placeholder
+                      // the player shows — not the white headphones sheet.
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(ZenithArt.radius),
+                        child: Container(
+                          width: 200,
+                          height: 200,
+                          color: zenithArtWell(theme.colorScheme),
+                          child: UniversalImage(
+                            path: field.value?.path ??
+                                (updatingPlaylist?.images).asUrlString(
+                                  placeholder: ImagePlaceholder.albumArt,
+                                ),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -229,14 +246,22 @@ class PlaylistCreateDialog extends HookConsumerWidget {
                             },
                           ),
                           const SizedBox(width: 10),
-                          IconButton.destructive(
-                            icon: const Icon(SonolythIcons.trash),
-                            enabled: field.value != null,
-                            onPressed: () {
-                              field.didChange(null);
-                              field.validate();
-                              field.save();
-                            },
+                          // A bare glyph in the one sanctioned hue, not a
+                          // filled disc.
+                          ZenithTooltip(
+                            message: context.l10n.remove_image,
+                            child: IconButton.ghost(
+                              icon: Icon(
+                                SonolythIcons.trash,
+                                color: theme.colorScheme.destructive,
+                              ),
+                              enabled: field.value != null,
+                              onPressed: () {
+                                field.didChange(null);
+                                field.validate();
+                                field.save();
+                              },
+                            ),
                           ),
                         ],
                       ),
@@ -300,7 +325,11 @@ class PlaylistCreateDialogButton extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    return Button.secondary(
+    // `WhiteStrokedListHeaderButton` — a list header's text button: label at
+    // `textColorPrimary`, glyph beside it, no fill (the "stroke" is
+    // `colorStroke`, transparent in `@style/proxima`). Same as the Local
+    // library's "Add to library".
+    return Button.ghost(
       leading: const Icon(SonolythIcons.addFilled),
       child: Text(context.l10n.playlist),
       onPressed: () => showPlaylistDialog(context),

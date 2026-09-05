@@ -1,11 +1,14 @@
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:sonolyth/collections/formatters.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
 import 'package:sonolyth/modules/stats/common/artist_item.dart';
+import 'package:sonolyth/modules/stats/common/history_duration_chip.dart';
 import 'package:sonolyth/extensions/context.dart';
 
 import 'package:sonolyth/provider/history/top.dart';
@@ -43,14 +46,24 @@ class StatsStreamFeesPage extends HookConsumerWidget {
       [artistsData],
     );
 
-    final translations = <HistoryDuration, String>{
-      HistoryDuration.days7: context.l10n.this_week,
-      HistoryDuration.days30: context.l10n.this_month,
-      HistoryDuration.months6: context.l10n.last_6_months,
-      HistoryDuration.year: context.l10n.this_year,
-      HistoryDuration.years2: context.l10n.last_2_years,
-      HistoryDuration.allTime: context.l10n.all_time,
-    };
+    final totalText = Text(
+      context.l10n.total_money(usdFormatter.format(total)),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      // The figure is the point of the page, so it takes the same 24dp bold
+      // readout a `SummaryCard` gives one (`SleepTimerValue_Text`) rather than
+      // shadcn's `.semiBold().large()`.
+      style: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+        color: context.theme.colorScheme.foreground,
+      ),
+    );
+
+    final durationChip = HistoryDurationChip(
+      value: duration.value,
+      onChanged: (value) => duration.value = value,
+    );
 
     return SafeArea(
       bottom: false,
@@ -70,44 +83,45 @@ class StatsStreamFeesPage extends HookConsumerWidget {
                 sliver: SliverToBoxAdapter(
                   child: Text(
                     context.l10n.hipotetical_calculation,
-                  ).small().muted(),
+                    // `ItemTextLine2`'s 11dp, but at `ColorTrackLine`
+                    // rather than its `textColorPrimary`: this is a
+                    // disclaimer, and §12's rule is that what explains
+                    // recedes below what it explains. The token itself is
+                    // full-strength because it is used for a settings row's
+                    // second line, where the line *is* the content.
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: context.theme.colorScheme.mutedForeground,
+                    ),
+                  ),
                 ),
               ),
             ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      context.l10n.total_money(usdFormatter.format(total)),
-                    ).semiBold().large(),
-                    Select<HistoryDuration>(
-                      value: duration.value,
-                      onChanged: (value) {
-                        if (value == null) return;
-                        duration.value = value;
-                      },
-                      itemBuilder: (context, value) =>
-                          Text(translations[value]!),
-                      constraints: const BoxConstraints(maxWidth: 150),
-                      popupWidthConstraint: PopoverConstraint.anchorMaxSize,
-                      popup: SelectPopup(
-                        items: SelectItemBuilder(
-                          childCount: translations.length,
-                          builder: (context, index) {
-                            final entry = translations.entries.elementAt(index);
-                            return SelectItemButton(
-                              value: entry.key,
-                              child: Text(entry.value),
-                            );
-                          },
-                        ),
-                      ).call,
-                    ),
-                  ],
-                ),
+                // Past `zenithStackedRowTextScale` the total and the chip stop
+                // sharing the line: at 200% the chip's natural width left
+                // "Total $0.06" ellipsised to "Total $0.…", i.e. it hid the
+                // one number the page exists to report. Same rule as the
+                // category row in `top.dart` and a settings row in §37b.
+                child: zenithStacksRows(context)
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          totalText,
+                          const Gap(8),
+                          durationChip,
+                        ],
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(child: totalText),
+                          const Gap(8),
+                          durationChip,
+                        ],
+                      ),
               ),
             ),
             SliverSafeArea(

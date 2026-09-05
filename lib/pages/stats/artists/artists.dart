@@ -2,7 +2,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:sonolyth/collections/formatters.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
 import 'package:sonolyth/modules/stats/common/artist_item.dart';
 import 'package:sonolyth/extensions/context.dart';
@@ -53,8 +52,7 @@ class StatsArtistsPage extends HookConsumerWidget {
               final artist = artistsData[index];
               return StatsArtistItem(
                 artist: artist.artist,
-                info: Text(context.l10n
-                    .count_plays(compactNumberFormatter.format(artist.count))),
+                info: Text(context.l10n.count_plays(artist.count)),
               );
             },
           ),

@@ -12,6 +12,7 @@ import 'package:sonolyth/utils/platform.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:version/version.dart';
+import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 
 class RootAppUpdateDialog extends HookWidget {
   static const _updaterChannel = MethodChannel("com.ezrasong.sonolyth/updater");
@@ -125,7 +126,7 @@ class RootAppUpdateDialog extends HookWidget {
               AnchorButton(
                 context.l10n.release_notes,
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: context.theme.colorScheme.primary,
                 ),
                 onTap: () => launchUrlString(
                   releasesUrl,

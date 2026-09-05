@@ -1,17 +1,9 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
 import 'package:sonolyth/components/button/back_button.dart';
-import 'package:sonolyth/components/titlebar/titlebar_buttons.dart';
-import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
-import 'package:sonolyth/utils/platform.dart';
-import 'package:window_manager/window_manager.dart';
-
-final kTitlebarVisible = kIsWindows || kIsLinux;
-
-class TitleBar extends HookConsumerWidget implements PreferredSizeWidget {
+class TitleBar extends StatelessWidget implements PreferredSizeWidget {
   final bool automaticallyImplyLeading;
   final List<Widget> trailing;
   final List<Widget> leading;
@@ -54,77 +46,62 @@ class TitleBar extends HookConsumerWidget implements PreferredSizeWidget {
     this.useSafeArea = false,
   });
 
-  void onDrag(WidgetRef ref) {
-    final systemTitleBar =
-        ref.read(userPreferencesProvider.select((s) => s.systemTitleBar));
-    if (kIsDesktop && !systemTitleBar) {
-      windowManager.startDragging();
-    }
-  }
+  /// The bar is 48dp, plus whatever the page title needs above that at the
+  /// viewer's system font size.
+  ///
+  /// A fixed 48 clipped the title at large font scales — 1px at 200%, since
+  /// Android 14 scales a 29sp heading far less than a 13sp label, but clipped
+  /// all the same and reported on every settings screen (§37). Zero growth at
+  /// the default scale, so the skin's 48dp header is untouched.
+  double _height(BuildContext context) =>
+      height ??
+      (48 * context.theme.scaling) +
+          zenithLineGrowth(context, zenithPageTitle(context.theme.colorScheme));
 
   @override
-  Widget build(BuildContext context, ref) {
-    final hasLeadingOrCanPop = leading.isNotEmpty || Navigator.canPop(context);
-    final lastClicked = useRef<int>(DateTime.now().millisecondsSinceEpoch);
-
+  Widget build(BuildContext context) {
     return SizedBox(
-      height: height ?? (48 * context.theme.scaling),
+      height: _height(context),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final hasFullscreen =
-              MediaQuery.sizeOf(context).width == constraints.maxWidth;
-
           final canPop = leading.isEmpty &&
               automaticallyImplyLeading &&
               (Navigator.canPop(context) || context.watchRouter.canPop());
 
-          return GestureDetector(
-            onHorizontalDragStart: (_) => onDrag(ref),
-            onVerticalDragStart: (_) => onDrag(ref),
-            onTapDown: (details) async {
-              final systemTitlebar = ref.read(
-                  userPreferencesProvider.select((s) => s.systemTitleBar));
-              if (!kIsDesktop || systemTitlebar) return;
-
-              int currMills = DateTime.now().millisecondsSinceEpoch;
-
-              if ((currMills - lastClicked.value) < 500) {
-                if (await windowManager.isMaximized()) {
-                  await windowManager.unmaximize();
-                } else {
-                  await windowManager.maximize();
-                }
-              } else {
-                lastClicked.value = currMills;
-              }
-            },
-            child: AppBar(
+          return AppBar(
               leading: canPop ? [const BackButton()] : leading,
-              trailing: [
-                ...trailing,
-                Align(
-                  alignment: Alignment.topRight,
-                  child:
-                      WindowTitleBarButtons(foregroundColor: foregroundColor),
-                ),
-              ],
-              title: title,
+              trailing: trailing,
+              // Every screen title in the app goes through here, so this is
+              // the one place the skin's header type has to be applied:
+              // `ItemTextTitle_Text` × `ItemTextTitle_scene_header` = 29sp
+              // **normal** weight. Call sites pass a bare `Text` and inherit it.
+              title: title == null
+                  ? null
+                  : DefaultTextStyle.merge(
+                      style: zenithPageTitle(context.theme.colorScheme),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      child: title!,
+                    ),
               header: header,
               subtitle: subtitle,
               trailingExpanded: trailingExpanded,
               alignment: alignment,
               padding: padding ?? EdgeInsets.zero,
-              backgroundColor: backgroundColor,
+              // Page-coloured unless a caller says otherwise. Nothing in Zenith
+              // is raised: the skin's list header is `colorBgPrimary`, and
+              // every page converted so far passed `Colors.transparent` by
+              // hand — the settings family, which did not, wore shadcn's
+              // lighter surface band as a result.
+              backgroundColor: backgroundColor ?? Colors.transparent,
               leadingGap: leadingGap,
               trailingGap: trailingGap,
-              height: height ?? (48 * context.theme.scaling),
-              surfaceBlur: surfaceBlur,
+              height: _height(context),
+              surfaceBlur: surfaceBlur ?? 0,
               surfaceOpacity: surfaceOpacity,
               useSafeArea: useSafeArea,
               child: child,
-            ).withPadding(
-                left: kIsMacOS && hasFullscreen && hasLeadingOrCanPop ? 65 : 0),
-          );
+            );
         },
       ),
     );

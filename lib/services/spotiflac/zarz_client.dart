@@ -21,7 +21,10 @@ class ZarzRateLimitedException implements Exception {
 /// tracks overlaps. Both lanes retry 429s with backoff (honoring `Retry-After`
 /// when present; the playback lane caps its own backoff via [_maxRetryBackoff]).
 class ZarzClient {
-  static const userAgent = "SpotiFLAC-Mobile/4.5.6";
+  /// Tracks the current SpotiFLAC-Mobile release (4.9.5, 2026-09-01) — the
+  /// official app sends its own version here and the gateway rejects unknown
+  /// or too-old ones with `{"error":"Unsupported app version"}`.
+  static const userAgent = "SpotiFLAC-Mobile/4.9.5";
 
   /// 5 requests / 10s allowed; stay just under it on the serialized lane.
   static const _defaultMinRequestGap = Duration(milliseconds: 2100);

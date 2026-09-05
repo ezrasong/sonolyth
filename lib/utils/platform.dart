@@ -1,15 +1,12 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
-
-final kIsDesktop = kIsLinux || kIsWindows || kIsMacOS;
-
+/// Android is the only platform this app builds for: `838e2db2` deleted
+/// `linux/`, `windows/`, `macos/`, `ios/` and `web/`, and §40 removed the last
+/// code that branched on them. `kIsIOS` survives because the iOS *sources*
+/// (home-widget app group, the NewPipe-less engine default) are still written
+/// for a platform that could be re-added with `flutter create --platforms=ios`;
+/// nothing desktop is.
 final kIsMobile = kIsAndroid || kIsIOS;
 
-final kIsFlatpak = kIsWeb ? false : Platform.environment["FLATPAK_ID"] != null;
-
-final kIsMacOS = kIsWeb ? false : Platform.isMacOS;
-final kIsLinux = kIsWeb ? false : Platform.isLinux;
-final kIsAndroid = kIsWeb ? false : Platform.isAndroid;
-final kIsIOS = kIsWeb ? false : Platform.isIOS;
-final kIsWindows = kIsWeb ? false : Platform.isWindows;
+final kIsAndroid = Platform.isAndroid;
+final kIsIOS = Platform.isIOS;

@@ -74,7 +74,14 @@ class AlbumCard extends HookConsumerWidget {
 
     final isLoading =
         (isPlaylistPlaying && isFetchingActiveTrack) || updating.value;
-    final description = "${album.albumType.name} • ${album.artists.asString()}";
+    // "album • Artist" — but a search result routinely arrives with no
+    // artists at all, and joining unconditionally left a dangling "album •"
+    // on those cards (§33e). `ItemTrackLine2` is `goneWhenEmpty`: a fact we
+    // do not have contributes nothing, not a separator.
+    final description = [
+      album.albumType.name,
+      album.artists.asString(),
+    ].where((part) => part.trim().isNotEmpty).join(" • ");
 
     final onTap = useCallback(() {
       context.navigateTo(AlbumRoute(id: album.id, album: album));

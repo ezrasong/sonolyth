@@ -1,9 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
-import 'package:sonolyth/components/image/universal_image.dart';
-import 'package:sonolyth/components/ui/button_tile.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/modules/stats/common/stats_row.dart';
 
 class StatsArtistItem extends StatelessWidget {
   final SonolythSimpleArtistObject artist;
@@ -16,18 +15,12 @@ class StatsArtistItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ButtonTile(
-      style: ButtonVariance.ghost,
-      title: Text(artist.name),
-      leading: Avatar(
-        initials: artist.name.substring(0, 1),
-        provider: UniversalImage.imageProvider(
-          (artist.images).asUrlString(
-            placeholder: ImagePlaceholder.artist,
-          ),
-        ),
+    return StatsRow(
+      imageUrl: (artist.images).asUrlString(
+        placeholder: ImagePlaceholder.artist,
       ),
-      trailing: info,
+      title: artist.name,
+      info: info,
       onPressed: () {
         context.navigateTo(ArtistRoute(artistId: artist.id));
       },

@@ -9,8 +9,6 @@ import 'package:sonolyth/components/track_presentation/presentation_props.dart';
 import 'package:sonolyth/models/connect/connect.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
-import 'package:sonolyth/provider/audio_player/qobuz_playback.dart';
-import 'package:sonolyth/provider/audio_player/tidal_playback.dart';
 import 'package:sonolyth/provider/connect/connect.dart';
 import 'package:sonolyth/provider/history/history.dart';
 import 'package:sonolyth/provider/server/sourced_track_provider.dart';
@@ -53,22 +51,15 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
           final sourced =
               await ref.read(sourcedTrackProvider(firstTrack).future);
 
-          // Poison guard: when a lossless source is on but this prewarm landed
-          // on a lossy (YouTube) stream, the gateway match was likely briefly
-          // rate-limited during the page-load burst. Drop the cached resolution
-          // so pressing play re-resolves instead of the (non-auto-disposed)
-          // provider pinning the lossy fallback for the session. This composes
-          // with fetchFromTrack's caching: a genuine no-lossless-match track is
-          // already DB-cached (the re-resolve is an instant cache hit), while a
-          // transient rate-limit isn't cached (the re-resolve recovers
-          // lossless). The common case — the track IS on the lossless source —
-          // caches cleanly here so play starts instantly.
-          final qobuzOn = await ref.read(qobuzPlaybackEnabledProvider.future);
-          final tidalOn = await ref.read(tidalPlaybackEnabledProvider.future);
+          // Poison guard: every source is lossless now, so a prewarm that
+          // landed on a non-lossless stream came from a stale pre-upgrade
+          // cache row. Drop the cached resolution so pressing play re-resolves
+          // instead of the (non-auto-disposed) provider pinning it for the
+          // session.
           final isLossless = sourced.sources.any(
             (s) => s.type == SonolythMediaCompressionType.lossless,
           );
-          if ((qobuzOn || tidalOn) && !isLossless) {
+          if (!isLossless) {
             ref.invalidate(sourcedTrackProvider(firstTrack));
           }
         } catch (e, stack) {
@@ -99,7 +90,8 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
                   initialIndex: Random().nextInt(allTracks.length))
               : WebSocketLoadEventData.playlist(
                   tracks: allTracks,
-                  collection: options.collection as SonolythSimplePlaylistObject,
+                  collection:
+                      options.collection as SonolythSimplePlaylistObject,
                   initialIndex: Random().nextInt(allTracks.length),
                 ),
         );
@@ -170,7 +162,8 @@ UseActionCallbacks useActionCallbacks(WidgetRef ref) {
                 )
               : WebSocketLoadEventData.playlist(
                   tracks: allTracks,
-                  collection: options.collection as SonolythSimplePlaylistObject,
+                  collection:
+                      options.collection as SonolythSimplePlaylistObject,
                 ),
         );
       } else {

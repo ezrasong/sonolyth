@@ -3,6 +3,7 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 
 class LinkOpenPermissionDialog extends StatelessWidget {
   final String? href;
@@ -31,7 +32,7 @@ class LinkOpenPermissionDialog extends StatelessWidget {
                 TextSpan(
                   text: "$href\n\n",
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
+                    color: context.theme.colorScheme.primary,
                   ),
                 ),
               TextSpan(text: context.l10n.unsafe_url_warning),

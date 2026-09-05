@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
 import 'package:sonolyth/extensions/context.dart';
 
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
@@ -26,6 +27,9 @@ class SonolythColor extends Color {
 }
 
 final Set<SonolythColor> colorsMap = {
+  // Proxima Dark Zenith — the default identity. Achromatic by design, so its
+  // swatch is the skin's own accent: pure white.
+  const SonolythColor(0xffffffff, name: "zenith"),
   const SonolythColor(0xff6750a4, name: "android"),
   const SonolythColor(0xff1db954, name: "spotify"),
   SonolythColor(Colors.slate.value, name: "slate"),
@@ -43,6 +47,7 @@ final Set<SonolythColor> colorsMap = {
 };
 
 final colorSchemeMap = {
+  "zenith": zenithColorScheme,
   "android": LegacyColorSchemes.violet,
   "spotify": LegacyColorSchemes.green,
   "slate": LegacyColorSchemes.slate,
@@ -82,13 +87,14 @@ class ColorSchemePickerDialog extends HookConsumerWidget {
         style: TextStyle(color: context.theme.colorScheme.foreground),
       ).large(),
       actions: [
-        Button.outline(
+        Button.ghost(
           child: Text(context.l10n.cancel),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        Button.primary(
+        Button(
+          style: zenithPositiveButton(context.theme.colorScheme),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -153,7 +159,9 @@ class ColorChip extends StatelessWidget {
         ),
       ),
       onPressed: onPressed,
-      style: isActive ? ButtonVariance.primary : ButtonVariance.outline,
+      // Selection is the 2dp outline, as everywhere else — not a white fill.
+      style:
+          zenithSelectableGhost(context.theme.colorScheme, selected: isActive),
       child: Text(name),
     );
   }

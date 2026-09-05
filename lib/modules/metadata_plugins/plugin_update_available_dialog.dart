@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/markdown/markdown.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
@@ -33,12 +34,15 @@ class MetadataPluginUpdateAvailableDialog extends HookConsumerWidget {
                   ),
                   title: Text(message),
                   leadingAlignment: Alignment.center,
-                  trailing: IconButton.ghost(
-                    size: ButtonSize.small,
-                    icon: const Icon(SonolythIcons.close),
-                    onPressed: () {
-                      overlay.close();
-                    },
+                  trailing: ZenithTooltip(
+                    message: context.l10n.close,
+                    child: IconButton.ghost(
+                      size: ButtonSize.small,
+                      icon: const Icon(SonolythIcons.close),
+                      onPressed: () {
+                        overlay.close();
+                      },
+                    ),
                   ),
                 ),
               );

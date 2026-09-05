@@ -5,6 +5,7 @@ import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/extensions/constrains.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/pages/search/search.dart';
+import 'package:sonolyth/components/fallbacks/zenith_illustration.dart';
 
 class SearchPlaceholder extends HookConsumerWidget {
   final AsyncValue snapshot;
@@ -39,9 +40,8 @@ class SearchPlaceholder extends HookConsumerWidget {
               padding: EdgeInsets.only(top: topGap, bottom: 24 * theme.scaling),
               child: Column(
                 children: [
-                  Undraw(
+                  ZenithIllustration(
                     illustration: UndrawIllustration.explore,
-                    color: theme.colorScheme.primary,
                     height: illustrationHeight,
                   ),
                   const SizedBox(height: 20),

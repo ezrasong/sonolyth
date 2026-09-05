@@ -22,17 +22,14 @@ class ArtistAlbumList extends HookConsumerWidget {
 
     final albums = albumsQuery.asData?.value.items ?? [];
 
-    final theme = Theme.of(context);
-
     return HorizontalPlaybuttonCardView<SonolythSimpleAlbumObject>(
       isLoadingNextPage: albumsQuery.isLoadingNextPage,
       hasNextPage: albumsQuery.asData?.value.hasMore ?? false,
       items: albums,
       onFetchMore: albumsQueryNotifier.fetchMore,
-      title: Text(
-        context.l10n.albums,
-        style: theme.typography.h4,
-      ),
+      // Unstyled: HorizontalPlaybuttonCardView already wraps its title in
+      // the Zenith subhead style, and an explicit style here would override it.
+      title: Text(context.l10n.albums),
     );
   }
 }

@@ -21,8 +21,7 @@ abstract class EncryptedKvStoreService {
 
   static String get encryptionKeySync => _encryptionKeySync!;
 
-  static bool get isUnsupportedPlatform =>
-      kIsMacOS || kIsIOS || (kIsLinux && !kIsFlatpak);
+  static bool get isUnsupportedPlatform => kIsIOS;
 
   static Future<String> get encryptionKey async {
     if (isUnsupportedPlatform) {

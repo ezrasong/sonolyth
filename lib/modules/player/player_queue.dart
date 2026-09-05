@@ -14,6 +14,7 @@ import 'package:sonolyth/components/fallbacks/not_found.dart';
 import 'package:sonolyth/components/inter_scrollbar/inter_scrollbar.dart';
 import 'package:sonolyth/components/track_tile/track_tile.dart';
 import 'package:sonolyth/components/ui/button_tile.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/constrains.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/hooks/controllers/use_auto_scroll_controller.dart';
@@ -22,6 +23,8 @@ import 'package:sonolyth/modules/player/player_queue_actions.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/audio_player/smart_shuffle.dart';
 import 'package:sonolyth/provider/audio_player/state.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
+import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 
 class PlayerQueue extends HookConsumerWidget {
   final bool floating;
@@ -106,6 +109,9 @@ class PlayerQueue extends HookConsumerWidget {
                 maxWidth: mediaQuery.smAndDown ? mediaQuery.width - 40 : 300,
               ),
               child: TextField(
+                // `searchbar_bg`: fully round, page-coloured,
+                // no stroke. See `zenithSearchField`.
+                decoration: zenithSearchField(context.theme.colorScheme),
                 onChanged: (value) {
                   searchText.value = value;
                 },
@@ -129,14 +135,17 @@ class PlayerQueue extends HookConsumerWidget {
                       backgroundColor: Colors.transparent,
                       leading: [
                         if (mediaQuery.smAndDown)
-                          IconButton.ghost(
-                            icon: const Icon(
-                              Icons.arrow_back_ios_new_outlined,
+                          ZenithTooltip(
+                            message: context.l10n.back,
+                            child: IconButton.ghost(
+                              icon: const Icon(
+                                Icons.arrow_back_ios_new_outlined,
+                              ),
+                              onPressed: () {
+                                isSearching.value = false;
+                                searchText.value = '';
+                              },
                             ),
-                            onPressed: () {
-                              isSearching.value = false;
-                              searchText.value = '';
-                            },
                           )
                       ],
                       surfaceBlur: 0,
@@ -149,12 +158,15 @@ class PlayerQueue extends HookConsumerWidget {
                       surfaceBlur: 0,
                       surfaceOpacity: 0,
                       leading: [
-                        IconButton.ghost(
-                          icon: const Icon(SonolythIcons.close),
-                          onPressed: () {
-                            selectedTrackIds.value = {};
-                            selectionMode.value = false;
-                          },
+                        ZenithTooltip(
+                          message: context.l10n.exit_selection,
+                          child: IconButton.ghost(
+                            icon: const Icon(SonolythIcons.close),
+                            onPressed: () {
+                              selectedTrackIds.value = {};
+                              selectionMode.value = false;
+                            },
+                          ),
                         )
                       ],
                       title: SizedBox(
@@ -249,18 +261,19 @@ class PlayerQueue extends HookConsumerWidget {
                         if (mediaQuery.mdAndUp)
                           searchBar
                         else
-                          IconButton.ghost(
-                            icon: const Icon(SonolythIcons.filter),
-                            onPressed: () {
-                              isSearching.value = !isSearching.value;
-                            },
+                          ZenithTooltip(
+                            message: context.l10n.search,
+                            child: IconButton.ghost(
+                              icon: const Icon(SonolythIcons.filter),
+                              onPressed: () {
+                                isSearching.value = !isSearching.value;
+                              },
+                            ),
                           ),
                         if (!isSearching.value) ...[
                           const SizedBox(width: 10),
-                          Tooltip(
-                            tooltip: TooltipContainer(
-                                    child: Text(context.l10n.clear_all))
-                                .call,
+                          ZenithTooltip(
+                            message: context.l10n.clear_all,
                             child: IconButton.outline(
                               icon: const Icon(SonolythIcons.playlistRemove),
                               onPressed: () {
@@ -351,10 +364,8 @@ class PlayerQueue extends HookConsumerWidget {
                                       Padding(
                                         padding:
                                             const EdgeInsets.only(left: 8.0),
-                                        child: Tooltip(
-                                          tooltip: const TooltipContainer(
-                                            child: Text("Recommended"),
-                                          ).call,
+                                        child: ZenithTooltip.status(
+                                          message: "Recommended",
                                           child: Icon(
                                             SonolythIcons.lightningOutlined,
                                             size: 16,
@@ -393,20 +404,23 @@ class PlayerQueue extends HookConsumerWidget {
         Positioned(
           right: 20,
           bottom: 20,
-          child: IconButton.secondary(
-            icon: const Icon(SonolythIcons.angleDown),
-            onPressed: () {
-              // Item indices refer to filteredTracks, so map the active
-              // track to its filtered position (it may be filtered out).
-              final activeIndex = filteredTracks.indexWhere(
-                (track) => track.id == playlist.activeTrack?.id,
-              );
-              if (activeIndex == -1) return;
-              controller.scrollToIndex(
-                activeIndex,
-                preferPosition: AutoScrollPosition.middle,
-              );
-            },
+          child: ZenithTooltip(
+            message: context.l10n.scroll_to_current_track,
+            child: IconButton.secondary(
+              icon: const Icon(SonolythIcons.angleDown),
+              onPressed: () {
+                // Item indices refer to filteredTracks, so map the active
+                // track to its filtered position (it may be filtered out).
+                final activeIndex = filteredTracks.indexWhere(
+                  (track) => track.id == playlist.activeTrack?.id,
+                );
+                if (activeIndex == -1) return;
+                controller.scrollToIndex(
+                  activeIndex,
+                  preferPosition: AutoScrollPosition.middle,
+                );
+              },
+            ),
           ),
         )
       ],

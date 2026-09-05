@@ -1,25 +1,22 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:palette_generator/palette_generator.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/collections/zenith_motion.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/modules/lyrics/zoom_controls.dart';
 import 'package:sonolyth/components/shimmers/shimmer_lyrics.dart';
-import 'package:sonolyth/extensions/constrains.dart';
 import 'package:sonolyth/extensions/context.dart';
 
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/lyrics/synced.dart';
 
 class PlainLyrics extends HookConsumerWidget {
-  final PaletteColor palette;
   final bool? isModal;
   final int defaultTextZoom;
   const PlainLyrics({
-    required this.palette,
     this.isModal,
     this.defaultTextZoom = 100,
     super.key,
@@ -29,8 +26,7 @@ class PlainLyrics extends HookConsumerWidget {
   Widget build(BuildContext context, ref) {
     final playlist = ref.watch(audioPlayerProvider);
     final lyricsQuery = ref.watch(syncedLyricsProvider(playlist.activeTrack));
-    final mediaQuery = MediaQuery.of(context);
-    final typography = Theme.of(context).typography;
+    final colorScheme = Theme.of(context).colorScheme;
 
     final textZoomLevel = useState<int>(defaultTextZoom);
 
@@ -43,20 +39,18 @@ class PlainLyrics extends HookConsumerWidget {
               Center(
                 child: Text(
                   playlist.activeTrack?.name ?? "",
-                  style: mediaQuery.mdAndUp
-                      ? typography.h3
-                      : typography.h4.copyWith(
-                          color: palette.titleTextColor,
-                        ),
+                  // `ItemTextTitle_scene_header` — 29sp normal. See the note
+                  // in `synced_lyrics.dart` on the palette colour this
+                  // replaces.
+                  style: zenithPageTitle(colorScheme),
                 ),
               ),
               Center(
                 child: Text(
                   playlist.activeTrack?.artists.asString() ?? "",
-                  style: (mediaQuery.mdAndUp ? typography.h4 : typography.large)
-                      .copyWith(
-                    color: palette.bodyTextColor,
-                  ),
+                  // `ItemTextTitle_scene_subheader` — 17sp, dimmed.
+                  style: zenithSubheaderTitle(colorScheme)
+                      .copyWith(color: colorScheme.mutedForeground),
                 ),
               )
             ],
@@ -78,8 +72,10 @@ class PlainLyrics extends HookConsumerWidget {
                               children: [
                                 Text(
                                   context.l10n.no_lyrics_available,
-                                  style: typography.large.copyWith(
-                                    color: palette.bodyTextColor,
+                                  // `PopupButton_Text` (16dp) at 60%.
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: colorScheme.mutedForeground,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -104,11 +100,10 @@ class PlainLyrics extends HookConsumerWidget {
                         }).join("\n");
 
                         return AnimatedDefaultTextStyle(
-                          duration: const Duration(milliseconds: 200),
+                          duration: ZenithMotion.fade,
+                          curve: ZenithMotion.fadeCurve,
                           style: TextStyle(
-                            color: isModal == true
-                                ? context.theme.colorScheme.foreground
-                                : palette.bodyTextColor,
+                            color: colorScheme.foreground,
                             fontSize: 24 * textZoomLevel.value / 100,
                             height: textZoomLevel.value < 70
                                 ? 1.5
@@ -134,6 +129,7 @@ class PlainLyrics extends HookConsumerWidget {
         Align(
           alignment: Alignment.bottomRight,
           child: ZoomControls(
+            label: context.l10n.text_size,
             value: textZoomLevel.value,
             onChanged: (value) => textZoomLevel.value = value,
             min: 50,

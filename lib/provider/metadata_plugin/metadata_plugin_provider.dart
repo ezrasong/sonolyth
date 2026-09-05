@@ -189,7 +189,8 @@ class MetadataPluginNotifier extends AsyncNotifier<MetadataPluginState> {
       // always preloaded (see assets/plugins/spotube-plugin-spotify).
       "spotube-plugin-spotify",
       "spotube-plugin-musicbrainz-listenbrainz",
-      "spotube-plugin-youtube-audio",
+      // YouTube removed: playback resolves lossless-only (Qobuz -> Tidal) via
+      // lib/services/sourced_track, so no audio-source plugin is bundled.
     ];
 
     PluginConfiguration? spotifyConfig;

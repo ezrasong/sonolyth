@@ -1,44 +1,27 @@
 part of 'audio_player.dart';
 
 mixin SonolythAudioPlayersStreams on AudioPlayerInterface {
+  // Every stream here reads the main player. The crossfade engine's second
+  // deck only ever carries the tail of a track main has already moved on
+  // from, so the main player is always the current track — no consumer (UI,
+  // media notification, Connect clients, scrobbling, prefetch) has to know a
+  // crossfade is in progress.
+
   // stream getters
   Stream<Duration> get durationStream {
-    // if (mkSupportedPlatform) {
     return _mkPlayer.stream.duration;
-    // } else {
-    //   return _justAudio!.durationStream
-    //       .where((event) => event != null)
-    //       .map((event) => event!)
-    //       ;
-    // }
   }
 
   Stream<Duration> get positionStream {
-    // if (mkSupportedPlatform) {
     return _mkPlayer.stream.position;
-    // } else {
-    //   return _justAudio!.positionStream;
-    // }
   }
 
   Stream<Duration> get bufferedPositionStream {
-    // if (mkSupportedPlatform) {
-    // audioplayers doesn't have the capability to get buffered position
     return _mkPlayer.stream.buffer;
-    // } else {
-    //   return _justAudio!.bufferedPositionStream;
-    // }
   }
 
   Stream<void> get completedStream {
-    // if (mkSupportedPlatform) {
     return _mkPlayer.stream.completed;
-    // } else {
-    //   return _justAudio!.playerStateStream
-    //       .where(
-    //           (event) => event.processingState == ja.ProcessingState.completed)
-    //       ;
-    // }
   }
 
   /// Stream that emits when the player is almost (%) complete
@@ -53,11 +36,7 @@ mixin SonolythAudioPlayersStreams on AudioPlayerInterface {
   }
 
   Stream<bool> get playingStream {
-    // if (mkSupportedPlatform) {
     return _mkPlayer.stream.playing;
-    // } else {
-    //   return _justAudio!.playingStream;
-    // }
   }
 
   Stream<bool> get shuffledStream {
@@ -78,12 +57,10 @@ mixin SonolythAudioPlayersStreams on AudioPlayerInterface {
     // }
   }
 
+  /// The volume the USER set, not the decks' momentary output gain — during
+  /// a crossfade both decks ride a fade ramp that no consumer should mirror.
   Stream<double> get volumeStream {
-    // if (mkSupportedPlatform) {
-    return _mkPlayer.stream.volume.map((event) => event / 100);
-    // } else {
-    //   return _justAudio!.volumeStream;
-    // }
+    return _engine.userVolumeStream;
   }
 
   Stream<bool> get bufferingStream {
@@ -101,13 +78,7 @@ mixin SonolythAudioPlayersStreams on AudioPlayerInterface {
   }
 
   Stream<AudioPlaybackState> get playerStateStream {
-    // if (mkSupportedPlatform) {
     return _mkPlayer.playerStateStream;
-    // } else {
-    //   return _justAudio!.playerStateStream
-    //       .map(AudioPlaybackState.fromJaPlayerState)
-    //       ;
-    // }
   }
 
   Stream<int> get currentIndexChangedStream {

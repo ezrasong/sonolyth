@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
 import 'package:sonolyth/components/form/text_form_field.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/hooks/controllers/use_shadcn_text_editing_controller.dart';
@@ -43,7 +44,7 @@ class SettingsPlaybackEditInstanceUrlDialog extends HookConsumerWidget {
             Row(
               children: [
                 Expanded(
-                  child: Button.secondary(
+                  child: Button.ghost(
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
@@ -52,7 +53,8 @@ class SettingsPlaybackEditInstanceUrlDialog extends HookConsumerWidget {
                 ),
                 const Gap(10),
                 Expanded(
-                  child: Button.primary(
+                  child: Button(
+                    style: zenithPositiveButton(Theme.of(context).colorScheme),
                     onPressed: () {
                       if (!formKey.currentState!.saveAndValidate()) {
                         return;

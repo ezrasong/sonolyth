@@ -157,13 +157,13 @@ void useGlobalSubscriptions(WidgetRef ref) {
           context: context,
           location: ToastLocation.topRight,
           builder: (context, overlay) {
+            // Zenith warns with the muted surface + a plain glyph, not a
+            // yellow card — a coloured fill would be the only hue on screen.
             return SurfaceCard(
-              fillColor: Colors.yellow[600],
-              filled: true,
               child: Basic(
-                leading: const Icon(
+                leading: Icon(
                   SonolythIcons.error,
-                  color: Colors.black,
+                  color: Theme.of(context).colorScheme.mutedForeground,
                 ),
                 title: Text(
                   context.l10n.connect_client_alert(clientOrigin),

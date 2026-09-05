@@ -148,10 +148,11 @@ class TrackOptions extends HookConsumerWidget {
               onTapItem?.call();
             },
             leading: isLiked
-                ? const Icon(
+                ? Icon(
                     SonolythIcons.heartFilled,
-                    // Matches the liked-heart red used by HeartButton.
-                    color: Colors.red,
+                    // Matches HeartButton: Zenith marks "liked" by filling the
+                    // glyph at full strength, not by colouring it.
+                    color: Theme.of(context).colorScheme.foreground,
                   )
                 : const Icon(SonolythIcons.heart),
             title: Text(

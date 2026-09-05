@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -10,6 +11,7 @@ import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/models/connect/connect.dart';
 import 'package:sonolyth/modules/search/loading.dart';
 import 'package:sonolyth/pages/search/search.dart';
+import 'package:sonolyth/pages/search/search_results_header.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/connect/connect.dart';
 import 'package:sonolyth/provider/metadata_plugin/search/tracks.dart';
@@ -31,6 +33,10 @@ class SearchPageTracksTab extends HookConsumerWidget {
 
     final playlist = ref.watch(audioPlayerProvider);
     final playlistNotifier = ref.watch(audioPlayerProvider.notifier);
+
+    // The header's "Select" (and a long-press) put the rows in selection mode.
+    final selection = ref.watch(searchSelectionProvider);
+    final selectionNotifier = ref.read(searchSelectionProvider.notifier);
 
     if (searchTracksSnapshot.hasError) {
       return Center(
@@ -66,6 +72,21 @@ class SearchPageTracksTab extends HookConsumerWidget {
             track: track,
             playlist: playlist,
             index: index,
+            selected: selection.contains(track),
+            selectionMode: selection.selectionMode,
+            onChanged: !selection.isSelecting
+                ? null
+                : (isSelected) {
+                    if (isSelected == true) {
+                      selectionNotifier.select(track);
+                    } else {
+                      selectionNotifier.deselect(track);
+                    }
+                  },
+            onLongPress: () {
+              selectionNotifier.select(track);
+              HapticFeedback.selectionClick();
+            },
             onTap: () async {
               final isRemoteDevice = await showSelectDeviceDialog(context, ref);
 

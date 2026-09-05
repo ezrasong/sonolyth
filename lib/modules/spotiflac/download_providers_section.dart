@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart' show ListTileControlAffinity;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/adaptive/adaptive_select_tile.dart';
 import 'package:sonolyth/components/fallbacks/error_box.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/spotiflac/download_settings.dart';
 import 'package:sonolyth/services/spotiflac/providers/qobuz_provider.dart';
 import 'package:sonolyth/services/spotiflac/providers/spotiflac_provider.dart';
 import 'package:sonolyth/services/spotiflac/providers/tidal_provider.dart';
-import 'package:sonolyth/services/spotiflac/providers/youtube_provider.dart';
 
 /// Settings for the native lossless download providers. Downloads run entirely
 /// in-app through the zarz gateway (no external SpotiFLAC app), so this manages
@@ -53,14 +54,17 @@ class SpotiFlacDownloadProvidersSection extends ConsumerWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Card(
+            // A flat row like every other settings row — `item_bg` has no
+            // card and no stroke (see `SectionCardWithHeading`).
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Basic(
                 leading: const Icon(SonolythIcons.download),
                 title: Text(context.l10n.lossless_downloads),
                 subtitle: Text(context.l10n.lossless_downloads_description),
               ),
             ),
-            const Gap(12),
+            const Gap(4),
             for (var index = 0; index < ordered.length; index++)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
@@ -69,7 +73,6 @@ class SpotiFlacDownloadProvidersSection extends ConsumerWidget {
                   index: index,
                   total: ordered.length,
                   enabled: !settings.disabled.contains(ordered[index].id),
-                  lossy: ordered[index] is YouTubeProvider,
                   quality: settings.qualityByProvider[ordered[index].id] ??
                       ordered[index].defaultQuality,
                   qualityLabel: _qualityLabel,
@@ -82,11 +85,13 @@ class SpotiFlacDownloadProvidersSection extends ConsumerWidget {
                         location: ToastLocation.topRight,
                         builder: (context, overlay) => SurfaceCard(
                           child: Basic(
-                            leading: const Icon(
+                            leading: Icon(
                               SonolythIcons.warning,
-                              color: Colors.yellow,
+                              color:
+                                  Theme.of(context).colorScheme.mutedForeground,
                             ),
-                            title: Text(context.l10n.keep_one_download_provider),
+                            title:
+                                Text(context.l10n.keep_one_download_provider),
                           ),
                         ),
                       );
@@ -111,15 +116,18 @@ class SpotiFlacDownloadProvidersSection extends ConsumerWidget {
   }
 }
 
+/// Sized so the *button* measures [kMinTapTarget], not the box around it:
+/// shadcn's ghost variance keeps a 3dp inset on each side, so a 48dp
+/// `SizedBox` yielded a 42dp target (measured in the accessibility tree on the
+/// emulator, and pinned by a test).
+const kReorderTapTarget = 54.0;
+
 class _ProviderCard extends StatelessWidget {
   final SpotiFlacProvider provider;
   final int index;
   final int total;
   final bool enabled;
 
-  /// True for providers that can't deliver lossless audio (the YouTube
-  /// fallback) so the row can carry a "Lossy" hint.
-  final bool lossy;
   final String quality;
   final String Function(SpotiFlacProvider, String) qualityLabel;
   final ValueChanged<bool> onToggle;
@@ -132,7 +140,6 @@ class _ProviderCard extends StatelessWidget {
     required this.index,
     required this.total,
     required this.enabled,
-    required this.lossy,
     required this.quality,
     required this.qualityLabel,
     required this.onToggle,
@@ -143,7 +150,10 @@ class _ProviderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    // No card: the providers are rows in the section, separated by their own
+    // padding and numbering, the way every other settings row is separated.
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: 4,
@@ -152,17 +162,34 @@ class _ProviderCard extends StatelessWidget {
             children: [
               Column(
                 children: [
-                  IconButton.ghost(
-                    size: ButtonSize.small,
-                    enabled: onMoveUp != null,
-                    icon: const Icon(SonolythIcons.angleUp),
-                    onPressed: onMoveUp,
+                  // 48dp, not the 24dp `ButtonSize.small` draws: these are
+                  // ordinary settings rows with no Proxima geometry behind
+                  // them (see the note above — the providers deliberately have
+                  // no card), so the reorder arrows can be a real touch target
+                  // without disturbing anything the skin measures.
+                  ZenithTooltip(
+                    message: context.l10n.move_up,
+                    child: SizedBox.square(
+                      dimension: kReorderTapTarget,
+                      child: IconButton.ghost(
+                        size: ButtonSize.small,
+                        enabled: onMoveUp != null,
+                        icon: const Icon(SonolythIcons.angleUp),
+                        onPressed: onMoveUp,
+                      ),
+                    ),
                   ),
-                  IconButton.ghost(
-                    size: ButtonSize.small,
-                    enabled: onMoveDown != null,
-                    icon: const Icon(SonolythIcons.angleDown),
-                    onPressed: onMoveDown,
+                  ZenithTooltip(
+                    message: context.l10n.move_down,
+                    child: SizedBox.square(
+                      dimension: kReorderTapTarget,
+                      child: IconButton.ghost(
+                        size: ButtonSize.small,
+                        enabled: onMoveDown != null,
+                        icon: const Icon(SonolythIcons.angleDown),
+                        onPressed: onMoveDown,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -180,10 +207,6 @@ class _ProviderCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ).semiBold(),
                         ),
-                        if (lossy) ...[
-                          const Gap(8),
-                          SecondaryBadge(child: Text(context.l10n.lossy)),
-                        ],
                       ],
                     ),
                     Text(

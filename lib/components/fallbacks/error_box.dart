@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/context.dart';
 
 class ErrorBox extends StatelessWidget {
@@ -89,9 +90,12 @@ class ErrorBox extends StatelessWidget {
                                   const Icon(SonolythIcons.logs),
                                   Text(context.l10n.logs),
                                   const Spacer(),
-                                  IconButton.ghost(
-                                    icon: const Icon(SonolythIcons.close),
-                                    onPressed: () => context.maybePop(),
+                                  ZenithTooltip(
+                                    message: context.l10n.close,
+                                    child: IconButton.ghost(
+                                      icon: const Icon(SonolythIcons.close),
+                                      onPressed: () => context.maybePop(),
+                                    ),
                                   )
                                 ],
                               ),

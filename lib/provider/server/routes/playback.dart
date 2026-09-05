@@ -103,16 +103,75 @@ class ServerPlaybackRoutes {
     );
   }
 
+  /// How long a request for a track blocked on verification is held open
+  /// before it gives up and 404s.
+  ///
+  /// **mpv's answer to a failed open is `playlist-next`,** and it cannot be
+  /// told otherwise — there is no "stop on error". So while lossless access is
+  /// unverified every 404 this route returns costs the user a place in their
+  /// queue, and `currentIndex` mirrors mpv's playlist index straight into the
+  /// database, so it costs them the *saved* place too. Measured on the
+  /// emulator against a lapsed session, with nothing touching the device: a
+  /// 233-track queue walked from 152 to 160 in sixty seconds — one track every
+  /// 7.5s, off the end inside half an hour.
+  ///
+  /// Pausing does not help and was tried: the session sits in `CONNECTING`,
+  /// never `PLAYING`, because nothing ever opens, and the traversal is mpv's
+  /// reaction to the failed open rather than playback running on. What mpv
+  /// will do is **wait** — so the request is simply held. It stays under the
+  /// `network-timeout` of 120s that `custom_player.dart` sets, so mpv does not
+  /// tear the connection down itself, and the resolve is retried the moment
+  /// verification lands, which means finishing the Turnstile starts the music
+  /// on the track the user was actually on.
+  static const _verifyHoldWindow = Duration(seconds: 100);
+
+  /// The session record is in shared preferences, so this poll is local. It
+  /// deliberately does **not** re-attempt the resolve on a timer: a gateway
+  /// round trip every couple of seconds is precisely the churn §32c closed,
+  /// and nothing can change until a Turnstile is completed on the device.
+  static const _verifyPollInterval = Duration(seconds: 2);
+
   Future<SourcedTrack?> _getSourcedTrack(
     Request request,
     String trackId,
-  ) {
-    // mpv is blocked on this request RIGHT NOW — any signed zarz calls a cold
-    // resolve makes here must jump ahead of queued prefetch traffic instead
-    // of waiting behind the warm fan-out.
-    return ZarzSession.runInteractive(
-      () => _getSourcedTrackInner(request, trackId),
-    );
+  ) async {
+    final deadline = DateTime.now().add(_verifyHoldWindow);
+    while (true) {
+      try {
+        // mpv is blocked on this request RIGHT NOW — any signed zarz calls a
+        // cold resolve makes here must jump ahead of queued prefetch traffic
+        // instead of waiting behind the warm fan-out.
+        return await ZarzSession.runInteractive(
+          () => _getSourcedTrackInner(request, trackId),
+        );
+      } on ZarzVerificationRequiredException {
+        // Only the entry mpv is actually sitting on is worth holding. A
+        // prefetch of the next one, or a request left behind by a track the
+        // user has already skipped away from, must fail at once and give the
+        // connection back.
+        if (!_isActiveEntry(trackId) || DateTime.now().isAfter(deadline)) {
+          rethrow;
+        }
+        if (!await _awaitVerification(trackId, deadline)) rethrow;
+      }
+    }
+  }
+
+  bool _isActiveEntry(String trackId) {
+    final state = playlist;
+    return state.tracks.elementAtOrNull(state.currentIndex)?.id == trackId;
+  }
+
+  /// Waits for lossless access to become available, or until [deadline] /
+  /// until [trackId] stops being the track mpv is on. Returns whether the
+  /// resolve is worth retrying.
+  Future<bool> _awaitVerification(String trackId, DateTime deadline) async {
+    while (DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(_verifyPollInterval);
+      if (!_isActiveEntry(trackId)) return false;
+      if (await ZarzSession.anyLosslessUsable()) return true;
+    }
+    return false;
   }
 
   Future<SourcedTrack?> _getSourcedTrackInner(
@@ -360,6 +419,19 @@ class ServerPlaybackRoutes {
         int.tryParse(res.headers.value("content-length") ?? "") ??
         0;
 
+    // Survive a dropped upstream connection: the bytes already delivered stay
+    // delivered and the rest is re-requested from where it stopped, so a
+    // blip costs a reconnect instead of ending the track mid-play.
+    res.data!.stream = _resumeOnDrop(
+      source: res.data!.stream,
+      track: track,
+      startOffset: contentRange?.start ?? 0,
+      expectedLength: int.tryParse(
+            res.headers.value("content-length") ?? "",
+          ) ??
+          (expectedTotal - (contentRange?.start ?? 0)),
+    );
+
     res.data!.stream = await _teeToCacheFile(
       cacheFile: trackCacheFile,
       source: res.data!.stream,
@@ -368,6 +440,113 @@ class ServerPlaybackRoutes {
       track: track,
     );
     return res;
+  }
+
+  /// How many times a single response may reconnect before giving up. A
+  /// genuinely dead stream shouldn't retry forever; a flaky one recovers well
+  /// inside this.
+  static const _maxStreamResumes = 3;
+
+  /// Yields [source], and if it ends or errors before [expectedLength] bytes
+  /// have been delivered, re-requests the remainder from the byte it stopped
+  /// at and keeps going.
+  ///
+  /// mpv sees one uninterrupted body, so a dropped TCP connection mid-track
+  /// costs a reconnect rather than a truncated track. Byte order and total
+  /// length are preserved exactly, which is what lets the cache tee downstream
+  /// still recognise the write as complete.
+  Stream<Uint8List> _resumeOnDrop({
+    required Stream<Uint8List> source,
+    required SourcedTrack track,
+    required int startOffset,
+    required int expectedLength,
+  }) async* {
+    var delivered = 0;
+    var current = source;
+
+    for (var attempt = 0;; attempt++) {
+      Object? failure;
+      try {
+        await for (final chunk in current) {
+          delivered += chunk.length;
+          yield chunk;
+        }
+      } catch (e) {
+        failure = e;
+      }
+
+      // Nothing promised, or everything delivered: done either way.
+      if (expectedLength <= 0 || delivered >= expectedLength) return;
+      if (attempt >= _maxStreamResumes) {
+        if (failure != null) throw failure;
+        return;
+      }
+
+      final resumeAt = startOffset + delivered;
+      AppLogger.log.i(
+        "Stream for '${track.query.name}' stopped at $delivered/"
+        "$expectedLength bytes; resuming from $resumeAt",
+      );
+
+      try {
+        current = await _openStreamAt(track, resumeAt);
+      } catch (e, stack) {
+        AppLogger.reportError(e, stack);
+        if (failure != null) throw failure;
+        return;
+      }
+    }
+  }
+
+  /// Opens a byte-range request for [track] starting at [offset], refreshing
+  /// the streaming URL once if the stored one no longer answers.
+  Future<Stream<Uint8List>> _openStreamAt(
+    SourcedTrack track,
+    int offset,
+  ) async {
+    String url = track.url ??
+        await ref
+            .read(sourcedTrackProvider(track.query).notifier)
+            .refreshStreamingUrl()
+            .then((track) => track.url!);
+
+    Options optionsFor(String url) => Options(
+          headers: {
+            "range": "bytes=$offset-",
+            "user-agent": streamUserAgentFor(track),
+            "host": Uri.parse(url).host,
+          },
+          responseType: ResponseType.stream,
+          validateStatus: (status) => status != null && status < 400,
+        );
+
+    dio_lib.Response<ResponseBody> res;
+    try {
+      res = await dio.get<ResponseBody>(url, options: optionsFor(url));
+    } catch (_) {
+      final refreshed = await ref
+          .read(sourcedTrackProvider(track.query).notifier)
+          .refreshStreamingUrl();
+      url = refreshed.url!;
+      res = await dio.get<ResponseBody>(url, options: optionsFor(url));
+    }
+
+    // The resume is only safe if the upstream actually honoured the range: a
+    // server that answers 200 would replay the file from byte 0 and splice
+    // duplicate audio into the middle of the response. Refuse anything that
+    // doesn't confirm it starts exactly where we stopped.
+    final contentRangeValue = res.headers.value("content-range");
+    final start = contentRangeValue == null
+        ? null
+        : ContentRangeHeader.parse(contentRangeValue).start;
+    if (res.statusCode != 206 || start != offset) {
+      await res.data?.stream.drain<void>().catchError((_) {});
+      throw StateError(
+        "Upstream did not honour the resume range "
+        "(status ${res.statusCode}, content-range $contentRangeValue)",
+      );
+    }
+    return res.data!.stream;
   }
 
   /// Tees [source] to the music cache file for [track] and returns a stream
@@ -987,8 +1166,12 @@ class ServerPlaybackRoutes {
     String trackId, {
     required bool headOnly,
   }) async {
-    final path =
-        ref.read(downloadedTracksProvider.notifier).pathFor(trackId);
+    final downloads = ref.read(downloadedTracksProvider.notifier);
+    // The registry loads from disk asynchronously; without this a request that
+    // arrives during the first moments of a cold start would miss an
+    // already-downloaded file and stream it instead.
+    await downloads.ready;
+    final path = downloads.pathFor(trackId);
     if (path == null) return null;
 
     final file = File(path);

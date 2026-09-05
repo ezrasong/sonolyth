@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sonolyth/models/database/database.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
@@ -70,7 +71,16 @@ class PlaybackHistoryActions {
   }
 
   Future<void> clear() async {
-    _db.delete(_db.historyTable).go();
+    await _db.delete(_db.historyTable).go();
+  }
+
+  /// How many rows the history holds — what Settings puts on the "Clear play
+  /// history" row so the action names a number rather than a promise.
+  Future<int> count() async {
+    final rows = _db.historyTable.id.count();
+    return await (_db.selectOnly(_db.historyTable)..addColumns([rows]))
+        .map((row) => row.read(rows) ?? 0)
+        .getSingle();
   }
 }
 

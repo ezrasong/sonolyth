@@ -2,6 +2,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
+import 'package:sonolyth/components/ui/zenith_filter_chip.dart';
+import 'package:sonolyth/components/ui/zenith_popup_card.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/collections/official_plugin_owners.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
@@ -39,7 +42,10 @@ class MetadataPluginRepositoryItem extends HookConsumerWidget {
         : pluginRepo.name.toCapitalCase();
     final isInstalling = useState(false);
 
-    return Card(
+    // `popup_bg`: one flat fill at radius 20, no stroke.
+    return ZenithPopupCard(
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.all(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -50,7 +56,8 @@ class MetadataPluginRepositoryItem extends HookConsumerWidget {
               pluginTitle,
             ),
             subtitle: Text(pluginRepo.description),
-            trailing: Button.primary(
+            trailing: Button(
+              style: zenithPositiveButton(context.theme.colorScheme),
               enabled: !isInstalling.value,
               onPressed: () async {
                 try {
@@ -98,11 +105,8 @@ class MetadataPluginRepositoryItem extends HookConsumerWidget {
                                                 height: 36,
                                                 width: 36,
                                                 alignment: Alignment.center,
-                                                decoration: BoxDecoration(
-                                                  color: context.theme
-                                                      .colorScheme.secondary,
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
+                                                color: zenithArtWell(
+                                                  context.theme.colorScheme,
                                                 ),
                                                 child: const Icon(
                                                     SonolythIcons.plugin),
@@ -124,13 +128,16 @@ class MetadataPluginRepositoryItem extends HookConsumerWidget {
                                 ],
                               ),
                               actions: [
-                                Button.secondary(
+                                Button.ghost(
                                   onPressed: () {
                                     Navigator.of(context).pop(false);
                                   },
                                   child: Text(context.l10n.decline),
                                 ),
-                                Button.primary(
+                                Button(
+                                  style: zenithPositiveButton(
+                                    context.theme.colorScheme,
+                                  ),
                                   onPressed: () {
                                     Navigator.of(context).pop(true);
                                   },
@@ -153,7 +160,7 @@ class MetadataPluginRepositoryItem extends HookConsumerWidget {
                   ? SizedBox.square(
                       dimension: 20,
                       child: CircularProgressIndicator(
-                        color: context.theme.colorScheme.primaryForeground,
+                        color: context.theme.colorScheme.foreground,
                       ),
                     )
                   : const Icon(SonolythIcons.add),
@@ -185,8 +192,8 @@ class MetadataPluginRepositoryItem extends HookConsumerWidget {
             runSpacing: 8,
             children: [
               if (officialPluginOwners.contains(pluginRepo.owner))
-                PrimaryBadge(
-                  leading: const Icon(SonolythIcons.done),
+                ZenithValueChip(
+                  icon: SonolythIcons.done,
                   child: Text(context.l10n.official),
                 )
               else ...[
@@ -194,38 +201,21 @@ class MetadataPluginRepositoryItem extends HookConsumerWidget {
                   context.l10n.author_name(pluginRepo.owner),
                   style: context.theme.typography.xSmall,
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: context.theme.colorScheme.primary,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    spacing: 4,
-                    children: [
-                      const Icon(SonolythIcons.warning, size: 14),
-                      Text(
-                        context.l10n.third_party,
-                        style: const TextStyle(color: Colors.white),
-                      ).xSmall
-                    ],
-                  ),
+                // Was white text on a `primary` fill — invisible in an
+                // achromatic theme where `primary` is white.
+                ZenithValueChip(
+                  icon: SonolythIcons.warning,
+                  child: Text(context.l10n.third_party),
                 ),
               ],
               for (final topic in pluginRepo.topics)
                 if (validTopics.keys.contains(topic))
-                  SecondaryBadge(
-                    leading: Icon(validTopics[topic]!.$2),
+                  ZenithValueChip(
+                    icon: validTopics[topic]!.$2,
                     child: Text(validTopics[topic]!.$1),
                   ),
-              SecondaryBadge(
-                leading: host == "github.com"
-                    ? const Icon(SonolythIcons.github)
-                    : null,
+              ZenithValueChip(
+                icon: host == "github.com" ? SonolythIcons.github : null,
                 child: Text(host),
                 onPressed: () {
                   launchUrlString(pluginRepo.repoUrl);

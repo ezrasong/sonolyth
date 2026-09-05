@@ -2,13 +2,12 @@ import 'package:flutter/material.dart' as material;
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:sonolyth/components/button/back_button.dart';
 import 'package:sonolyth/components/fallbacks/error_box.dart';
+import 'package:sonolyth/components/ui/sheet_aware_pop_scope.dart';
 
 import 'package:sonolyth/components/titlebar/titlebar.dart';
-import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/extensions/constrains.dart';
 import 'package:sonolyth/modules/artist/artist_album_list.dart';
 
 import 'package:sonolyth/pages/artist/section/footer.dart';
@@ -39,79 +38,71 @@ class ArtistPage extends HookConsumerWidget {
 
     final artistQuery = ref.watch(metadataPluginArtistProvider(artistId));
 
-    return SafeArea(
-      bottom: false,
-      child: Scaffold(
-        headers: const [
-          TitleBar(
-            leading: [BackButton()],
-            backgroundColor: Colors.transparent,
-          )
-        ],
-        floatingHeader: true,
-        child: material.RefreshIndicator.adaptive(
-          onRefresh: () async {
-            ref.invalidate(metadataPluginArtistProvider(artistId));
-            ref.invalidate(
-              metadataPluginArtistRelatedArtistsProvider(artistId),
-            );
-            ref.invalidate(metadataPluginArtistAlbumsProvider(artistId));
-            ref.invalidate(metadataPluginIsSavedArtistProvider(artistId));
-            ref.invalidate(metadataPluginArtistTopTracksProvider(artistId));
-            if (artistQuery.hasValue) {
+    // Like every collection page (§21e): the header art runs under the status
+    // bar and its own "‹ Artists" back decor replaces the title bar. Wide
+    // layouts keep a bar for the window controls, without a back button.
+    final isWide = MediaQuery.sizeOf(context).mdAndUp;
+
+    return SheetAwarePopScope(
+      child: SafeArea(
+        top: isWide,
+        bottom: false,
+        child: Scaffold(
+          headers: [
+            if (isWide)
+              const TitleBar(automaticallyImplyLeading: false, height: 32),
+          ],
+          child: material.RefreshIndicator.adaptive(
+            onRefresh: () async {
+              ref.invalidate(metadataPluginArtistProvider(artistId));
               ref.invalidate(
-                artistWikipediaSummaryProvider(artistQuery.asData!.value),
+                metadataPluginArtistRelatedArtistsProvider(artistId),
               );
-            }
-          },
-          child: Builder(builder: (context) {
-            if (artistQuery.hasError && artistQuery.asData?.value == null) {
-              return Center(
-                child: ErrorBox(
-                  error: artistQuery.error!,
-                  onRetry: () => ref.invalidate(
-                    metadataPluginArtistProvider(artistId),
+              ref.invalidate(metadataPluginArtistAlbumsProvider(artistId));
+              ref.invalidate(metadataPluginIsSavedArtistProvider(artistId));
+              ref.invalidate(metadataPluginArtistTopTracksProvider(artistId));
+              if (artistQuery.hasValue) {
+                ref.invalidate(
+                  artistWikipediaSummaryProvider(artistQuery.asData!.value),
+                );
+              }
+            },
+            child: Builder(builder: (context) {
+              if (artistQuery.hasError && artistQuery.asData?.value == null) {
+                return Center(
+                  child: ErrorBox(
+                    error: artistQuery.error!,
+                    onRetry: () => ref.invalidate(
+                      metadataPluginArtistProvider(artistId),
+                    ),
                   ),
-                ),
-              );
-            }
-            return Skeletonizer(
-              enabled: artistQuery.isLoading,
-              child: CustomScrollView(
-                controller: scrollController,
-                slivers: [
-                  const SliverGap(material.kToolbarHeight),
-                  SliverToBoxAdapter(
-                    child: SafeArea(
-                      bottom: false,
+                );
+              }
+              return Skeletonizer(
+                enabled: artistQuery.isLoading,
+                child: CustomScrollView(
+                  controller: scrollController,
+                  slivers: [
+                    SliverToBoxAdapter(
                       child: ArtistPageHeader(artistId: artistId),
                     ),
-                  ),
-                  const SliverGap(20),
-                  ArtistPageTopTracks(artistId: artistId),
-                  const SliverGap(20),
-                  SliverToBoxAdapter(child: ArtistAlbumList(artistId)),
-                  SliverPadding(
-                    padding: const EdgeInsets.all(8.0),
-                    sliver: SliverToBoxAdapter(
-                      child: Text(
-                        context.l10n.fans_also_like,
-                        style: context.theme.typography.h4,
+                    const SliverGap(20),
+                    ArtistPageTopTracks(artistId: artistId),
+                    const SliverGap(20),
+                    SliverToBoxAdapter(child: ArtistAlbumList(artistId)),
+                    ArtistPageRelatedArtists(artistId: artistId),
+                    const SliverGap(20),
+                    if (artistQuery.asData?.value != null)
+                      SliverToBoxAdapter(
+                        child:
+                            ArtistPageFooter(artist: artistQuery.asData!.value),
                       ),
-                    ),
-                  ),
-                  ArtistPageRelatedArtists(artistId: artistId),
-                  const SliverGap(20),
-                  if (artistQuery.asData?.value != null)
-                    SliverToBoxAdapter(
-                      child:
-                          ArtistPageFooter(artist: artistQuery.asData!.value),
-                    ),
-                  const SliverSafeArea(sliver: SliverGap(10)),
-                ],
-              ),
-            );
-          }),
+                    const SliverSafeArea(sliver: SliverGap(10)),
+                  ],
+                ),
+              );
+            }),
+          ),
         ),
       ),
     );

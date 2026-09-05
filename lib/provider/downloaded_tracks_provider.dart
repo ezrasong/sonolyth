@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -17,6 +18,16 @@ class DownloadedTracksNotifier extends Notifier<Map<String, String>> {
   static const _formatVersion = 1;
 
   bool _loaded = false;
+
+  /// Completes once the on-disk registry has been read.
+  ///
+  /// [build] can only kick the read off asynchronously, so for a short window
+  /// after launch the registry looks empty — and anything resolving in that
+  /// window would stream a track that is already downloaded (and, worse, need
+  /// a verified lossless session to do it). Callers that must not make that
+  /// mistake await [ready] first.
+  final Completer<void> _readyCompleter = Completer<void>();
+  Future<void> get ready => _readyCompleter.future;
 
   @override
   Map<String, String> build() {
@@ -44,6 +55,8 @@ class DownloadedTracksNotifier extends Notifier<Map<String, String>> {
       _syncMediaPaths();
     } catch (e, stack) {
       AppLogger.reportError(e, stack);
+    } finally {
+      if (!_readyCompleter.isCompleted) _readyCompleter.complete();
     }
   }
 

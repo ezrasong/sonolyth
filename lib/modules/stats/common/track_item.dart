@@ -1,10 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
-import 'package:sonolyth/components/image/universal_image.dart';
 import 'package:sonolyth/components/links/artist_link.dart';
-import 'package:sonolyth/components/ui/button_tile.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/modules/stats/common/stats_row.dart';
 
 class StatsTrackItem extends StatelessWidget {
   final SonolythTrackObject track;
@@ -17,19 +16,11 @@ class StatsTrackItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ButtonTile(
-      style: ButtonVariance.ghost,
-      leading: ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: UniversalImage(
-          path: (track.album.images).asUrlString(
-            placeholder: ImagePlaceholder.albumArt,
-          ),
-          width: 40,
-          height: 40,
-        ),
+    return StatsRow(
+      imageUrl: (track.album.images).asUrlString(
+        placeholder: ImagePlaceholder.albumArt,
       ),
-      title: Text(track.name),
+      title: track.name,
       subtitle: ArtistLink(
         artists: track.artists,
         mainAxisAlignment: WrapAlignment.start,
@@ -37,7 +28,7 @@ class StatsTrackItem extends StatelessWidget {
           context.navigateTo(TrackRoute(trackId: track.id));
         },
       ),
-      trailing: info,
+      info: info,
       onPressed: () {
         context.navigateTo(TrackRoute(trackId: track.id));
       },

@@ -3,6 +3,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/constrains.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/connect/clients.dart';
@@ -23,17 +25,24 @@ class ConnectDeviceButton extends HookConsumerWidget {
       final mediaQuery = MediaQuery.sizeOf(context);
 
       if (mediaQuery.mdAndDown) {
-        return IconButton.ghost(
-          icon: const Icon(SonolythIcons.speaker),
-          onPressed: () {
-            context.navigateTo(const ConnectRoute());
-          },
+        return ZenithTooltip(
+          message: context.l10n.connect_to_a_device,
+          child: IconButton.ghost(
+            icon: const Icon(SonolythIcons.speaker),
+            onPressed: () {
+              context.navigateTo(const ConnectRoute());
+            },
+          ),
         );
       }
 
       return SizedBox(
         width: double.infinity,
-        child: Button.primary(
+        // `DialogPositiveButtonStyle`: the translucent 5% positive, never a
+        // white-filled `Button.primary` — the wide sidebar's first render
+        // showed one (§22).
+        child: Button(
+          style: zenithPositiveButton(Theme.of(context).colorScheme),
           onPressed: () {
             context.navigateTo(const ConnectRoute());
           },
@@ -54,11 +63,11 @@ class ConnectDeviceButton extends HookConsumerWidget {
           },
           style: const ButtonStyle.secondary(size: ButtonSize(.8)),
           leading: connectClients.asData?.value.resolvedService != null
-              ? const Center(
+              ? Center(
                   child: DotItem(
                     size: 6,
                     borderRadius: 10,
-                    color: Colors.green,
+                    color: Theme.of(context).colorScheme.foreground,
                   ),
                 )
               : null,
@@ -67,11 +76,15 @@ class ConnectDeviceButton extends HookConsumerWidget {
             "${hasServices ? " (${connectClients.asData?.value.services.length})" : ""}",
           ),
         ),
-        IconButton.primary(
-          icon: const Icon(SonolythIcons.speaker),
-          onPressed: () {
-            context.navigateTo(const ConnectRoute());
-          },
+        // A bare glyph: a white-filled disc has no source in Proxima.
+        ZenithTooltip(
+          message: context.l10n.connect_to_a_device,
+          child: IconButton.ghost(
+            icon: const Icon(SonolythIcons.speaker),
+            onPressed: () {
+              context.navigateTo(const ConnectRoute());
+            },
+          ),
         )
       ],
     );

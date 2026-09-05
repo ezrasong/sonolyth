@@ -5,36 +5,52 @@ final audioPlayer = SonolythAudioPlayer();
 class SonolythAudioPlayer extends AudioPlayerInterface
     with SonolythAudioPlayersStreams {
   Future<void> pause() async {
-    await _mkPlayer.pause();
+    await _engine.pause();
   }
 
   Future<void> resume() async {
-    await _mkPlayer.play();
+    await _engine.resume();
   }
 
   Future<void> stop() async {
+    // Drop the shadow deck before stopping: the queue is being torn down, so
+    // there is nothing left to cross-fade into and the engine must go back to
+    // its dormant single-player state.
+    await _engine.reset();
     await _mkPlayer.stop();
   }
 
   Future<void> seek(Duration position) async {
-    await _mkPlayer.seek(position);
+    await _engine.seek(position);
   }
 
   /// Volume is between 0 and 1
   Future<void> setVolume(double volume) async {
     assert(volume >= 0 && volume <= 1);
-    await _mkPlayer.setVolume(volume * 100);
+    await _engine.setUserVolume(volume);
   }
 
   Future<void> setSpeed(double speed) async {
-    await _mkPlayer.setRate(speed);
+    await _engine.applyToDecks((deck) => deck.setRate(speed));
   }
 
   Future<void> setAudioDevice(mk.AudioDevice device) async {
-    await _mkPlayer.setAudioDevice(device);
+    await _engine.applyToDecks((deck) => deck.setAudioDevice(device));
+  }
+
+  /// Length of the crossfade between tracks. [Duration.zero] turns crossfading
+  /// off entirely, which leaves playback on the single main player exactly as
+  /// it behaves without the engine.
+  Future<void> setCrossfadeDuration(Duration duration) async {
+    await _engine.setFadeDuration(duration);
+  }
+
+  Future<void> setCrossfadeCurve(CrossfadeCurve curve) async {
+    _engine.curve = curve;
   }
 
   Future<void> dispose() async {
+    await _engine.dispose();
     await _mkPlayer.dispose();
   }
 
@@ -47,6 +63,9 @@ class SonolythAudioPlayer extends AudioPlayerInterface
   }) async {
     assert(tracks.isNotEmpty);
     assert(initialIndex <= tracks.length - 1);
+    // A new queue replaces whatever the decks were doing; park the engine so
+    // playback restarts cleanly on the main player.
+    await _engine.reset();
     await _mkPlayer.open(
       mk.Playlist(tracks, index: initialIndex),
       play: autoPlay,
@@ -89,15 +108,35 @@ class SonolythAudioPlayer extends AudioPlayerInterface
   int get currentIndex => _mkPlayer.state.playlist.index;
 
   Future<void> skipToNext() async {
-    await _mkPlayer.next();
+    await _engine.skipToNext();
   }
 
+  /// How far into a track "previous" still means *the previous track*.
+  /// Past this it restarts the track you are listening to, which is what
+  /// every other player does — and what you actually want when you press it
+  /// to hear a verse again.
+  static const restartInsteadOfPreviousAfter = Duration(seconds: 5);
+
   Future<void> skipToPrevious() async {
-    await _mkPlayer.previous();
+    final position = _mkPlayer.state.position;
+    // With nothing before this track, "previous" can only mean "start it
+    // again" — it used to be a no-op, so the button did nothing at all on
+    // the first track of a queue.
+    final hasPrevious = _mkPlayer.state.playlist.index > 0 ||
+        _mkPlayer.state.playlistMode == mk.PlaylistMode.loop;
+    AppLogger.diag(
+      "[prev] position=${position.inMilliseconds}ms index="
+      "${_mkPlayer.state.playlist.index} hasPrevious=$hasPrevious",
+    );
+    if (position > restartInsteadOfPreviousAfter || !hasPrevious) {
+      await seek(Duration.zero);
+      return;
+    }
+    await _engine.skipToPrevious();
   }
 
   Future<void> jumpTo(int index) async {
-    await _mkPlayer.jump(index);
+    await _engine.jumpTo(index);
   }
 
   Future<void> addTrack(mk.Media media) async {
@@ -117,6 +156,7 @@ class SonolythAudioPlayer extends AudioPlayerInterface
   }
 
   Future<void> clearPlaylist() async {
+    await _engine.reset();
     _mkPlayer.stop();
   }
 
@@ -129,10 +169,14 @@ class SonolythAudioPlayer extends AudioPlayerInterface
   }
 
   Future<void> setAudioNormalization(bool normalize) async {
-    await _mkPlayer.setAudioNormalization(normalize);
+    await _engine.applyToDecks(
+      (deck) => deck.setAudioNormalization(normalize),
+    );
   }
 
   Future<void> setDemuxerBufferSize(int sizeInBytes) async {
-    await _mkPlayer.setDemuxerBufferSize(sizeInBytes);
+    await _engine.applyToDecks(
+      (deck) => deck.setDemuxerBufferSize(sizeInBytes),
+    );
   }
 }

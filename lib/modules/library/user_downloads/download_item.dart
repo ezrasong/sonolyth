@@ -4,13 +4,16 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/image/universal_image.dart';
-import 'package:sonolyth/components/links/artist_link.dart';
-import 'package:sonolyth/components/ui/button_tile.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/download_manager_provider.dart';
 import 'package:sonolyth/services/spotiflac/native_flac_downloader.dart';
 
+/// One row of the download queue, in the Proxima Zenith idiom: a flat row with
+/// square art, a monochrome status affordance, and — while downloading — a
+/// hairline progress rule spanning the full row width. Zenith expresses
+/// progress as a thin line (its seekbar), never as a spinner or filled pill.
 class DownloadItem extends HookConsumerWidget {
   final DownloadTask task;
   const DownloadItem({
@@ -20,20 +23,19 @@ class DownloadItem extends HookConsumerWidget {
 
   String _errorHeadline(BuildContext context) {
     return switch (task.errorCode) {
-      DownloadErrorCode.rateLimited =>
-        context.l10n.download_error_rate_limited,
-      DownloadErrorCode.noProviders =>
-        context.l10n.download_error_no_providers,
+      DownloadErrorCode.rateLimited => context.l10n.download_error_rate_limited,
+      DownloadErrorCode.noProviders => context.l10n.download_error_no_providers,
+      DownloadErrorCode.needsVerification =>
+        "Lossless access not verified — Settings > Playback",
       DownloadErrorCode.noSource => context.l10n.download_error_no_source,
-      DownloadErrorCode.emptyStream =>
-        context.l10n.download_error_empty_stream,
+      DownloadErrorCode.emptyStream => context.l10n.download_error_empty_stream,
       DownloadErrorCode.httpStatus =>
         context.l10n.download_error_http(task.errorMessage ?? "?"),
       DownloadErrorCode.timeout => context.l10n.download_error_timeout,
       DownloadErrorCode.noConnection =>
         context.l10n.download_error_no_connection,
-      DownloadErrorCode.network => context.l10n.download_error_network,
       DownloadErrorCode.unknown ||
+      DownloadErrorCode.network ||
       null =>
         task.errorMessage ?? context.l10n.download_error_unknown,
     };
@@ -42,128 +44,164 @@ class DownloadItem extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final downloadManager = ref.watch(downloadManagerProvider.notifier);
+    final isFailed = task.status == DownloadStatus.failed;
 
-    return ButtonTile(
-      style: ButtonVariance.ghost,
-      leading: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 5),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: UniversalImage(
-            height: 40,
-            width: 40,
-            path: task.track.album.images.asUrlString(
-              placeholder: ImagePlaceholder.albumArt,
-            ),
-          ),
-        ),
-      ),
-      title: Text(
-        task.track.name,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final artists = task.track.artists.map((a) => a.name).join(", ");
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ClipRect(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 20),
-              child: ArtistLink(
-                artists: task.track.artists,
-                mainAxisAlignment: WrapAlignment.start,
-                onOverflowArtistClick: () {
-                  context.navigateTo(TrackRoute(trackId: task.track.id));
-                },
-              ),
-            ),
-          ),
-          if (task.status == DownloadStatus.failed &&
-              (task.errorCode != null || task.errorMessage != null))
-            Tooltip(
-              tooltip: TooltipContainer(
-                child: Text(task.errorMessage ?? _errorHeadline(context)),
-              ).call,
-              child: Text(
-                _errorHeadline(context),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.typography.xSmall.copyWith(
-                  color: theme.colorScheme.destructive,
+          Row(
+            children: [
+              // Square art, tight corners — Zenith treats artwork as a panel,
+              // not a rounded chip.
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: UniversalImage(
+                  height: 44,
+                  width: 44,
+                  path: task.track.album.images.asUrlString(
+                    placeholder: ImagePlaceholder.albumArt,
+                  ),
                 ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () =>
+                      context.navigateTo(TrackRoute(trackId: task.track.id)),
+                  behavior: HitTestBehavior.opaque,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        task.track.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.typography.small.copyWith(
+                          color: scheme.foreground,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        isFailed ? _errorHeadline(context) : artists,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.typography.xSmall.copyWith(
+                          color: isFailed
+                              ? scheme.destructive
+                              : scheme.mutedForeground,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              _Trailing(task: task, downloadManager: downloadManager),
+            ],
+          ),
+          if (task.status == DownloadStatus.downloading)
+            Padding(
+              padding: const EdgeInsets.only(top: 9),
+              child: StreamBuilder(
+                stream: task.downloadedBytesStream,
+                builder: (context, snapshot) {
+                  final total = task.totalSizeBytes;
+                  final progress = total == null || total == 0
+                      ? null
+                      : ((snapshot.data ?? 0) / total).clamp(0.0, 1.0);
+                  // A 2px rule, full bleed across the row.
+                  return SizedBox(
+                    height: 2,
+                    child: LinearProgressIndicator(value: progress),
+                  );
+                },
               ),
             ),
         ],
       ),
-      trailing: switch (task.status) {
-        DownloadStatus.downloading => StreamBuilder(
-            stream: task.downloadedBytesStream,
-            builder: (context, asyncSnapshot) {
-              final progress =
-                  task.totalSizeBytes == null || task.totalSizeBytes == 0
-                      ? 0.0
-                      : (asyncSnapshot.data ?? 0) / task.totalSizeBytes!;
+    );
+  }
+}
 
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "${(progress * 100).round()}%",
-                    style: theme.typography.xSmall,
+/// Status affordance. Every state reads as a word or a single glyph in the
+/// monochrome ramp — no coloured badges, which would break the achromatic rule.
+class _Trailing extends StatelessWidget {
+  const _Trailing({required this.task, required this.downloadManager});
+
+  final DownloadTask task;
+  final DownloadManagerNotifier downloadManager;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    switch (task.status) {
+      case DownloadStatus.downloading:
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            StreamBuilder(
+              stream: task.downloadedBytesStream,
+              builder: (context, snapshot) {
+                final total = task.totalSizeBytes;
+                final pct = total == null || total == 0
+                    ? null
+                    : (((snapshot.data ?? 0) / total) * 100).round();
+                return Text(
+                  pct == null ? "--" : "$pct%",
+                  style: theme.typography.xSmall.copyWith(
+                    color: scheme.mutedForeground,
+                    // Tabular figures stop the row twitching as digits change.
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
-                  const SizedBox(width: 8),
-                  SizedBox.square(
-                    dimension: 22,
-                    child: CircularProgressIndicator(
-                      value: progress.clamp(0.0, 1.0),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  IconButton.ghost(
-                    size: ButtonSize.small,
-                    icon: const Icon(SonolythIcons.close),
-                    onPressed: () {
-                      downloadManager.cancel(task.track);
-                    },
-                  ),
-                ],
-              );
-            },
-          ),
-        DownloadStatus.failed || DownloadStatus.canceled => Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                task.status == DownloadStatus.failed
-                    ? SonolythIcons.error
-                    : SonolythIcons.close,
-                size: 18,
-                color: task.status == DownloadStatus.failed
-                    ? theme.colorScheme.destructive
-                    : theme.colorScheme.mutedForeground,
-              ),
-              const SizedBox(width: 4),
-              IconButton.ghost(
+                );
+              },
+            ),
+            const SizedBox(width: 4),
+            ZenithTooltip(
+              message: context.l10n.cancel_download,
+              child: IconButton.ghost(
                 size: ButtonSize.small,
-                icon: const Icon(SonolythIcons.refresh),
-                onPressed: () {
-                  downloadManager.retry(task.track);
-                },
+                icon: const Icon(SonolythIcons.close),
+                onPressed: () => downloadManager.cancel(task.track),
               ),
-            ],
+            ),
+          ],
+        );
+      case DownloadStatus.failed:
+      case DownloadStatus.canceled:
+        return ZenithTooltip(
+          message: context.l10n.retry_download,
+          child: IconButton.ghost(
+            size: ButtonSize.small,
+            icon: const Icon(SonolythIcons.refresh),
+            onPressed: () => downloadManager.retry(task.track),
           ),
-        DownloadStatus.completed =>
-          Icon(SonolythIcons.done, color: theme.colorScheme.primary),
-        DownloadStatus.queued => IconButton.ghost(
+        );
+      case DownloadStatus.completed:
+        return Icon(
+          SonolythIcons.done,
+          size: 18,
+          color: scheme.foreground,
+        );
+      case DownloadStatus.queued:
+        return ZenithTooltip(
+          message: context.l10n.cancel_download,
+          child: IconButton.ghost(
             size: ButtonSize.small,
             icon: const Icon(SonolythIcons.close),
-            onPressed: () {
-              downloadManager.cancel(task.track);
-            },
+            onPressed: () => downloadManager.cancel(task.track),
           ),
-      },
-    );
+        );
+    }
   }
 }

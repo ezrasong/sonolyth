@@ -5,6 +5,8 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:sonolyth/collections/fake.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
+import 'package:sonolyth/components/playbutton_view/playbutton_card.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/modules/album/album_card.dart';
 import 'package:sonolyth/modules/artist/artist_card.dart';
@@ -42,7 +44,6 @@ class HorizontalPlaybuttonCardView<T> extends HookWidget {
   Widget build(BuildContext context) {
     final scrollController = useScrollController();
     final isArtist = items.every((s) => s is SonolythFullArtistObject);
-    final scale = context.theme.scaling;
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -55,9 +56,9 @@ class HorizontalPlaybuttonCardView<T> extends HookWidget {
             children: [
               Flexible(
                 child: DefaultTextStyle(
-                  style: context.theme.typography.h4.copyWith(
-                    color: context.theme.colorScheme.foreground,
-                  ),
+                  // `SubheadText` — 12sp bold at 60%. Small and dim on
+                  // purpose; see `zenithSubhead`.
+                  style: zenithSubhead(context.theme.colorScheme),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   child: title,
@@ -70,9 +71,14 @@ class HorizontalPlaybuttonCardView<T> extends HookWidget {
             error!
           else
             SizedBox(
-              // Card contents scale with theme.scaling; the rail must too or
-              // increased UI scale clips every carousel.
-              height: (isArtist ? 250 : 225) * scale,
+              // Card contents scale with theme.scaling *and* with the system
+              // font size; the rail must too or increased UI scale clips every
+              // carousel (§37).
+              // One height for every card type: since ArtistCard became a
+              // `PlaybuttonCard` too (§34) an artist rail is exactly as tall
+              // as an album rail — it used to need 25dp more for the 130dp
+              // avatar and the "ARTIST" badge.
+              height: ZenithCardMetrics.extent(context),
               child: NotificationListener(
                 // disable multiple scrollbar to use this
                 onNotification: (notification) => true,
@@ -109,7 +115,10 @@ class HorizontalPlaybuttonCardView<T> extends HookWidget {
                               ),
                           isLoading: isLoadingNextPage,
                           hasReachedMax: !hasNextPage,
-                          separatorBuilder: (context, index) => Gap(12 * scale),
+                          // No separator: the cards carry
+                          // `ItemTrackAAImage_scene_grid`'s 8dp margins.
+                          separatorBuilder: (context, index) =>
+                              const SizedBox.shrink(),
                           itemBuilder: (context, index) {
                             final item = items[index];
 

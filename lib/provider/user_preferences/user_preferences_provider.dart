@@ -6,12 +6,13 @@ import 'package:path_provider/path_provider.dart' as paths;
 import 'package:shadcn_flutter/shadcn_flutter.dart' hide join;
 import 'package:sonolyth/models/database/database.dart';
 import 'package:sonolyth/models/metadata/market.dart';
+import 'package:sonolyth/models/playback/crossfade.dart';
 import 'package:sonolyth/modules/settings/color_scheme_picker_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sonolyth/provider/database/database.dart';
 import 'package:sonolyth/services/audio_player/audio_player.dart';
 import 'package:sonolyth/services/logger/logger.dart';
 import 'package:sonolyth/utils/platform.dart';
-import 'package:window_manager/window_manager.dart';
 import 'package:open_file/open_file.dart';
 
 typedef UserPreferences = PreferencesTableData;
@@ -44,6 +45,8 @@ class UserPreferencesNotifier extends Notifier<PreferencesTableData> {
             ..where((tbl) => tbl.id.equals(0)))
           .getSingle();
 
+      await _migrateToZenithAccent(db);
+
       final subscription = (db.select(db.preferencesTable)
             ..where((tbl) => tbl.id.equals(0)))
           .watchSingle()
@@ -51,15 +54,14 @@ class UserPreferencesNotifier extends Notifier<PreferencesTableData> {
         try {
           state = event;
 
-          if (kIsDesktop) {
-            await windowManager.setTitleBarStyle(
-              state.systemTitleBar
-                  ? TitleBarStyle.normal
-                  : TitleBarStyle.hidden,
-            );
-          }
-
           await audioPlayer.setAudioNormalization(state.normalizeAudio);
+          // Crossfade is owned by the player, not the DB row: re-apply it on
+          // every preferences emission so a launch (and a change made from
+          // another surface) reaches the engine.
+          await audioPlayer.setCrossfadeDuration(
+            Duration(seconds: state.crossfadeDuration),
+          );
+          await audioPlayer.setCrossfadeCurve(state.crossfadeCurve);
         } catch (e, stack) {
           AppLogger.reportError(e, stack);
         }
@@ -74,20 +76,10 @@ class UserPreferencesNotifier extends Notifier<PreferencesTableData> {
   }
 
   Future<String> _getDefaultDownloadDirectory() async {
-    if (kIsAndroid) {
-      final dir = await paths.getExternalStorageDirectory();
-      return join(
-          dir?.path ?? (await paths.getApplicationDocumentsDirectory()).path,
-          "Downloads");
-    }
-
-    if (kIsMacOS) {
-      return join((await paths.getLibraryDirectory()).path, "Caches");
-    }
-
-    return paths.getDownloadsDirectory().then((dir) {
-      return join(dir!.path, "Sonolyth");
-    });
+    final dir = await paths.getExternalStorageDirectory();
+    return join(
+        dir?.path ?? (await paths.getApplicationDocumentsDirectory()).path,
+        "Downloads");
   }
 
   Future<void> setData(PreferencesTableCompanion data) async {
@@ -147,6 +139,28 @@ class UserPreferencesNotifier extends Notifier<PreferencesTableData> {
     return setData(PreferencesTableCompanion(market: Value(country)));
   }
 
+  /// One-time move to the Proxima Dark Zenith accent scheme.
+  ///
+  /// Zenith is the app's identity but it didn't exist as a selectable scheme
+  /// before, so every stored value on an existing install predates it and is
+  /// really "never chosen". Rewrite it once, guarded by a flag, so the app
+  /// looks like itself after an update — and so a user who later picks a
+  /// different scheme keeps that choice.
+  Future<void> _migrateToZenithAccent(AppDatabase db) async {
+    const flag = "zenith-accent-migrated";
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      if (preferences.getBool(flag) == true) return;
+      await preferences.setBool(flag, true);
+      if (state.accentColorScheme.name == "zenith") return;
+      await setAccentColorScheme(
+        const SonolythColor(0xffffffff, name: "zenith"),
+      );
+    } catch (_) {
+      // A failed migration just leaves the previous accent in place.
+    }
+  }
+
   Future<void> setAccentColorScheme(SonolythColor color) {
     return setData(PreferencesTableCompanion(accentColorScheme: Value(color)));
   }
@@ -179,10 +193,6 @@ class UserPreferencesNotifier extends Notifier<PreferencesTableData> {
         localLibraryLocation: Value(localLibraryDirs),
       ),
     );
-  }
-
-  Future<void> setLayoutMode(LayoutMode mode) {
-    return setData(PreferencesTableCompanion(layoutMode: Value(mode)));
   }
 
   Future<void> setCloseBehavior(CloseBehavior behavior) {
@@ -256,7 +266,31 @@ class UserPreferencesNotifier extends Notifier<PreferencesTableData> {
   Future<void> setCacheMusic(bool cache) {
     return setData(PreferencesTableCompanion(cacheMusic: Value(cache)));
   }
+
+  /// Seconds of overlap between tracks; 0 turns crossfading off.
+  Future<void> setCrossfadeDuration(int seconds) {
+    assert(
+      seconds >= 0 && seconds <= maxCrossfadeSeconds,
+      "Crossfade must be between 0 and $maxCrossfadeSeconds seconds",
+    );
+    final result = setData(
+      PreferencesTableCompanion(crossfadeDuration: Value(seconds)),
+    );
+    audioPlayer.setCrossfadeDuration(Duration(seconds: seconds));
+    return result;
+  }
+
+  Future<void> setCrossfadeCurve(CrossfadeCurve curve) {
+    final result = setData(
+      PreferencesTableCompanion(crossfadeCurve: Value(curve)),
+    );
+    audioPlayer.setCrossfadeCurve(curve);
+    return result;
+  }
 }
+
+/// Upper bound of the crossfade setting, matching what streaming apps offer.
+const maxCrossfadeSeconds = 12;
 
 final userPreferencesProvider =
     NotifierProvider<UserPreferencesNotifier, PreferencesTableData>(

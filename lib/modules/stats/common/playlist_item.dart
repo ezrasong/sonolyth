@@ -1,10 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
-import 'package:sonolyth/components/image/universal_image.dart';
-import 'package:sonolyth/components/ui/button_tile.dart';
 import 'package:sonolyth/extensions/string.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
+import 'package:sonolyth/modules/stats/common/stats_row.dart';
 
 class StatsPlaylistItem extends StatelessWidget {
   final SonolythSimplePlaylistObject playlist;
@@ -14,25 +13,18 @@ class StatsPlaylistItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ButtonTile(
-      style: ButtonVariance.ghost,
-      leading: ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: UniversalImage(
-          path: (playlist.images).asUrlString(
-            placeholder: ImagePlaceholder.collection,
-          ),
-          width: 40,
-          height: 40,
-        ),
+    final description = playlist.description.unescapeHtml().cleanHtml();
+
+    return StatsRow(
+      imageUrl: (playlist.images).asUrlString(
+        placeholder: ImagePlaceholder.collection,
       ),
-      title: Text(playlist.name),
-      subtitle: Text(
-        playlist.description.unescapeHtml(),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      trailing: info,
+      title: playlist.name,
+      // A description arrives as HTML from the metadata plugin, and an empty
+      // one must not leave an empty line 2 behind — `PlaybuttonTile` cleans
+      // and drops it the same way.
+      subtitle: description.isEmpty ? null : Text(description),
+      info: info,
       onPressed: () {
         context.navigateTo(PlaylistRoute(id: playlist.id, playlist: playlist));
       },

@@ -13,6 +13,7 @@ import 'package:sonolyth/components/links/artist_link.dart';
 import 'package:sonolyth/components/links/link_text.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
 import 'package:sonolyth/components/track_tile/track_options_button.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/extensions/list.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
@@ -205,8 +206,8 @@ class TrackPage extends HookConsumerWidget {
                                           !playlist.tracks
                                               .containsBy(track, (t) => t.id))
                                         Button.outline(
-                                          leading:
-                                              const Icon(SonolythIcons.queueAdd),
+                                          leading: const Icon(
+                                              SonolythIcons.queueAdd),
                                           child: Text(context.l10n.queue),
                                           onPressed: () {
                                             playlistNotifier.addTrack(track);
@@ -216,10 +217,8 @@ class TrackPage extends HookConsumerWidget {
                                       if (!isActive &&
                                           !playlist.tracks
                                               .containsBy(track, (t) => t.id))
-                                        Tooltip(
-                                          tooltip: TooltipContainer(
-                                            child: Text(context.l10n.play_next),
-                                          ).call,
+                                        ZenithTooltip(
+                                          message: context.l10n.play_next,
                                           child: IconButton.outline(
                                             icon: const Icon(
                                                 SonolythIcons.lightning),
@@ -230,14 +229,10 @@ class TrackPage extends HookConsumerWidget {
                                           ),
                                         ),
                                       const Gap(5),
-                                      Tooltip(
-                                        tooltip: TooltipContainer(
-                                          child: Text(
-                                            isActive
-                                                ? context.l10n.pause_playback
-                                                : context.l10n.play,
-                                          ),
-                                        ).call,
+                                      ZenithTooltip(
+                                        message: isActive
+                                            ? context.l10n.pause_playback
+                                            : context.l10n.play,
                                         child: IconButton.primary(
                                           shape: ButtonShape.circle,
                                           icon: Icon(

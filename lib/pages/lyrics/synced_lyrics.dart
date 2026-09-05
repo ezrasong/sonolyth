@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:palette_generator/palette_generator.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/collections/zenith_motion.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/modules/lyrics/zoom_controls.dart';
 import 'package:sonolyth/components/shimmers/shimmer_lyrics.dart';
-import 'package:sonolyth/extensions/constrains.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/hooks/controllers/use_auto_scroll_controller.dart';
 import 'package:sonolyth/modules/lyrics/use_synced_lyrics.dart';
@@ -19,12 +19,10 @@ import 'package:sonolyth/services/audio_player/audio_player.dart';
 import 'package:sonolyth/services/logger/logger.dart';
 
 class SyncedLyrics extends HookConsumerWidget {
-  final PaletteColor palette;
   final bool? isModal;
   final int defaultTextZoom;
 
   const SyncedLyrics({
-    required this.palette,
     this.isModal,
     this.defaultTextZoom = 100,
     super.key,
@@ -49,33 +47,37 @@ class SyncedLyrics extends HookConsumerWidget {
     final lyricsState = ref.watch(
       syncedLyricsMapProvider(playlist.activeTrack),
     );
-    final currentTime =
-        useSyncedLyrics(ref, lyricsState.asData?.value.lyricsMap ?? {}, delay);
+    // `const` so the hook's effect key is stable while there are no lyrics —
+    // a fresh `{}` every build re-subscribed the position stream each frame.
+    final currentTime = useSyncedLyrics(
+      ref,
+      lyricsState.asData?.value.lyricsMap ?? const <int, String>{},
+      delay,
+    );
     final textZoomLevel = useState<int>(defaultTextZoom);
-
-    final typography = Theme.of(context).typography;
 
     ref.listen(
       audioPlayerProvider.select((s) => s.activeTrack),
       (previous, next) {
         controller.animateTo(
           0,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
+          duration: ZenithMotion.slide,
+          curve: ZenithMotion.slideCurve,
         );
         ref.read(syncedLyricsDelayProvider.notifier).state = 0;
       },
     );
 
-    final headlineTextStyle = (mediaQuery.mdAndUp
-            ? typography.h3
-            : typography.h4.copyWith(fontSize: 25))
-        .copyWith(
-      color: palette.titleTextColor,
-    );
+    // `ItemTextTitle_scene_header` — 29sp normal at `textColorPrimary`. The
+    // palette-derived colour this used to carry was computed for the album's
+    // dark-muted tone, so on a dark cover the title came out near-black on the
+    // near-black ground — invisible.
+    final headlineTextStyle = zenithPageTitle(theme.colorScheme);
 
-    final bodyTextTheme = typography.large.copyWith(
-      color: palette.bodyTextColor,
+    // `PopupButton_Text` size (16dp) at `textColorSecondary`.
+    final bodyTextTheme = TextStyle(
+      fontSize: 16,
+      color: theme.colorScheme.mutedForeground,
     );
 
     useEffect(() {
@@ -86,8 +88,8 @@ class SyncedLyrics extends HookConsumerWidget {
             if (event > Duration.zero || !controller.hasClients) return;
             controller.animateTo(
               0,
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
+              duration: ZenithMotion.slide,
+              curve: ZenithMotion.slideCurve,
             );
           } catch (e, stack) {
             AppLogger.reportError(e, stack);
@@ -116,8 +118,9 @@ class SyncedLyrics extends HookConsumerWidget {
                   preferredSize: const Size.fromHeight(40),
                   child: Text(
                     playlist.activeTrack?.artists.asString() ?? "",
-                    style:
-                        mediaQuery.mdAndUp ? typography.h4 : typography.x2Large,
+                    // `ItemTextTitle_scene_subheader` — 17sp, dimmed.
+                    style: zenithSubheaderTitle(theme.colorScheme)
+                        .copyWith(color: theme.colorScheme.mutedForeground),
                   ),
                 ),
               ),
@@ -156,7 +159,8 @@ class SyncedLyrics extends HookConsumerWidget {
                                     )
                                   : const EdgeInsets.all(8.0),
                               child: AnimatedDefaultTextStyle(
-                                duration: const Duration(milliseconds: 250),
+                                duration: ZenithMotion.fade,
+                                curve: ZenithMotion.fadeCurve,
                                 style: TextStyle(
                                   color: isActive
                                       ? theme.colorScheme.foreground
@@ -224,9 +228,8 @@ class SyncedLyrics extends HookConsumerWidget {
                         ),
                         TextSpan(
                           text: " ${context.l10n.plain_lyrics} ",
-                          style: typography.large.copyWith(
-                            color: palette.bodyTextColor,
-                            fontWeight: FontWeight.bold,
+                          style: bodyTextTheme.copyWith(
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         TextSpan(text: context.l10n.tab_instead),
@@ -242,6 +245,7 @@ class SyncedLyrics extends HookConsumerWidget {
           child: Builder(builder: (context) {
             final actions = [
               ZoomControls(
+                label: context.l10n.lyrics_delay,
                 value: delay,
                 onChanged: (value) =>
                     ref.read(syncedLyricsDelayProvider.notifier).state = value,
@@ -252,6 +256,7 @@ class SyncedLyrics extends HookConsumerWidget {
                 direction: isModal == true ? Axis.horizontal : Axis.vertical,
               ),
               ZoomControls(
+                label: context.l10n.text_size,
                 value: textZoomLevel.value,
                 onChanged: (value) => textZoomLevel.value = value,
                 min: 50,

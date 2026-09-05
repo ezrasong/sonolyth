@@ -269,6 +269,14 @@ class TidalProvider extends SpotiFlacProvider {
     Map? best;
     var bestScore = 0.0;
     for (final candidate in candidates) {
+      final candidateTitle = candidate["title"]?.toString() ?? "";
+      // Hard reject alternate versions (live / cover / karaoke / piano /
+      // instrumental / remix / sped-up ...). Scoring them down still let a
+      // strong title+artist match clear the 0.5 threshold, which is how live
+      // and piano renditions kept getting matched and downloaded.
+      if (TrackMatching.isVariantMismatch(track.name, candidateTitle)) {
+        continue;
+      }
       final artists = candidate["artists"];
       final candidateArtists = artists is List
           ? artists
@@ -282,7 +290,7 @@ class TidalProvider extends SpotiFlacProvider {
             ];
       final score = TrackMatching.score(
         expectedTitle: track.name,
-        candidateTitle: candidate["title"]?.toString() ?? "",
+        candidateTitle: candidateTitle,
         expectedArtists: track.artists.map((a) => a.name).toList(),
         candidateArtists: candidateArtists,
         expectedDurationMs: track.durationMs,

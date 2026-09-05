@@ -6,6 +6,7 @@ import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/components/fallbacks/zenith_illustration.dart';
 
 class NoDefaultMetadataPlugin extends StatelessWidget {
   const NoDefaultMetadataPlugin({super.key});
@@ -18,10 +19,9 @@ class NoDefaultMetadataPlugin extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         spacing: 10,
         children: [
-          Undraw(
+          ZenithIllustration(
             height: 200 * context.theme.scaling,
             illustration: UndrawIllustration.stars,
-            color: context.theme.colorScheme.primary,
           ),
           AutoSizeText(
             context.l10n.no_default_metadata_provider_selected,

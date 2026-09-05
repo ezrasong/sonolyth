@@ -1,14 +1,10 @@
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sonolyth/collections/routes.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
-import 'package:sonolyth/modules/player/player_controls.dart';
 import 'package:sonolyth/provider/audio_player/querying_track_info.dart';
 import 'package:sonolyth/services/audio_player/audio_player.dart';
-import 'package:sonolyth/utils/platform.dart';
 
 class PlayPauseIntent extends Intent {
   final WidgetRef ref;
@@ -18,10 +14,6 @@ class PlayPauseIntent extends Intent {
 class PlayPauseAction extends Action<PlayPauseIntent> {
   @override
   invoke(intent) async {
-    if (PlayerControls.focusNode.canRequestFocus) {
-      PlayerControls.focusNode.requestFocus();
-    }
-
     if (!audioPlayer.isPlaying) {
       await audioPlayer.resume();
     } else {
@@ -126,11 +118,7 @@ class CloseAppIntent extends Intent {}
 class CloseAppAction extends Action<CloseAppIntent> {
   @override
   invoke(intent) {
-    if (kIsDesktop) {
-      exit(0);
-    } else {
-      SystemNavigator.pop();
-    }
+    SystemNavigator.pop();
     return null;
   }
 }

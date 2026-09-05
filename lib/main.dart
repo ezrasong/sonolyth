@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:ui';
 import 'dart:io';
 
-import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:flutter/services.dart';
@@ -11,33 +10,29 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:home_widget/home_widget.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:local_notifier/local_notifier.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:metadata_god/metadata_god.dart';
-import 'package:smtc_windows/smtc_windows.dart';
-import 'package:sonolyth/collections/env.dart';
 import 'package:sonolyth/collections/http-override.dart';
 import 'package:sonolyth/collections/intents.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:sonolyth/collections/routes.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
 import 'package:sonolyth/hooks/configurators/use_android_display_setup.dart';
-import 'package:sonolyth/hooks/configurators/use_close_behavior.dart';
-import 'package:sonolyth/hooks/configurators/use_deep_linking.dart';
 import 'package:sonolyth/hooks/configurators/use_disable_battery_optimizations.dart';
-import 'package:sonolyth/hooks/configurators/use_fix_window_stretching.dart';
 import 'package:sonolyth/hooks/configurators/use_has_touch.dart';
 import 'package:sonolyth/models/database/database.dart';
 import 'package:sonolyth/modules/settings/color_scheme_picker_dialog.dart';
 import 'package:sonolyth/provider/audio_player/audio_player_streams.dart';
 import 'package:sonolyth/provider/database/database.dart';
+import 'package:sonolyth/provider/history/retention.dart';
+import 'package:sonolyth/provider/audio_player/track_trim.dart';
 import 'package:sonolyth/provider/downloaded_tracks_provider.dart';
 import 'package:sonolyth/provider/glance/glance.dart';
 import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
 import 'package:sonolyth/provider/metadata_plugin/updater/update_checker.dart';
 import 'package:sonolyth/provider/server/bonsoir.dart';
+import 'package:sonolyth/provider/server/sourced_track_provider.dart';
 import 'package:sonolyth/provider/server/server.dart';
-import 'package:sonolyth/provider/tray_manager/tray_manager.dart';
 import 'package:sonolyth/l10n/l10n.dart';
 import 'package:sonolyth/provider/connect/clients.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
@@ -49,22 +44,15 @@ import 'package:sonolyth/services/kv_store/kv_store.dart';
 import 'package:sonolyth/services/logger/logger.dart';
 import 'package:sonolyth/services/sourced_track/qobuz_audio_source.dart';
 import 'package:sonolyth/services/sourced_track/tidal_audio_source.dart';
-import 'package:sonolyth/services/wm_tools/wm_tools.dart';
-import 'package:sonolyth/utils/migrations/sandbox.dart';
 import 'package:sonolyth/utils/platform.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:window_manager/window_manager.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:yt_dlp_dart/yt_dlp_dart.dart';
 import 'package:flutter_new_pipe_extractor/flutter_new_pipe_extractor.dart';
+import 'package:sonolyth/services/spotiflac/zarz_headless_verify.dart';
+import 'package:sonolyth/hooks/configurators/use_zarz_keep_alive.dart';
+import 'package:sonolyth/services/spotiflac/zarz_session.dart';
 
 Future<void> main(List<String> rawArgs) async {
-  if (rawArgs.contains("web_view_title_bar")) {
-    WidgetsFlutterBinding.ensureInitialized();
-    if (runWebViewTitleBarWidget(rawArgs)) {
-      return;
-    }
-  }
   final arguments = await startCLI(rawArgs);
   AppLogger.initialize(arguments["verbose"]);
 
@@ -73,13 +61,9 @@ Future<void> main(List<String> rawArgs) async {
 
     HttpOverrides.global = BadCertificateAllowlistOverrides();
 
-    // await registerWindowsScheme("spotify");
-
     tz.initializeTimeZones();
 
     MediaKit.ensureInitialized();
-
-    await migrateMacOsFromSandboxToNoSandbox();
 
     // High refresh rate + portrait lock moved to useAndroidDisplaySetup:
     // both need an attached activity, and when AudioService boots this
@@ -87,29 +71,13 @@ Future<void> main(List<String> rawArgs) async {
     // noActivity here — aborting main() before runApp and leaving a cached
     // engine with no UI, which every later launch attached to as a
     // permanently black screen.
-    if (kIsAndroid || kIsDesktop) {
+    if (kIsAndroid) {
       await NewPipeExtractor.init();
     }
 
-    if (!kIsWeb) {
-      MetadataGod.initialize();
-    }
+    MetadataGod.initialize();
 
     await KVStoreService.initialize();
-
-    if (kIsDesktop) {
-      await windowManager.setPreventClose(true);
-      await YtDlp.instance
-          .setBinaryLocation(
-            KVStoreService.getYoutubeEnginePath(YoutubeClientEngine.ytDlp) ??
-                "yt-dlp${kIsWindows ? '.exe' : ''}",
-          )
-          .catchError((e, stack) => null);
-    }
-
-    if (kIsWindows) {
-      await SMTCWindows.initialize();
-    }
 
     await EncryptedKvStoreService.initialize();
 
@@ -171,11 +139,6 @@ Future<void> main(List<String> rawArgs) async {
           .setBool('sourceMatchYtRepinV1', true);
     }
 
-    if (kIsDesktop) {
-      await localNotifier.setup(appName: "Sonolyth");
-      await WindowManagerTools.initialize();
-    }
-
     if (kIsIOS) {
       HomeWidget.setAppGroupId("group.spotube_home_player_widget");
     }
@@ -193,6 +156,30 @@ Future<void> main(List<String> rawArgs) async {
     );
   });
 }
+
+/// Zenith corner softening.
+///
+/// **Proxima's corners are bimodal, and it is the artwork that is square, not
+/// the containers.** Reading every `corners_*` out of `@style/proxima`:
+///
+/// | group | value |
+/// | --- | --- |
+/// | all `corners_aa_*`, miniplayer art, `corners_equ_frs` | **0dp** |
+/// | `corners_small` / `corners_navbar` | 1dp / 5dp |
+/// | `corners_medium`, `corners_medium_plus`, `corners_popup` | **20dp** |
+/// | `corners_mini` / `corners_large` | 25dp / 30dp |
+/// | `corners_searchbar` | 60dp |
+///
+/// So panels, popups and menus are *rounder* than Material's defaults, not
+/// tighter. shadcn derives its ramp from this one scalar as
+/// `radiusXs..radiusXxl = radius * 4..24`, so 1.0 puts `radiusXl` exactly on
+/// `corners_popup`/`corners_medium` (20dp) and `radiusLg` at 16.
+///
+/// This was 0.4 on the theory that "Proxima keeps corners tight". That reads
+/// the artwork tokens and applies them to containers; the widgets that really
+/// are square say so themselves with an explicit 0 (see `ZenithCardMetrics`,
+/// `ZenithTrackRowMetrics`).
+const _kZenithRadius = 1.0;
 
 class SonolythApp extends HookConsumerWidget {
   const SonolythApp({super.key});
@@ -250,10 +237,12 @@ class SonolythApp extends HookConsumerWidget {
     // Load the downloaded-tracks registry up front so media construction can
     // route already-downloaded tracks to their local files.
     ref.listen(downloadedTracksProvider, (_, __) {});
+    // Load the measured edge-silence registry up front, for the same reason:
+    // media construction reads it synchronously.
+    ref.listen(trackTrimProvider, (_, __) {});
     ref.listen(bonsoirProvider, (_, __) {});
     ref.listen(connectClientsProvider, (_, __) {});
     ref.listen(serverProvider, (_, __) {});
-    ref.listen(trayManagerProvider, (_, __) {});
     ref.listen(metadataPluginsProvider, (_, __) {});
     ref.listen(metadataPluginProvider, (_, __) {});
     ref.listen(audioSourcePluginProvider, (_, __) {});
@@ -261,10 +250,70 @@ class SonolythApp extends HookConsumerWidget {
     ref.listen(audioSourcePluginUpdateCheckerProvider, (_, __) {});
 
     useAndroidDisplaySetup();
-    useFixWindowStretching();
-    useDeepLinking(ref, router);
-    useCloseBehavior(ref);
     useDisableBatteryOptimizations();
+
+    // `history_table` is the one table nothing ever removes from: a row per
+    // played track plus one per collection opened, each carrying the item's
+    // full JSON (CONTEXT item 40). Bound it here rather than on the write
+    // path — it is append-only housekeeping, and no frame is waiting on it.
+    // Ten seconds in, well clear of the launch the user is watching.
+    useEffect(() {
+      Future(() async {
+        await Future.delayed(const Duration(seconds: 10));
+        final removed = await pruneHistory(ref.read(databaseProvider));
+        if (removed > 0) {
+          AppLogger.diag("[history] pruned $removed rows past retention");
+        }
+      }).catchError((Object e) {
+        AppLogger.reportError(e, StackTrace.current);
+      });
+      return null;
+    }, []);
+
+    // Warm the lossless sessions at launch. This is a read-only check: a
+    // `GET /bootstrap` mints a challenge server-side, the gateway has never
+    // answered one with a session (CONTEXT §17a), and an install that keeps
+    // minting challenges it never opens gets every signed call answered
+    // `428 VERIFY_REQUIRED` for a while (§23) — so nothing here may bootstrap
+    // except the headless attempt, which opens the challenge it minted.
+    //
+    // When there is no session, solve the Turnstile in a headless WebView
+    // rather than leaving playback dead until the user happens to open
+    // Settings → Playback. Sequentially, not `Future.wait`: two challenge
+    // pages racing each other is two WebViews competing for the same
+    // renderer, and neither is urgent.
+    // Sessions that exist are refreshed on launch / resume / a timer so
+    // they never lapse while the app is in use (they live ten hours).
+    useZarzSessionKeepAlive(ref);
+    useEffect(() {
+      Future(() async {
+        // Let the first frames land before spinning up a hidden WebView:
+        // the challenge page competes with the UI for the main thread, and
+        // a launch that stutters through two 25-second solves read as "the
+        // app is slow". 15 s is generous for a Turnstile that is going to
+        // pass on its own (it does so in a few seconds); one that wants a
+        // click will not pass at 25 s either.
+        await Future.delayed(const Duration(seconds: 4));
+        var granted = false;
+        for (final session in [ZarzSession.qobuz, ZarzSession.tidal]) {
+          if (await session.isAuthenticated()) continue;
+          granted = await tryZarzHeadlessVerify(
+                session,
+                timeout: const Duration(seconds: 15),
+              ) ||
+              granted;
+        }
+        // A headless solve that lands after the first track already failed to
+        // resolve has to re-open it, or the session is verified and nothing
+        // plays until the next launch.
+        if (granted && context.mounted) {
+          await reloadPlaybackAfterVerification(ref);
+        }
+      }).catchError((Object e) {
+        AppLogger.reportError(e, StackTrace.current);
+      });
+      return null;
+    }, []);
 
     useEffect(() {
       if (kIsMobile) {
@@ -314,55 +363,78 @@ class SonolythApp extends HookConsumerWidget {
           child: child!,
         );
 
-        if (kIsLinux) {
-          child = DragToResizeArea(
-            resizeEdgeSize: 2.5,
-            child: child,
-          );
-        }
-
         return child;
       },
       scaling: const AdaptiveScaling(1),
+      // Zenith geometry: flat and opaque. Proxima defines
+      // `m3_sys_elevation_level0 = 0dp` and paints depth with alpha alone, so
+      // surfaces never blur or float — only the radius softens them.
       theme: ThemeData(
-        radius: .5,
+        radius: _kZenithRadius,
         iconTheme: const IconThemeProperties(),
         colorScheme: resolveColorScheme(ThemeMode.light),
         surfaceOpacity: 1,
         surfaceBlur: 0,
       ),
       darkTheme: ThemeData(
-        radius: .5,
+        radius: _kZenithRadius,
         iconTheme: const IconThemeProperties(),
         colorScheme: resolveColorScheme(ThemeMode.dark),
         surfaceOpacity: 1,
         surfaceBlur: 0,
       ),
-      materialTheme: material.ThemeData(
-        brightness: materialBrightness,
-        scaffoldBackgroundColor: materialBrightness == Brightness.dark
-            ? const material.Color(0xff121212)
-            : const material.Color(0xfffafafa),
-        canvasColor: materialBrightness == Brightness.dark
-            ? const material.Color(0xff121212)
-            : const material.Color(0xfffafafa),
-        colorScheme: material.ColorScheme.fromSeed(
-          seedColor: effectiveAccentColor,
+      // The Material layer must not drift from the shadcn one, or Material
+      // widgets (dialogs, ListTiles, the bottom sheet) reintroduce the tinted
+      // M3 surfaces Zenith exists to avoid. Derive it from the same scheme
+      // instead of seeding a hue off the accent.
+      materialTheme: () {
+        final scheme = resolveColorScheme(effectiveThemeMode);
+        return material.ThemeData(
           brightness: materialBrightness,
-        ).copyWith(
-          primary: effectiveAccentColor,
-          surface: materialBrightness == Brightness.dark
-              ? const material.Color(0xff181818)
-              : const material.Color(0xffffffff),
-        ),
-        splashFactory: material.NoSplash.splashFactory,
-        appBarTheme: const material.AppBarTheme(
-          surfaceTintColor: Colors.transparent,
-          scrolledUnderElevation: 0,
-          shadowColor: Colors.transparent,
-          elevation: 0,
-        ),
-      ),
+          scaffoldBackgroundColor: scheme.background,
+          canvasColor: scheme.background,
+          colorScheme: material.ColorScheme(
+            brightness: materialBrightness,
+            primary: scheme.primary,
+            onPrimary: scheme.primaryForeground,
+            secondary: scheme.secondary,
+            onSecondary: scheme.secondaryForeground,
+            error: scheme.destructive,
+            onError: scheme.destructiveForeground,
+            surface: scheme.card,
+            onSurface: scheme.cardForeground,
+            surfaceContainerHighest: scheme.muted,
+            onSurfaceVariant: scheme.mutedForeground,
+            outline: scheme.border,
+            outlineVariant: scheme.border,
+          ),
+          dividerColor: scheme.border,
+          // Zenith is flat: no tint, no shadow, no elevation overlays.
+          splashFactory: material.NoSplash.splashFactory,
+          appBarTheme: const material.AppBarTheme(
+            surfaceTintColor: Colors.transparent,
+            scrolledUnderElevation: 0,
+            shadowColor: Colors.transparent,
+            elevation: 0,
+          ),
+          dialogTheme: material.DialogThemeData(
+            backgroundColor: scheme.popover,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+          ),
+          bottomSheetTheme: material.BottomSheetThemeData(
+            backgroundColor: scheme.popover,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            modalElevation: 0,
+          ),
+          cardTheme: material.CardThemeData(
+            color: scheme.card,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+          ),
+        );
+      }(),
       themeMode: effectiveThemeMode,
       shortcuts: {
         ...WidgetsApp.defaultShortcuts.map((key, value) {

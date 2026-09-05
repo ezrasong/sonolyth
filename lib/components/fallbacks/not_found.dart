@@ -2,6 +2,7 @@ import 'package:flutter_undraw/flutter_undraw.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/components/fallbacks/zenith_illustration.dart';
 
 class NotFound extends StatelessWidget {
   const NotFound({super.key});
@@ -11,10 +12,9 @@ class NotFound extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Undraw(
+        ZenithIllustration(
           illustration: UndrawIllustration.empty,
           height: 200 * context.theme.scaling,
-          color: context.theme.colorScheme.primary,
         ),
         const Gap(10),
         Text(

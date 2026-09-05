@@ -7,22 +7,22 @@ import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
-import 'package:skeletonizer/skeletonizer.dart';
-import 'package:sonolyth/collections/fake.dart';
-
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+
+import 'package:sonolyth/components/adaptive/adaptive_pop_sheet_list.dart';
 import 'package:sonolyth/components/fallbacks/anonymous_fallback.dart';
 import 'package:sonolyth/components/fallbacks/error_box.dart';
 import 'package:sonolyth/components/fallbacks/no_default_metadata_plugin.dart';
+import 'package:sonolyth/components/playbutton_view/playbutton_view.dart';
 import 'package:sonolyth/modules/artist/artist_card.dart';
 import 'package:sonolyth/components/inter_scrollbar/inter_scrollbar.dart';
-import 'package:sonolyth/components/waypoint.dart';
-import 'package:sonolyth/extensions/constrains.dart';
+import 'package:sonolyth/components/ui/zenith_list_header.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/metadata_plugin/core/auth.dart';
 import 'package:sonolyth/provider/metadata_plugin/library/artists.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:sonolyth/services/metadata/errors/exceptions.dart';
+import 'package:sonolyth/components/fallbacks/zenith_illustration.dart';
 
 @RoutePage()
 class UserArtistsPage extends HookConsumerWidget {
@@ -38,6 +38,11 @@ class UserArtistsPage extends HookConsumerWidget {
         ref.watch(metadataPluginSavedArtistsProvider.notifier);
 
     final searchText = useState('');
+
+    // Poweramp keeps the view mode in the list header's menu; null = decide
+    // from the width, as `PlaybuttonView` always did. Artists only gained a
+    // list mode in §34, when `ArtistCard` picked up a `.tile` variant.
+    final viewGrid = useState<bool?>(null);
 
     final filteredArtists = useMemoized(() {
       final artists = artistQuery.asData?.value.items ?? [];
@@ -93,60 +98,42 @@ class UserArtistsPage extends HookConsumerWidget {
               child: CustomScrollView(
                 controller: controller,
                 slivers: [
-                  SliverAppBar(
-                    automaticallyImplyLeading: false,
-                    backgroundColor: Theme.of(context).colorScheme.background,
-                    floating: true,
-                    flexibleSpace: SizedBox(
-                      height: 48,
-                      child: TextField(
-                        onChanged: (value) => searchText.value = value,
-                        features: const [
-                          InputFeature.leading(Icon(SonolythIcons.filter)),
-                        ],
-                        placeholder: Text(context.l10n.filter_artist),
-                      ),
+                  // `merge_item_text_header`: the filter behind the search
+                  // glyph.
+                  SliverToBoxAdapter(
+                    child: ZenithListToolbar(
+                      filterPlaceholder: context.l10n.filter_artist,
+                      onFilterChanged: (value) => searchText.value = value,
+                      menuItems: (context) => [
+                        AdaptiveMenuButton(
+                          value: "grid",
+                          leading: const Icon(SonolythIcons.grid),
+                          child: Text(context.l10n.grid_view),
+                        ),
+                        AdaptiveMenuButton(
+                          value: "list",
+                          leading: const Icon(SonolythIcons.list),
+                          child: Text(context.l10n.list_view),
+                        ),
+                      ],
+                      onMenuSelected: (value) =>
+                          viewGrid.value = value == "grid",
                     ),
                   ),
-                  const SliverGap(10),
                   if (filteredArtists.isNotEmpty || artistQuery.isLoading)
-                    SliverLayoutBuilder(builder: (context, constrains) {
-                      return SliverGrid.builder(
-                        itemCount: filteredArtists.length + 1,
-                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 200,
-                          mainAxisExtent: constrains.smAndDown ? 225 : 250,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 8,
-                        ),
-                        itemBuilder: (context, index) {
-                          if (filteredArtists.isNotEmpty &&
-                              index == filteredArtists.length) {
-                            if (artistQuery.asData?.value.hasMore != true) {
-                              return const SizedBox.shrink();
-                            }
-
-                            return Waypoint(
-                              controller: controller,
-                              isGrid: true,
-                              onTouchEdge: artistQueryNotifier.fetchMore,
-                              child: Skeletonizer(
-                                enabled: true,
-                                child: ArtistCard(FakeData.artist),
-                              ),
-                            );
-                          }
-
-                          return Skeletonizer(
-                            enabled: artistQuery.isLoading,
-                            child: ArtistCard(
-                              filteredArtists.elementAtOrNull(index) ??
-                                  FakeData.artist,
-                            ),
-                          );
-                        },
-                      );
-                    })
+                    PlaybuttonView(
+                      isGrid: viewGrid.value,
+                      showViewToggle: false,
+                      controller: controller,
+                      itemCount: filteredArtists.length,
+                      hasMore: artistQuery.asData?.value.hasMore == true,
+                      isLoading: artistQuery.isLoading,
+                      onRequestMore: artistQueryNotifier.fetchMore,
+                      gridItemBuilder: (context, index) =>
+                          ArtistCard(filteredArtists[index]),
+                      listItemBuilder: (context, index) =>
+                          ArtistCard.tile(filteredArtists[index]),
+                    )
                   else if (filteredArtists.isEmpty &&
                       searchText.value.isEmpty &&
                       !artistQuery.isLoading)
@@ -155,10 +142,9 @@ class UserArtistsPage extends HookConsumerWidget {
                         mainAxisSize: MainAxisSize.min,
                         spacing: 10,
                         children: [
-                          Undraw(
+                          ZenithIllustration(
                             height: 200 * context.theme.scaling,
                             illustration: UndrawIllustration.followMeDrone,
-                            color: Theme.of(context).colorScheme.primary,
                           ),
                           Text(
                             context.l10n.not_following_artists,
@@ -173,10 +159,9 @@ class UserArtistsPage extends HookConsumerWidget {
                         mainAxisSize: MainAxisSize.min,
                         spacing: 10,
                         children: [
-                          Undraw(
+                          ZenithIllustration(
                             height: 200 * context.theme.scaling,
                             illustration: UndrawIllustration.taken,
-                            color: Theme.of(context).colorScheme.primary,
                           ),
                           Text(
                             context.l10n.nothing_found,

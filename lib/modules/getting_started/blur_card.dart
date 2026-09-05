@@ -1,29 +1,13 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:sonolyth/components/ui/zenith_popup_card.dart';
 
-class BlurCard extends HookConsumerWidget {
+/// A getting-started step. The name is historical — it was once a blurred,
+/// bordered card — and it now is `popup_bg` like every other dialog-shaped
+/// surface; see [ZenithPopupCard] for the token.
+class BlurCard extends StatelessWidget {
   final Widget child;
   const BlurCard({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context, ref) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      margin: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: colorScheme.card,
-        border: Border.all(color: colorScheme.border),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      constraints: const BoxConstraints(maxWidth: 400),
-      clipBehavior: Clip.antiAlias,
-      child: SizedBox(
-        width: double.infinity,
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: child,
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => ZenithPopupCard(child: child);
 }

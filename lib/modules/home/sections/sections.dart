@@ -14,6 +14,9 @@ import 'package:sonolyth/provider/metadata_plugin/utils/common.dart';
 import 'package:sonolyth/services/metadata/errors/exceptions.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
 import 'package:flutter_undraw/flutter_undraw.dart';
+import 'package:sonolyth/components/fallbacks/zenith_illustration.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
+import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 
 class HomePageBrowseSection extends HookConsumerWidget {
   const HomePageBrowseSection({super.key});
@@ -22,7 +25,6 @@ class HomePageBrowseSection extends HookConsumerWidget {
   Widget build(BuildContext context, ref) {
     final browseSections = ref.watch(metadataPluginBrowseSectionsProvider);
     final sections = browseSections.asData?.value.items;
-    final ThemeData(:colorScheme) = Theme.of(context);
 
     if (browseSections.isLoading) {
       return SliverToBoxAdapter(
@@ -30,17 +32,23 @@ class HomePageBrowseSection extends HookConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 16,
           children: [
-            Undraw(
+            const ZenithIllustration(
               height: 200,
               illustration: UndrawIllustration.process,
-              color: colorScheme.primary,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               spacing: 8,
               children: [
                 const CircularProgressIndicator(),
-                Text(context.l10n.building_your_timeline).muted,
+                // Flexible: with the sidebar rail taking 70dp of a phone
+                // width, the bare Text overflowed the row by 39px.
+                Flexible(
+                  child: Text(
+                    context.l10n.building_your_timeline,
+                    overflow: TextOverflow.ellipsis,
+                  ).muted,
+                ),
               ],
             ),
             const Gap(16),
@@ -106,8 +114,19 @@ class HomePageBrowseSection extends HookConsumerWidget {
           isLoadingNextPage: false,
           onFetchMore: () {},
           titleTrailing: section.browseMore
+              // `ItemSubheadWithButtonButton` sits on the same line as the
+              // subhead and is not a heading of its own, so it takes the same
+              // 12sp bold as the label it sits beside. Padding is the skin's:
+              // 4 / 6 / 12 / 6.
               ? Button.text(
-                  child: Text(context.l10n.browse_all),
+                  style: ButtonVariance.text.copyWith(
+                    padding: (context, states, value) =>
+                        const EdgeInsets.fromLTRB(4, 6, 12, 6),
+                  ),
+                  child: Text(
+                    context.l10n.browse_all,
+                    style: zenithSubhead(context.theme.colorScheme),
+                  ),
                   onPressed: () {
                     context.navigateTo(
                       HomeBrowseSectionItemsRoute(

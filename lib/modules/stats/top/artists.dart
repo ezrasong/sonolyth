@@ -4,13 +4,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:sonolyth/collections/formatters.dart';
 import 'package:sonolyth/modules/stats/common/artist_item.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/history/top.dart';
 import 'package:sonolyth/provider/history/top/tracks.dart';
 import 'package:sonolyth/provider/metadata_plugin/utils/common.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
+import 'package:sonolyth/components/fallbacks/zenith_illustration.dart';
 
 class TopArtists extends HookConsumerWidget {
   const TopArtists({super.key});
@@ -43,9 +43,8 @@ class TopArtists extends HookConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Gap(50),
-              Undraw(
+              ZenithIllustration(
                 illustration: UndrawIllustration.happyMusic,
-                color: context.theme.colorScheme.primary,
                 height: 200 * context.theme.scaling,
               ),
               Text(
@@ -60,8 +59,7 @@ class TopArtists extends HookConsumerWidget {
           return StatsArtistItem(
             artist: artist.artist,
             info: Text(
-              context.l10n
-                  .count_plays(compactNumberFormatter.format(artist.count)),
+              context.l10n.count_plays(artist.count),
             ),
           );
         },

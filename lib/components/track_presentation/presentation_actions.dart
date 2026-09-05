@@ -8,6 +8,7 @@ import 'package:sonolyth/components/dialogs/prompt_dialog.dart';
 import 'package:sonolyth/components/track_presentation/presentation_props.dart';
 import 'package:sonolyth/components/track_presentation/presentation_state.dart';
 import 'package:sonolyth/components/track_presentation/use_is_user_playlist.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/download_manager_provider.dart';
@@ -50,12 +51,15 @@ ToastOverlay showToastForAction(
           leading: Icon(message.$2),
           title: Text(message.$1),
           leadingAlignment: Alignment.center,
-          trailing: IconButton.ghost(
-            size: ButtonSize.small,
-            icon: const Icon(SonolythIcons.close),
-            onPressed: () {
-              overlay.close();
-            },
+          trailing: ZenithTooltip(
+            message: context.l10n.close,
+            child: IconButton.ghost(
+              size: ButtonSize.small,
+              icon: const Icon(SonolythIcons.close),
+              onPressed: () {
+                overlay.close();
+              },
+            ),
           ),
         ),
       );
@@ -216,7 +220,8 @@ class TrackPresentationActionsSection extends HookConsumerWidget {
         }
       },
       icon: const Icon(SonolythIcons.moreVertical),
-      variance: ButtonVariance.outline,
+      // `ItemHeader*Button`: a bare glyph, like the rest of the row.
+      variance: ButtonVariance.ghost,
       items: (context) => [
         AdaptiveMenuButton(
           value: "download",

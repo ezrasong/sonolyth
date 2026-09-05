@@ -1,21 +1,21 @@
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_undraw/flutter_undraw.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:sonolyth/collections/fake.dart';
 import 'package:sonolyth/components/fallbacks/error_box.dart';
-import 'package:sonolyth/components/waypoint.dart';
-import 'package:sonolyth/extensions/constrains.dart';
-import 'package:sonolyth/extensions/context.dart';
+import 'package:sonolyth/components/playbutton_view/playbutton_view.dart';
 import 'package:sonolyth/modules/artist/artist_card.dart';
 import 'package:sonolyth/modules/search/loading.dart';
 import 'package:sonolyth/pages/search/search.dart';
 import 'package:sonolyth/provider/metadata_plugin/search/artists.dart';
 
 class SearchPageArtistsTab extends HookConsumerWidget {
-  const SearchPageArtistsTab({super.key});
+  const SearchPageArtistsTab({super.key, this.isGrid});
+
+  /// View mode from the search header's `header_menu`, as on Albums and
+  /// Playlists. The Artists chip had no menu at all until §34, because
+  /// `ArtistCard` had no list variant to offer (§28d).
+  final bool? isGrid;
 
   @override
   Widget build(BuildContext context, ref) {
@@ -26,7 +26,8 @@ class SearchPageArtistsTab extends HookConsumerWidget {
         ref.watch(metadataPluginSearchArtistsProvider(searchTerm));
     final searchArtistsNotifier =
         ref.read(metadataPluginSearchArtistsProvider(searchTerm).notifier);
-    final searchArtists = searchArtistsSnapshot.asData?.value.items ?? [];
+    final searchArtists =
+        searchArtistsSnapshot.asData?.value.items ?? [FakeData.artist];
 
     if (searchArtistsSnapshot.hasError) {
       return Center(
@@ -41,65 +42,25 @@ class SearchPageArtistsTab extends HookConsumerWidget {
 
     return SearchPlaceholder(
       snapshot: searchArtistsSnapshot,
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        child: LayoutBuilder(builder: (context, constrains) {
-          if (searchArtistsSnapshot.hasValue && searchArtists.isEmpty) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 10,
-                children: [
-                  Undraw(
-                    height: 200 * context.theme.scaling,
-                    illustration: UndrawIllustration.taken,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  Text(
-                    context.l10n.nothing_found,
-                    textAlign: TextAlign.center,
-                  ).muted().small()
-                ],
-              ),
-            );
-          }
-
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: searchArtists.length + 1,
-            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 200,
-              mainAxisExtent: constrains.smAndDown ? 225 : 250,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: CustomScrollView(
+          slivers: [
+            PlaybuttonView(
+              isGrid: isGrid,
+              showViewToggle: false,
+              controller: controller,
+              itemCount: searchArtists.length,
+              hasMore: searchArtistsSnapshot.asData?.value.hasMore == true,
+              isLoading: searchArtistsSnapshot.isLoading,
+              onRequestMore: searchArtistsNotifier.fetchMore,
+              gridItemBuilder: (context, index) =>
+                  ArtistCard(searchArtists.elementAt(index)),
+              listItemBuilder: (context, index) =>
+                  ArtistCard.tile(searchArtists.elementAt(index)),
             ),
-            itemBuilder: (context, index) {
-              if (searchArtists.isNotEmpty && index == searchArtists.length) {
-                if (searchArtistsSnapshot.asData?.value.hasMore != true) {
-                  return const SizedBox.shrink();
-                }
-
-                return Waypoint(
-                  controller: controller,
-                  isGrid: true,
-                  onTouchEdge: searchArtistsNotifier.fetchMore,
-                  child: Skeletonizer(
-                    enabled: true,
-                    child: ArtistCard(FakeData.artist),
-                  ),
-                );
-              }
-
-              return Skeletonizer(
-                enabled: searchArtistsSnapshot.isLoading,
-                child: ArtistCard(
-                  searchArtists.elementAtOrNull(index) ?? FakeData.artist,
-                ),
-              );
-            },
-          );
-        }),
+          ],
+        ),
       ),
     );
   }

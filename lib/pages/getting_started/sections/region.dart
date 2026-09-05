@@ -3,6 +3,7 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/language_codes.dart';
 import 'package:sonolyth/collections/markets.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
 import 'package:sonolyth/modules/getting_started/blur_card.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/l10n/l10n.dart';
@@ -46,7 +47,11 @@ class GettingStartedPageLanguageRegionSection extends HookConsumerWidget {
                     size: 16,
                   ),
                   const SizedBox(width: 8),
-                  Text(context.l10n.language_region).semiBold(),
+                  // `DialogTitle_Text` — 19sp bold.
+                  Text(
+                    context.l10n.language_region,
+                    style: zenithDialogTitle(Theme.of(context).colorScheme),
+                  ),
                 ],
               ),
               const Gap(30),
@@ -54,7 +59,11 @@ class GettingStartedPageLanguageRegionSection extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(context.l10n.choose_your_region).semiBold(),
+                  // `SubheadText` — the label over a group recedes.
+                  Text(
+                    context.l10n.choose_your_region,
+                    style: zenithSubhead(Theme.of(context).colorScheme),
+                  ),
                   Text(
                     context.l10n.choose_your_region_description,
                   ).small().muted(),
@@ -106,7 +115,8 @@ class GettingStartedPageLanguageRegionSection extends HookConsumerWidget {
                   const Gap(36),
                   Text(
                     context.l10n.choose_your_language,
-                  ).semiBold(),
+                    style: zenithSubhead(Theme.of(context).colorScheme),
+                  ),
                   const Gap(16),
                   Text(context.l10n.language).small(),
                   const Gap(8),
@@ -179,7 +189,9 @@ class GettingStartedPageLanguageRegionSection extends HookConsumerWidget {
               const Gap(48),
               Align(
                 alignment: Alignment.centerRight,
-                child: Button.primary(
+                // `DialogPositiveButtonStyle` — see [zenithPositiveButton].
+                child: Button(
+                  style: zenithPositiveButton(Theme.of(context).colorScheme),
                   trailing: const Icon(SonolythIcons.angleRight),
                   onPressed: onNext,
                   child: Text(context.l10n.next),

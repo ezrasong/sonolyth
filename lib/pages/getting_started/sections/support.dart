@@ -1,15 +1,16 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart' as material;
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
 import 'package:sonolyth/modules/getting_started/blur_card.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart';
 import 'package:sonolyth/services/kv_store/kv_store.dart';
 import 'package:sonolyth/services/logger/logger.dart';
+import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 
 class GettingStartedScreenSupportSection extends HookConsumerWidget {
   const GettingStartedScreenSupportSection({super.key});
@@ -37,14 +38,19 @@ class GettingStartedScreenSupportSection extends HookConsumerWidget {
                   children: [
                     Icon(
                       SonolythIcons.login,
-                      color: material.Theme.of(context).colorScheme.primary,
+                      color: context.theme.colorScheme.primary,
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      providerName != null
-                          ? context.l10n.sign_in_to_provider(providerName)
-                          : context.l10n.set_up_music_sources,
-                    ).semiBold(),
+                    // `DialogTitle_Text` — 19sp bold. Flexible, because a
+                    // provider name is not ours to keep short.
+                    Flexible(
+                      child: Text(
+                        providerName != null
+                            ? context.l10n.sign_in_to_provider(providerName)
+                            : context.l10n.set_up_music_sources,
+                        style: zenithDialogTitle(context.theme.colorScheme),
+                      ),
+                    ),
                   ],
                 ),
                 const Gap(16),
@@ -71,7 +77,9 @@ class GettingStartedScreenSupportSection extends HookConsumerWidget {
                 // The default provider ships with the app, so first-run setup
                 // is just signing in — launch that flow directly instead of
                 // sending the user hunting through the settings page.
-                Button.primary(
+                // `DialogPositiveButtonStyle` — see [zenithPositiveButton].
+                Button(
+                  style: zenithPositiveButton(context.theme.colorScheme),
                   leading: signingIn.value
                       ? const SizedBox(
                           height: 16,

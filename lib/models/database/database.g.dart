@@ -643,7 +643,7 @@ class $PreferencesTableTable extends PreferencesTable
               'accent_color_scheme', aliasedName, false,
               type: DriftSqlType.string,
               requiredDuringInsert: false,
-              defaultValue: const Constant("android:0xff6750a4"))
+              defaultValue: const Constant("zenith:0xffffffff"))
           .withConverter<SonolythColor>(
               $PreferencesTableTable.$converteraccentColorScheme);
   @override
@@ -764,6 +764,23 @@ class $PreferencesTableTable extends PreferencesTable
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("cache_music" IN (0, 1))'),
       defaultValue: const Constant(true));
+  static const VerificationMeta _crossfadeDurationMeta =
+      const VerificationMeta('crossfadeDuration');
+  @override
+  late final GeneratedColumn<int> crossfadeDuration = GeneratedColumn<int>(
+      'crossfade_duration', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  @override
+  late final GeneratedColumnWithTypeConverter<CrossfadeCurve, String>
+      crossfadeCurve = GeneratedColumn<String>(
+              'crossfade_curve', aliasedName, false,
+              type: DriftSqlType.string,
+              requiredDuringInsert: false,
+              defaultValue: Constant(CrossfadeCurve.equalPower.name))
+          .withConverter<CrossfadeCurve>(
+              $PreferencesTableTable.$convertercrossfadeCurve);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -789,7 +806,9 @@ class $PreferencesTableTable extends PreferencesTable
         endlessPlayback,
         enableConnect,
         connectPort,
-        cacheMusic
+        cacheMusic,
+        crossfadeDuration,
+        crossfadeCurve
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -889,6 +908,12 @@ class $PreferencesTableTable extends PreferencesTable
           cacheMusic.isAcceptableOrUnknown(
               data['cache_music']!, _cacheMusicMeta));
     }
+    if (data.containsKey('crossfade_duration')) {
+      context.handle(
+          _crossfadeDurationMeta,
+          crossfadeDuration.isAcceptableOrUnknown(
+              data['crossfade_duration']!, _crossfadeDurationMeta));
+    }
     return context;
   }
 
@@ -956,6 +981,11 @@ class $PreferencesTableTable extends PreferencesTable
           .read(DriftSqlType.int, data['${effectivePrefix}connect_port'])!,
       cacheMusic: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}cache_music'])!,
+      crossfadeDuration: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}crossfade_duration'])!,
+      crossfadeCurve: $PreferencesTableTable.$convertercrossfadeCurve.fromSql(
+          attachedDatabase.typeMapping.read(
+              DriftSqlType.string, data['${effectivePrefix}crossfade_curve'])!),
     );
   }
 
@@ -984,6 +1014,9 @@ class $PreferencesTableTable extends PreferencesTable
   static JsonTypeConverter2<YoutubeClientEngine, String, String>
       $converteryoutubeClientEngine =
       const EnumNameConverter<YoutubeClientEngine>(YoutubeClientEngine.values);
+  static JsonTypeConverter2<CrossfadeCurve, String, String>
+      $convertercrossfadeCurve =
+      const EnumNameConverter<CrossfadeCurve>(CrossfadeCurve.values);
 }
 
 class PreferencesTableData extends DataClass
@@ -998,6 +1031,18 @@ class PreferencesTableData extends DataClass
   final bool skipNonMusic;
   final CloseBehavior closeBehavior;
   final SonolythColor accentColorScheme;
+
+  /// **Dead since §38 — nothing reads this.** It chose between the phone
+  /// shell and a desktop sidebar-plus-bottom-bar, and that layout is gone:
+  /// Poweramp has no sidebar, rail or tablet layout to replicate, and the
+  /// desktop platforms were deleted when the fork was established.
+  ///
+  /// The column stays rather than being dropped, deliberately. Removing it
+  /// means a schema 14 and a table rewrite, and `database.steps.dart` needs
+  /// two patches re-applied by hand after every regen (§9) — not worth that
+  /// risk for one unread string. Drop it in whatever bump comes next for a
+  /// real reason, along with [LayoutMode] and the `layout_mode` /
+  /// `adaptive` / `compact` / `extended` l10n keys.
   final LayoutMode layoutMode;
   final Locale locale;
   final Market market;
@@ -1012,6 +1057,13 @@ class PreferencesTableData extends DataClass
   final bool enableConnect;
   final int connectPort;
   final bool cacheMusic;
+
+  /// Seconds of overlap between consecutive tracks. 0 disables crossfading
+  /// entirely, which keeps playback on a single player (native gapless).
+  final int crossfadeDuration;
+
+  /// Shape of the crossfade gain ramps; see [CrossfadeCurve].
+  final CrossfadeCurve crossfadeCurve;
   const PreferencesTableData(
       {required this.id,
       required this.albumColorSync,
@@ -1036,7 +1088,9 @@ class PreferencesTableData extends DataClass
       required this.endlessPlayback,
       required this.enableConnect,
       required this.connectPort,
-      required this.cacheMusic});
+      required this.cacheMusic,
+      required this.crossfadeDuration,
+      required this.crossfadeCurve});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1096,6 +1150,12 @@ class PreferencesTableData extends DataClass
     map['enable_connect'] = Variable<bool>(enableConnect);
     map['connect_port'] = Variable<int>(connectPort);
     map['cache_music'] = Variable<bool>(cacheMusic);
+    map['crossfade_duration'] = Variable<int>(crossfadeDuration);
+    {
+      map['crossfade_curve'] = Variable<String>($PreferencesTableTable
+          .$convertercrossfadeCurve
+          .toSql(crossfadeCurve));
+    }
     return map;
   }
 
@@ -1127,6 +1187,8 @@ class PreferencesTableData extends DataClass
       enableConnect: Value(enableConnect),
       connectPort: Value(connectPort),
       cacheMusic: Value(cacheMusic),
+      crossfadeDuration: Value(crossfadeDuration),
+      crossfadeCurve: Value(crossfadeCurve),
     );
   }
 
@@ -1166,6 +1228,9 @@ class PreferencesTableData extends DataClass
       enableConnect: serializer.fromJson<bool>(json['enableConnect']),
       connectPort: serializer.fromJson<int>(json['connectPort']),
       cacheMusic: serializer.fromJson<bool>(json['cacheMusic']),
+      crossfadeDuration: serializer.fromJson<int>(json['crossfadeDuration']),
+      crossfadeCurve: $PreferencesTableTable.$convertercrossfadeCurve
+          .fromJson(serializer.fromJson<String>(json['crossfadeCurve'])),
     );
   }
   @override
@@ -1204,6 +1269,10 @@ class PreferencesTableData extends DataClass
       'enableConnect': serializer.toJson<bool>(enableConnect),
       'connectPort': serializer.toJson<int>(connectPort),
       'cacheMusic': serializer.toJson<bool>(cacheMusic),
+      'crossfadeDuration': serializer.toJson<int>(crossfadeDuration),
+      'crossfadeCurve': serializer.toJson<String>($PreferencesTableTable
+          .$convertercrossfadeCurve
+          .toJson(crossfadeCurve)),
     };
   }
 
@@ -1231,7 +1300,9 @@ class PreferencesTableData extends DataClass
           bool? endlessPlayback,
           bool? enableConnect,
           int? connectPort,
-          bool? cacheMusic}) =>
+          bool? cacheMusic,
+          int? crossfadeDuration,
+          CrossfadeCurve? crossfadeCurve}) =>
       PreferencesTableData(
         id: id ?? this.id,
         albumColorSync: albumColorSync ?? this.albumColorSync,
@@ -1258,6 +1329,8 @@ class PreferencesTableData extends DataClass
         enableConnect: enableConnect ?? this.enableConnect,
         connectPort: connectPort ?? this.connectPort,
         cacheMusic: cacheMusic ?? this.cacheMusic,
+        crossfadeDuration: crossfadeDuration ?? this.crossfadeDuration,
+        crossfadeCurve: crossfadeCurve ?? this.crossfadeCurve,
       );
   PreferencesTableData copyWithCompanion(PreferencesTableCompanion data) {
     return PreferencesTableData(
@@ -1320,6 +1393,12 @@ class PreferencesTableData extends DataClass
           data.connectPort.present ? data.connectPort.value : this.connectPort,
       cacheMusic:
           data.cacheMusic.present ? data.cacheMusic.value : this.cacheMusic,
+      crossfadeDuration: data.crossfadeDuration.present
+          ? data.crossfadeDuration.value
+          : this.crossfadeDuration,
+      crossfadeCurve: data.crossfadeCurve.present
+          ? data.crossfadeCurve.value
+          : this.crossfadeCurve,
     );
   }
 
@@ -1349,7 +1428,9 @@ class PreferencesTableData extends DataClass
           ..write('endlessPlayback: $endlessPlayback, ')
           ..write('enableConnect: $enableConnect, ')
           ..write('connectPort: $connectPort, ')
-          ..write('cacheMusic: $cacheMusic')
+          ..write('cacheMusic: $cacheMusic, ')
+          ..write('crossfadeDuration: $crossfadeDuration, ')
+          ..write('crossfadeCurve: $crossfadeCurve')
           ..write(')'))
         .toString();
   }
@@ -1379,7 +1460,9 @@ class PreferencesTableData extends DataClass
         endlessPlayback,
         enableConnect,
         connectPort,
-        cacheMusic
+        cacheMusic,
+        crossfadeDuration,
+        crossfadeCurve
       ]);
   @override
   bool operator ==(Object other) =>
@@ -1408,7 +1491,9 @@ class PreferencesTableData extends DataClass
           other.endlessPlayback == this.endlessPlayback &&
           other.enableConnect == this.enableConnect &&
           other.connectPort == this.connectPort &&
-          other.cacheMusic == this.cacheMusic);
+          other.cacheMusic == this.cacheMusic &&
+          other.crossfadeDuration == this.crossfadeDuration &&
+          other.crossfadeCurve == this.crossfadeCurve);
 }
 
 class PreferencesTableCompanion extends UpdateCompanion<PreferencesTableData> {
@@ -1436,6 +1521,8 @@ class PreferencesTableCompanion extends UpdateCompanion<PreferencesTableData> {
   final Value<bool> enableConnect;
   final Value<int> connectPort;
   final Value<bool> cacheMusic;
+  final Value<int> crossfadeDuration;
+  final Value<CrossfadeCurve> crossfadeCurve;
   const PreferencesTableCompanion({
     this.id = const Value.absent(),
     this.albumColorSync = const Value.absent(),
@@ -1461,6 +1548,8 @@ class PreferencesTableCompanion extends UpdateCompanion<PreferencesTableData> {
     this.enableConnect = const Value.absent(),
     this.connectPort = const Value.absent(),
     this.cacheMusic = const Value.absent(),
+    this.crossfadeDuration = const Value.absent(),
+    this.crossfadeCurve = const Value.absent(),
   });
   PreferencesTableCompanion.insert({
     this.id = const Value.absent(),
@@ -1487,6 +1576,8 @@ class PreferencesTableCompanion extends UpdateCompanion<PreferencesTableData> {
     this.enableConnect = const Value.absent(),
     this.connectPort = const Value.absent(),
     this.cacheMusic = const Value.absent(),
+    this.crossfadeDuration = const Value.absent(),
+    this.crossfadeCurve = const Value.absent(),
   });
   static Insertable<PreferencesTableData> custom({
     Expression<int>? id,
@@ -1513,6 +1604,8 @@ class PreferencesTableCompanion extends UpdateCompanion<PreferencesTableData> {
     Expression<bool>? enableConnect,
     Expression<int>? connectPort,
     Expression<bool>? cacheMusic,
+    Expression<int>? crossfadeDuration,
+    Expression<String>? crossfadeCurve,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1542,6 +1635,8 @@ class PreferencesTableCompanion extends UpdateCompanion<PreferencesTableData> {
       if (enableConnect != null) 'enable_connect': enableConnect,
       if (connectPort != null) 'connect_port': connectPort,
       if (cacheMusic != null) 'cache_music': cacheMusic,
+      if (crossfadeDuration != null) 'crossfade_duration': crossfadeDuration,
+      if (crossfadeCurve != null) 'crossfade_curve': crossfadeCurve,
     });
   }
 
@@ -1569,7 +1664,9 @@ class PreferencesTableCompanion extends UpdateCompanion<PreferencesTableData> {
       Value<bool>? endlessPlayback,
       Value<bool>? enableConnect,
       Value<int>? connectPort,
-      Value<bool>? cacheMusic}) {
+      Value<bool>? cacheMusic,
+      Value<int>? crossfadeDuration,
+      Value<CrossfadeCurve>? crossfadeCurve}) {
     return PreferencesTableCompanion(
       id: id ?? this.id,
       albumColorSync: albumColorSync ?? this.albumColorSync,
@@ -1595,6 +1692,8 @@ class PreferencesTableCompanion extends UpdateCompanion<PreferencesTableData> {
       enableConnect: enableConnect ?? this.enableConnect,
       connectPort: connectPort ?? this.connectPort,
       cacheMusic: cacheMusic ?? this.cacheMusic,
+      crossfadeDuration: crossfadeDuration ?? this.crossfadeDuration,
+      crossfadeCurve: crossfadeCurve ?? this.crossfadeCurve,
     );
   }
 
@@ -1686,6 +1785,14 @@ class PreferencesTableCompanion extends UpdateCompanion<PreferencesTableData> {
     if (cacheMusic.present) {
       map['cache_music'] = Variable<bool>(cacheMusic.value);
     }
+    if (crossfadeDuration.present) {
+      map['crossfade_duration'] = Variable<int>(crossfadeDuration.value);
+    }
+    if (crossfadeCurve.present) {
+      map['crossfade_curve'] = Variable<String>($PreferencesTableTable
+          .$convertercrossfadeCurve
+          .toSql(crossfadeCurve.value));
+    }
     return map;
   }
 
@@ -1715,7 +1822,9 @@ class PreferencesTableCompanion extends UpdateCompanion<PreferencesTableData> {
           ..write('endlessPlayback: $endlessPlayback, ')
           ..write('enableConnect: $enableConnect, ')
           ..write('connectPort: $connectPort, ')
-          ..write('cacheMusic: $cacheMusic')
+          ..write('cacheMusic: $cacheMusic, ')
+          ..write('crossfadeDuration: $crossfadeDuration, ')
+          ..write('crossfadeCurve: $crossfadeCurve')
           ..write(')'))
         .toString();
   }
@@ -4123,6 +4232,391 @@ class PluginsTableCompanion extends UpdateCompanion<PluginsTableData> {
   }
 }
 
+class $TrackTrimTableTable extends TrackTrimTable
+    with TableInfo<$TrackTrimTableTable, TrackTrimTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TrackTrimTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _filePathMeta =
+      const VerificationMeta('filePath');
+  @override
+  late final GeneratedColumn<String> filePath = GeneratedColumn<String>(
+      'file_path', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _fileSizeMeta =
+      const VerificationMeta('fileSize');
+  @override
+  late final GeneratedColumn<int> fileSize = GeneratedColumn<int>(
+      'file_size', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _leadMsMeta = const VerificationMeta('leadMs');
+  @override
+  late final GeneratedColumn<int> leadMs = GeneratedColumn<int>(
+      'lead_ms', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _tailMsMeta = const VerificationMeta('tailMs');
+  @override
+  late final GeneratedColumn<int> tailMs = GeneratedColumn<int>(
+      'tail_ms', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _durationMsMeta =
+      const VerificationMeta('durationMs');
+  @override
+  late final GeneratedColumn<int> durationMs = GeneratedColumn<int>(
+      'duration_ms', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, filePath, fileSize, leadMs, tailMs, durationMs, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'track_trim_table';
+  @override
+  VerificationContext validateIntegrity(Insertable<TrackTrimTableData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('file_path')) {
+      context.handle(_filePathMeta,
+          filePath.isAcceptableOrUnknown(data['file_path']!, _filePathMeta));
+    } else if (isInserting) {
+      context.missing(_filePathMeta);
+    }
+    if (data.containsKey('file_size')) {
+      context.handle(_fileSizeMeta,
+          fileSize.isAcceptableOrUnknown(data['file_size']!, _fileSizeMeta));
+    } else if (isInserting) {
+      context.missing(_fileSizeMeta);
+    }
+    if (data.containsKey('lead_ms')) {
+      context.handle(_leadMsMeta,
+          leadMs.isAcceptableOrUnknown(data['lead_ms']!, _leadMsMeta));
+    }
+    if (data.containsKey('tail_ms')) {
+      context.handle(_tailMsMeta,
+          tailMs.isAcceptableOrUnknown(data['tail_ms']!, _tailMsMeta));
+    }
+    if (data.containsKey('duration_ms')) {
+      context.handle(
+          _durationMsMeta,
+          durationMs.isAcceptableOrUnknown(
+              data['duration_ms']!, _durationMsMeta));
+    } else if (isInserting) {
+      context.missing(_durationMsMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TrackTrimTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TrackTrimTableData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      filePath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}file_path'])!,
+      fileSize: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}file_size'])!,
+      leadMs: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}lead_ms'])!,
+      tailMs: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}tail_ms'])!,
+      durationMs: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}duration_ms'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $TrackTrimTableTable createAlias(String alias) {
+    return $TrackTrimTableTable(attachedDatabase, alias);
+  }
+}
+
+class TrackTrimTableData extends DataClass
+    implements Insertable<TrackTrimTableData> {
+  final int id;
+
+  /// Absolute path of the scanned file.
+  final String filePath;
+
+  /// Size of the file when scanned; a changed size means different audio and
+  /// invalidates the measurement.
+  final int fileSize;
+
+  /// Milliseconds of digital silence to skip at each edge. Either may be 0.
+  final int leadMs;
+  final int tailMs;
+
+  /// Full decoded length of the scanned file, so the tail trim can be turned
+  /// back into an absolute end position.
+  final int durationMs;
+  final DateTime createdAt;
+  const TrackTrimTableData(
+      {required this.id,
+      required this.filePath,
+      required this.fileSize,
+      required this.leadMs,
+      required this.tailMs,
+      required this.durationMs,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['file_path'] = Variable<String>(filePath);
+    map['file_size'] = Variable<int>(fileSize);
+    map['lead_ms'] = Variable<int>(leadMs);
+    map['tail_ms'] = Variable<int>(tailMs);
+    map['duration_ms'] = Variable<int>(durationMs);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  TrackTrimTableCompanion toCompanion(bool nullToAbsent) {
+    return TrackTrimTableCompanion(
+      id: Value(id),
+      filePath: Value(filePath),
+      fileSize: Value(fileSize),
+      leadMs: Value(leadMs),
+      tailMs: Value(tailMs),
+      durationMs: Value(durationMs),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory TrackTrimTableData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TrackTrimTableData(
+      id: serializer.fromJson<int>(json['id']),
+      filePath: serializer.fromJson<String>(json['filePath']),
+      fileSize: serializer.fromJson<int>(json['fileSize']),
+      leadMs: serializer.fromJson<int>(json['leadMs']),
+      tailMs: serializer.fromJson<int>(json['tailMs']),
+      durationMs: serializer.fromJson<int>(json['durationMs']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'filePath': serializer.toJson<String>(filePath),
+      'fileSize': serializer.toJson<int>(fileSize),
+      'leadMs': serializer.toJson<int>(leadMs),
+      'tailMs': serializer.toJson<int>(tailMs),
+      'durationMs': serializer.toJson<int>(durationMs),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  TrackTrimTableData copyWith(
+          {int? id,
+          String? filePath,
+          int? fileSize,
+          int? leadMs,
+          int? tailMs,
+          int? durationMs,
+          DateTime? createdAt}) =>
+      TrackTrimTableData(
+        id: id ?? this.id,
+        filePath: filePath ?? this.filePath,
+        fileSize: fileSize ?? this.fileSize,
+        leadMs: leadMs ?? this.leadMs,
+        tailMs: tailMs ?? this.tailMs,
+        durationMs: durationMs ?? this.durationMs,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  TrackTrimTableData copyWithCompanion(TrackTrimTableCompanion data) {
+    return TrackTrimTableData(
+      id: data.id.present ? data.id.value : this.id,
+      filePath: data.filePath.present ? data.filePath.value : this.filePath,
+      fileSize: data.fileSize.present ? data.fileSize.value : this.fileSize,
+      leadMs: data.leadMs.present ? data.leadMs.value : this.leadMs,
+      tailMs: data.tailMs.present ? data.tailMs.value : this.tailMs,
+      durationMs:
+          data.durationMs.present ? data.durationMs.value : this.durationMs,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TrackTrimTableData(')
+          ..write('id: $id, ')
+          ..write('filePath: $filePath, ')
+          ..write('fileSize: $fileSize, ')
+          ..write('leadMs: $leadMs, ')
+          ..write('tailMs: $tailMs, ')
+          ..write('durationMs: $durationMs, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id, filePath, fileSize, leadMs, tailMs, durationMs, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TrackTrimTableData &&
+          other.id == this.id &&
+          other.filePath == this.filePath &&
+          other.fileSize == this.fileSize &&
+          other.leadMs == this.leadMs &&
+          other.tailMs == this.tailMs &&
+          other.durationMs == this.durationMs &&
+          other.createdAt == this.createdAt);
+}
+
+class TrackTrimTableCompanion extends UpdateCompanion<TrackTrimTableData> {
+  final Value<int> id;
+  final Value<String> filePath;
+  final Value<int> fileSize;
+  final Value<int> leadMs;
+  final Value<int> tailMs;
+  final Value<int> durationMs;
+  final Value<DateTime> createdAt;
+  const TrackTrimTableCompanion({
+    this.id = const Value.absent(),
+    this.filePath = const Value.absent(),
+    this.fileSize = const Value.absent(),
+    this.leadMs = const Value.absent(),
+    this.tailMs = const Value.absent(),
+    this.durationMs = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  TrackTrimTableCompanion.insert({
+    this.id = const Value.absent(),
+    required String filePath,
+    required int fileSize,
+    this.leadMs = const Value.absent(),
+    this.tailMs = const Value.absent(),
+    required int durationMs,
+    this.createdAt = const Value.absent(),
+  })  : filePath = Value(filePath),
+        fileSize = Value(fileSize),
+        durationMs = Value(durationMs);
+  static Insertable<TrackTrimTableData> custom({
+    Expression<int>? id,
+    Expression<String>? filePath,
+    Expression<int>? fileSize,
+    Expression<int>? leadMs,
+    Expression<int>? tailMs,
+    Expression<int>? durationMs,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (filePath != null) 'file_path': filePath,
+      if (fileSize != null) 'file_size': fileSize,
+      if (leadMs != null) 'lead_ms': leadMs,
+      if (tailMs != null) 'tail_ms': tailMs,
+      if (durationMs != null) 'duration_ms': durationMs,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  TrackTrimTableCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? filePath,
+      Value<int>? fileSize,
+      Value<int>? leadMs,
+      Value<int>? tailMs,
+      Value<int>? durationMs,
+      Value<DateTime>? createdAt}) {
+    return TrackTrimTableCompanion(
+      id: id ?? this.id,
+      filePath: filePath ?? this.filePath,
+      fileSize: fileSize ?? this.fileSize,
+      leadMs: leadMs ?? this.leadMs,
+      tailMs: tailMs ?? this.tailMs,
+      durationMs: durationMs ?? this.durationMs,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (filePath.present) {
+      map['file_path'] = Variable<String>(filePath.value);
+    }
+    if (fileSize.present) {
+      map['file_size'] = Variable<int>(fileSize.value);
+    }
+    if (leadMs.present) {
+      map['lead_ms'] = Variable<int>(leadMs.value);
+    }
+    if (tailMs.present) {
+      map['tail_ms'] = Variable<int>(tailMs.value);
+    }
+    if (durationMs.present) {
+      map['duration_ms'] = Variable<int>(durationMs.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TrackTrimTableCompanion(')
+          ..write('id: $id, ')
+          ..write('filePath: $filePath, ')
+          ..write('fileSize: $fileSize, ')
+          ..write('leadMs: $leadMs, ')
+          ..write('tailMs: $tailMs, ')
+          ..write('durationMs: $durationMs, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4141,8 +4635,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $HistoryTableTable historyTable = $HistoryTableTable(this);
   late final $LyricsTableTable lyricsTable = $LyricsTableTable(this);
   late final $PluginsTableTable pluginsTable = $PluginsTableTable(this);
+  late final $TrackTrimTableTable trackTrimTable = $TrackTrimTableTable(this);
   late final Index uniqueBlacklist = Index('unique_blacklist',
       'CREATE UNIQUE INDEX unique_blacklist ON blacklist_table (element_type, element_id)');
+  late final Index uniqTrackMatch = Index('uniq_track_match',
+      'CREATE UNIQUE INDEX uniq_track_match ON source_match_table (track_id, source_type)');
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4158,7 +4655,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         historyTable,
         lyricsTable,
         pluginsTable,
-        uniqueBlacklist
+        trackTrimTable,
+        uniqueBlacklist,
+        uniqTrackMatch
       ];
 }
 
@@ -4506,6 +5005,8 @@ typedef $$PreferencesTableTableCreateCompanionBuilder
   Value<bool> enableConnect,
   Value<int> connectPort,
   Value<bool> cacheMusic,
+  Value<int> crossfadeDuration,
+  Value<CrossfadeCurve> crossfadeCurve,
 });
 typedef $$PreferencesTableTableUpdateCompanionBuilder
     = PreferencesTableCompanion Function({
@@ -4533,6 +5034,8 @@ typedef $$PreferencesTableTableUpdateCompanionBuilder
   Value<bool> enableConnect,
   Value<int> connectPort,
   Value<bool> cacheMusic,
+  Value<int> crossfadeDuration,
+  Value<CrossfadeCurve> crossfadeCurve,
 });
 
 class $$PreferencesTableTableFilterComposer
@@ -4642,6 +5145,15 @@ class $$PreferencesTableTableFilterComposer
 
   ColumnFilters<bool> get cacheMusic => $composableBuilder(
       column: $table.cacheMusic, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get crossfadeDuration => $composableBuilder(
+      column: $table.crossfadeDuration,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<CrossfadeCurve, CrossfadeCurve, String>
+      get crossfadeCurve => $composableBuilder(
+          column: $table.crossfadeCurve,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
 }
 
 class $$PreferencesTableTableOrderingComposer
@@ -4739,6 +5251,14 @@ class $$PreferencesTableTableOrderingComposer
 
   ColumnOrderings<bool> get cacheMusic => $composableBuilder(
       column: $table.cacheMusic, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get crossfadeDuration => $composableBuilder(
+      column: $table.crossfadeDuration,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get crossfadeCurve => $composableBuilder(
+      column: $table.crossfadeCurve,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$PreferencesTableTableAnnotationComposer
@@ -4827,6 +5347,13 @@ class $$PreferencesTableTableAnnotationComposer
 
   GeneratedColumn<bool> get cacheMusic => $composableBuilder(
       column: $table.cacheMusic, builder: (column) => column);
+
+  GeneratedColumn<int> get crossfadeDuration => $composableBuilder(
+      column: $table.crossfadeDuration, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<CrossfadeCurve, String> get crossfadeCurve =>
+      $composableBuilder(
+          column: $table.crossfadeCurve, builder: (column) => column);
 }
 
 class $$PreferencesTableTableTableManager extends RootTableManager<
@@ -4882,6 +5409,8 @@ class $$PreferencesTableTableTableManager extends RootTableManager<
             Value<bool> enableConnect = const Value.absent(),
             Value<int> connectPort = const Value.absent(),
             Value<bool> cacheMusic = const Value.absent(),
+            Value<int> crossfadeDuration = const Value.absent(),
+            Value<CrossfadeCurve> crossfadeCurve = const Value.absent(),
           }) =>
               PreferencesTableCompanion(
             id: id,
@@ -4908,6 +5437,8 @@ class $$PreferencesTableTableTableManager extends RootTableManager<
             enableConnect: enableConnect,
             connectPort: connectPort,
             cacheMusic: cacheMusic,
+            crossfadeDuration: crossfadeDuration,
+            crossfadeCurve: crossfadeCurve,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -4935,6 +5466,8 @@ class $$PreferencesTableTableTableManager extends RootTableManager<
             Value<bool> enableConnect = const Value.absent(),
             Value<int> connectPort = const Value.absent(),
             Value<bool> cacheMusic = const Value.absent(),
+            Value<int> crossfadeDuration = const Value.absent(),
+            Value<CrossfadeCurve> crossfadeCurve = const Value.absent(),
           }) =>
               PreferencesTableCompanion.insert(
             id: id,
@@ -4961,6 +5494,8 @@ class $$PreferencesTableTableTableManager extends RootTableManager<
             enableConnect: enableConnect,
             connectPort: connectPort,
             cacheMusic: cacheMusic,
+            crossfadeDuration: crossfadeDuration,
+            crossfadeCurve: crossfadeCurve,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -6289,6 +6824,204 @@ typedef $$PluginsTableTableProcessedTableManager = ProcessedTableManager<
     ),
     PluginsTableData,
     PrefetchHooks Function()>;
+typedef $$TrackTrimTableTableCreateCompanionBuilder = TrackTrimTableCompanion
+    Function({
+  Value<int> id,
+  required String filePath,
+  required int fileSize,
+  Value<int> leadMs,
+  Value<int> tailMs,
+  required int durationMs,
+  Value<DateTime> createdAt,
+});
+typedef $$TrackTrimTableTableUpdateCompanionBuilder = TrackTrimTableCompanion
+    Function({
+  Value<int> id,
+  Value<String> filePath,
+  Value<int> fileSize,
+  Value<int> leadMs,
+  Value<int> tailMs,
+  Value<int> durationMs,
+  Value<DateTime> createdAt,
+});
+
+class $$TrackTrimTableTableFilterComposer
+    extends Composer<_$AppDatabase, $TrackTrimTableTable> {
+  $$TrackTrimTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get filePath => $composableBuilder(
+      column: $table.filePath, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get fileSize => $composableBuilder(
+      column: $table.fileSize, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get leadMs => $composableBuilder(
+      column: $table.leadMs, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get tailMs => $composableBuilder(
+      column: $table.tailMs, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get durationMs => $composableBuilder(
+      column: $table.durationMs, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$TrackTrimTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $TrackTrimTableTable> {
+  $$TrackTrimTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get filePath => $composableBuilder(
+      column: $table.filePath, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get fileSize => $composableBuilder(
+      column: $table.fileSize, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get leadMs => $composableBuilder(
+      column: $table.leadMs, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get tailMs => $composableBuilder(
+      column: $table.tailMs, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get durationMs => $composableBuilder(
+      column: $table.durationMs, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$TrackTrimTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TrackTrimTableTable> {
+  $$TrackTrimTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get filePath =>
+      $composableBuilder(column: $table.filePath, builder: (column) => column);
+
+  GeneratedColumn<int> get fileSize =>
+      $composableBuilder(column: $table.fileSize, builder: (column) => column);
+
+  GeneratedColumn<int> get leadMs =>
+      $composableBuilder(column: $table.leadMs, builder: (column) => column);
+
+  GeneratedColumn<int> get tailMs =>
+      $composableBuilder(column: $table.tailMs, builder: (column) => column);
+
+  GeneratedColumn<int> get durationMs => $composableBuilder(
+      column: $table.durationMs, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$TrackTrimTableTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $TrackTrimTableTable,
+    TrackTrimTableData,
+    $$TrackTrimTableTableFilterComposer,
+    $$TrackTrimTableTableOrderingComposer,
+    $$TrackTrimTableTableAnnotationComposer,
+    $$TrackTrimTableTableCreateCompanionBuilder,
+    $$TrackTrimTableTableUpdateCompanionBuilder,
+    (
+      TrackTrimTableData,
+      BaseReferences<_$AppDatabase, $TrackTrimTableTable, TrackTrimTableData>
+    ),
+    TrackTrimTableData,
+    PrefetchHooks Function()> {
+  $$TrackTrimTableTableTableManager(
+      _$AppDatabase db, $TrackTrimTableTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TrackTrimTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TrackTrimTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TrackTrimTableTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> filePath = const Value.absent(),
+            Value<int> fileSize = const Value.absent(),
+            Value<int> leadMs = const Value.absent(),
+            Value<int> tailMs = const Value.absent(),
+            Value<int> durationMs = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              TrackTrimTableCompanion(
+            id: id,
+            filePath: filePath,
+            fileSize: fileSize,
+            leadMs: leadMs,
+            tailMs: tailMs,
+            durationMs: durationMs,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String filePath,
+            required int fileSize,
+            Value<int> leadMs = const Value.absent(),
+            Value<int> tailMs = const Value.absent(),
+            required int durationMs,
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              TrackTrimTableCompanion.insert(
+            id: id,
+            filePath: filePath,
+            fileSize: fileSize,
+            leadMs: leadMs,
+            tailMs: tailMs,
+            durationMs: durationMs,
+            createdAt: createdAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$TrackTrimTableTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $TrackTrimTableTable,
+    TrackTrimTableData,
+    $$TrackTrimTableTableFilterComposer,
+    $$TrackTrimTableTableOrderingComposer,
+    $$TrackTrimTableTableAnnotationComposer,
+    $$TrackTrimTableTableCreateCompanionBuilder,
+    $$TrackTrimTableTableUpdateCompanionBuilder,
+    (
+      TrackTrimTableData,
+      BaseReferences<_$AppDatabase, $TrackTrimTableTable, TrackTrimTableData>
+    ),
+    TrackTrimTableData,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6313,4 +7046,6 @@ class $AppDatabaseManager {
       $$LyricsTableTableTableManager(_db, _db.lyricsTable);
   $$PluginsTableTableTableManager get pluginsTable =>
       $$PluginsTableTableTableManager(_db, _db.pluginsTable);
+  $$TrackTrimTableTableTableManager get trackTrimTable =>
+      $$TrackTrimTableTableTableManager(_db, _db.trackTrimTable);
 }

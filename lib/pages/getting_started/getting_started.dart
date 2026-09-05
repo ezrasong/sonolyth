@@ -1,6 +1,7 @@
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:sonolyth/collections/zenith_motion.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
 import 'package:sonolyth/extensions/context.dart';
@@ -23,15 +24,15 @@ class GettingStartedPage extends HookConsumerWidget {
 
     final onNext = useCallback(() {
       pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
+        duration: ZenithMotion.slide,
+        curve: ZenithMotion.slideCurve,
       );
     }, [pageController]);
 
     final onPrevious = useCallback(() {
       pageController.previousPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
+        duration: ZenithMotion.slide,
+        curve: ZenithMotion.slideCurve,
       );
     }, [pageController]);
 
@@ -54,12 +55,16 @@ class GettingStartedPage extends HookConsumerWidget {
                 listenable: pageController,
                 builder: (context, _) {
                   return AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
+                    duration: ZenithMotion.fade,
+                    switchInCurve: ZenithMotion.fadeCurve,
+                    switchOutCurve: ZenithMotion.fadeCurve,
                     child: !pageController.hasClients ||
                             pageController.page == 0 ||
                             pageController.page == 3
                         ? const SizedBox()
-                        : Button.secondary(
+                        // `DialogNegativeButtonStyle` — `ripple_rounded_mini`:
+                        // a ripple and nothing else.
+                        : Button.ghost(
                             onPressed: onSkip,
                             child: Text(context.l10n.skip_setup),
                           ),

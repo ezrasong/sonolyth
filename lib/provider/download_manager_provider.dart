@@ -8,10 +8,8 @@ import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/downloaded_tracks_provider.dart';
 import 'package:sonolyth/provider/spotiflac/download_settings.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
-import 'package:sonolyth/provider/youtube_engine/youtube_engine.dart';
 import 'package:sonolyth/services/logger/logger.dart';
 import 'package:sonolyth/services/spotiflac/native_flac_downloader.dart';
-import 'package:sonolyth/services/spotiflac/providers/youtube_provider.dart';
 import 'package:sonolyth/utils/service_utils.dart';
 
 enum DownloadStatus {
@@ -353,13 +351,7 @@ class DownloadManagerNotifier extends Notifier<List<DownloadTask>> {
       }
 
       final settings = await ref.read(spotiFlacDownloadSettingsProvider.future);
-      // The YouTube fallback needs the active engine, which is Riverpod-scoped
-      // (depends on the user's chosen client engine), so inject it here.
-      final youtubeEngine = ref.read(youtubeEngineProvider);
-      final providers = settings.enabledProviders
-          .map((p) =>
-              p is YouTubeProvider ? YouTubeProvider(engine: youtubeEngine) : p)
-          .toList();
+      final providers = settings.enabledProviders;
       final downloadLocation =
           ref.read(userPreferencesProvider).downloadLocation;
       // Collection downloads land in their own subfolder; single-track

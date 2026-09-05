@@ -7,6 +7,7 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/models/connect/connect.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/modules/player/player_queue.dart';
@@ -205,14 +206,10 @@ class ConnectControlPage extends HookConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         spacing: 20,
                         children: [
-                          Tooltip(
-                            tooltip: TooltipContainer(
-                              child: Text(
-                                shuffled
-                                    ? context.l10n.unshuffle_playlist
-                                    : context.l10n.shuffle_playlist,
-                              ),
-                            ).call,
+                          ZenithTooltip(
+                            message: shuffled
+                                ? context.l10n.unshuffle_playlist
+                                : context.l10n.shuffle_playlist,
                             child: IconButton(
                               icon: const Icon(SonolythIcons.shuffle),
                               variance: shuffled
@@ -225,10 +222,8 @@ class ConnectControlPage extends HookConsumerWidget {
                                     },
                             ),
                           ),
-                          Tooltip(
-                            tooltip: TooltipContainer(
-                              child: Text(context.l10n.previous_track),
-                            ).call,
+                          ZenithTooltip(
+                            message: context.l10n.previous_track,
                             child: IconButton.ghost(
                               icon: const Icon(SonolythIcons.skipBack),
                               onPressed: playlist.activeTrack == null
@@ -236,14 +231,10 @@ class ConnectControlPage extends HookConsumerWidget {
                                   : connectNotifier.previous,
                             ),
                           ),
-                          Tooltip(
-                            tooltip: TooltipContainer(
-                              child: Text(
-                                playing
-                                    ? context.l10n.pause_playback
-                                    : context.l10n.resume_playback,
-                              ),
-                            ).call,
+                          ZenithTooltip(
+                            message: playing
+                                ? context.l10n.pause_playback
+                                : context.l10n.resume_playback,
                             child: IconButton.primary(
                               shape: ButtonShape.circle,
                               icon: playlist.activeTrack == null
@@ -269,10 +260,8 @@ class ConnectControlPage extends HookConsumerWidget {
                                     },
                             ),
                           ),
-                          Tooltip(
-                            tooltip: TooltipContainer(
-                                    child: Text(context.l10n.next_track))
-                                .call,
+                          ZenithTooltip(
+                            message: context.l10n.next_track,
                             child: IconButton.ghost(
                               icon: const Icon(SonolythIcons.skipForward),
                               onPressed: playlist.activeTrack == null
@@ -280,16 +269,12 @@ class ConnectControlPage extends HookConsumerWidget {
                                   : connectNotifier.next,
                             ),
                           ),
-                          Tooltip(
-                            tooltip: TooltipContainer(
-                              child: Text(
-                                loopMode == PlaylistMode.single
-                                    ? context.l10n.loop_track
-                                    : loopMode == PlaylistMode.loop
-                                        ? context.l10n.repeat_playlist
-                                        : context.l10n.no_loop,
-                              ),
-                            ).call,
+                          ZenithTooltip(
+                            message: loopMode == PlaylistMode.single
+                                ? context.l10n.loop_track
+                                : loopMode == PlaylistMode.loop
+                                    ? context.l10n.repeat_playlist
+                                    : context.l10n.no_loop,
                             child: IconButton(
                               icon: Icon(
                                 loopMode == PlaylistMode.single

@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:sonolyth/services/youtube_engine/youtube_engine.dart';
-import 'package:sonolyth/utils/platform.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:yt_dlp_dart/yt_dlp_dart.dart';
 // ignore: depend_on_referenced_packages
@@ -67,7 +66,11 @@ class YtDlpEngine implements YouTubeEngine {
     );
   }
 
-  static bool get isAvailableForPlatform => kIsDesktop;
+  // yt-dlp is a desktop binary and there are no desktop platforms left
+  // (§40). The engine stays because `YoutubeClientEngine` is a persisted
+  // database enum and the Hetu plugin ABI binds the whole youtube_engine
+  // surface; it simply never reports itself available.
+  static bool get isAvailableForPlatform => false;
 
   static Future<bool> isInstalled() async {
     return isAvailableForPlatform &&

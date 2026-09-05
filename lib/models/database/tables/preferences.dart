@@ -60,8 +60,21 @@ class PreferencesTable extends Table {
   TextColumn get closeBehavior => textEnum<CloseBehavior>()
       .withDefault(Constant(CloseBehavior.close.name))();
   TextColumn get accentColorScheme => text()
-      .withDefault(const Constant("android:0xff6750a4"))
+      // Proxima Dark Zenith is the app's identity; see zenith_theme.dart.
+      .withDefault(const Constant("zenith:0xffffffff"))
       .map(const SonolythColorConverter())();
+
+  /// **Dead since §38 — nothing reads this.** It chose between the phone
+  /// shell and a desktop sidebar-plus-bottom-bar, and that layout is gone:
+  /// Poweramp has no sidebar, rail or tablet layout to replicate, and the
+  /// desktop platforms were deleted when the fork was established.
+  ///
+  /// The column stays rather than being dropped, deliberately. Removing it
+  /// means a schema 14 and a table rewrite, and `database.steps.dart` needs
+  /// two patches re-applied by hand after every regen (§9) — not worth that
+  /// risk for one unread string. Drop it in whatever bump comes next for a
+  /// real reason, along with [LayoutMode] and the `layout_mode` /
+  /// `adaptive` / `compact` / `extended` l10n keys.
   TextColumn get layoutMode =>
       textEnum<LayoutMode>().withDefault(Constant(LayoutMode.adaptive.name))();
   TextColumn get locale => text()
@@ -90,6 +103,14 @@ class PreferencesTable extends Table {
   IntColumn get connectPort => integer().withDefault(const Constant(-1))();
   BoolColumn get cacheMusic => boolean().withDefault(const Constant(true))();
 
+  /// Seconds of overlap between consecutive tracks. 0 disables crossfading
+  /// entirely, which keeps playback on a single player (native gapless).
+  IntColumn get crossfadeDuration => integer().withDefault(const Constant(0))();
+
+  /// Shape of the crossfade gain ramps; see [CrossfadeCurve].
+  TextColumn get crossfadeCurve => textEnum<CrossfadeCurve>()
+      .withDefault(Constant(CrossfadeCurve.equalPower.name))();
+
   // Default values as PreferencesTableData
   static PreferencesTableData defaults() {
     return PreferencesTableData(
@@ -102,7 +123,7 @@ class PreferencesTable extends Table {
       systemTitleBar: false,
       skipNonMusic: false,
       closeBehavior: CloseBehavior.close,
-      accentColorScheme: const SonolythColor(0xff6750a4, name: "android"),
+      accentColorScheme: const SonolythColor(0xffffffff, name: "zenith"),
       layoutMode: LayoutMode.adaptive,
       locale: const Locale("system", "system"),
       market: Market.US,
@@ -119,6 +140,8 @@ class PreferencesTable extends Table {
       enableConnect: false,
       cacheMusic: true,
       connectPort: -1,
+      crossfadeDuration: 0,
+      crossfadeCurve: CrossfadeCurve.equalPower,
     );
   }
 }

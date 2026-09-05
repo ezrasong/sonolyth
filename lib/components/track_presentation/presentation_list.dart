@@ -1,3 +1,4 @@
+import 'package:sonolyth/collections/zenith_motion.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_undraw/flutter_undraw.dart';
@@ -18,6 +19,7 @@ import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
 import 'package:sonolyth/provider/metadata_plugin/library/playlists.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
+import 'package:sonolyth/components/fallbacks/zenith_illustration.dart';
 
 class PresentationListSection extends HookConsumerWidget {
   const PresentationListSection({super.key});
@@ -57,9 +59,8 @@ class PresentationListSection extends HookConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Undraw(
+              ZenithIllustration(
                 illustration: UndrawIllustration.dreamer,
-                color: context.theme.colorScheme.primary,
                 height: 200 * context.theme.scaling,
               ),
               Text(
@@ -125,8 +126,9 @@ class PresentationListSection extends HookConsumerWidget {
           playlist: playlist,
           track: track,
           selected: isSelected,
+          selectionMode: state.selectionMode,
           onTap: () => onTileTap(track, index),
-          onChanged: state.selectedTracks.isEmpty
+          onChanged: !state.isSelecting
               ? null
               : (isSelected) {
                   if (isSelected == true) {
@@ -143,35 +145,38 @@ class PresentationListSection extends HookConsumerWidget {
 
         // Only the user's own playlists allow removal. Swipe left to remove a
         // track — far quicker than digging through the row's overflow menu.
-        if (!isUserPlaylist) return tile;
-        return Dismissible(
-          key: ValueKey('pl-remove-${track.id}'),
-          direction: DismissDirection.endToStart,
-          confirmDismiss: (_) => showPromptDialog(
-            context: context,
-            title: context.l10n.remove_from_playlist,
-            message: track.name,
-            okText: context.l10n.remove_from_playlist,
-            destructive: true,
-          ),
-          onDismissed: (_) {
-            // Optimistic local drop keeps the list consistent for Dismissible;
-            // the backend removal then invalidates and reconciles the source.
-            notifier.removeTrack(track);
-            ref
-                .read(metadataPluginSavedPlaylistsProvider.notifier)
-                .removeTracks(options.collectionId, [track.id]);
-          },
-          background: Container(
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            color: context.theme.colorScheme.destructive,
-            child: const Icon(
-              SonolythIcons.trash,
-              color: Colors.white,
+        // `anim_fade_in_move_up` on arrival, whichever wrapper the row gets.
+        if (!isUserPlaylist) return ZenithListEnter(child: tile);
+        return ZenithListEnter(
+          child: Dismissible(
+            key: ValueKey('pl-remove-${track.id}'),
+            direction: DismissDirection.endToStart,
+            confirmDismiss: (_) => showPromptDialog(
+              context: context,
+              title: context.l10n.remove_from_playlist,
+              message: track.name,
+              okText: context.l10n.remove_from_playlist,
+              destructive: true,
             ),
+            onDismissed: (_) {
+              // Optimistic local drop keeps the list consistent for Dismissible;
+              // the backend removal then invalidates and reconciles the source.
+              notifier.removeTrack(track);
+              ref
+                  .read(metadataPluginSavedPlaylistsProvider.notifier)
+                  .removeTracks(options.collectionId, [track.id]);
+            },
+            background: Container(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              color: context.theme.colorScheme.destructive,
+              child: const Icon(
+                SonolythIcons.trash,
+                color: Colors.white,
+              ),
+            ),
+            child: tile,
           ),
-          child: tile,
         );
       }),
     );

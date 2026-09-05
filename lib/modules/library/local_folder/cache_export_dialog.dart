@@ -4,6 +4,7 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path/path.dart' as path;
+import 'package:sonolyth/collections/zenith_motion.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/services/logger/logger.dart';
 
@@ -58,7 +59,9 @@ class LocalFolderCacheExportDialog extends HookConsumerWidget {
     return AlertDialog(
       title: Text(context.l10n.export_cache_files),
       content: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
+        duration: ZenithMotion.scene,
+        switchInCurve: ZenithMotion.fadeCurve,
+        switchOutCurve: ZenithMotion.fadeCurve,
         child: filesExported.value == 0
             ? Column(
                 mainAxisSize: MainAxisSize.min,

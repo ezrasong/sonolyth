@@ -34,12 +34,31 @@ class MetadataPluginArtistEndpoint {
       }..removeWhere((key, value) => value == null),
     ) as Map;
 
-    return SonolythPaginationResponseObject<SonolythFullTrackObject>.fromJson(
+    final page =
+        SonolythPaginationResponseObject<SonolythFullTrackObject>.fromJson(
       raw.cast<String, dynamic>(),
       (Map json) => SonolythFullTrackObject.fromJson(
         json.cast<String, dynamic>(),
       ),
     );
+
+    return page.copyWith(
+      items: page.items.map(withoutPlaceholderAlbumName).toList(),
+    );
+  }
+
+  /// Spotify's `queryArtistOverview` returns each top track's `albumOfTrack`
+  /// with a uri and cover art but **no name**, and the plugin fills the gap
+  /// with the literal string "unknown" — which the player then printed as
+  /// "fromis_9 - unknown" for a track that reads "Glow ME" everywhere else
+  /// (§29e). There is no name to recover here (the persisted query's selection
+  /// set is fixed server-side), so blank it: an absent album is drawn as
+  /// nothing, and a placeholder is worse than a gap.
+  static SonolythFullTrackObject withoutPlaceholderAlbumName(
+    SonolythFullTrackObject track,
+  ) {
+    if (track.album.name.trim().toLowerCase() != "unknown") return track;
+    return track.copyWith(album: track.album.copyWith(name: ""));
   }
 
   Future<SonolythPaginationResponseObject<SonolythSimpleAlbumObject>> albums(

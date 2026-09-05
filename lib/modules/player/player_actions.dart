@@ -1,6 +1,5 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
@@ -8,6 +7,7 @@ import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
 
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/constrains.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/modules/player/player_queue.dart';
@@ -59,8 +59,6 @@ class PlayerActions extends HookConsumerWidget {
 
     final localTracks = ref.watch(localTracksProvider).value;
     final authenticated = ref.watch(metadataPluginAuthenticatedProvider);
-    final sleepTimer = ref.watch(sleepTimerProvider);
-    final sleepTimerNotifier = ref.watch(sleepTimerProvider.notifier);
 
     final isDownloaded = useMemoized(() {
       return localTracks?.values.expand((e) => e).any(
@@ -73,24 +71,12 @@ class PlayerActions extends HookConsumerWidget {
           true;
     }, [localTracks, playlist.activeTrack]);
 
-    final sleepTimerEntries = useMemoized(
-      () => {
-        context.l10n.mins(15): const Duration(minutes: 15),
-        context.l10n.mins(30): const Duration(minutes: 30),
-        context.l10n.hour(1): const Duration(hours: 1),
-        context.l10n.hour(2): const Duration(hours: 2),
-      },
-      [context.l10n],
-    );
-
-    var customHoursEnabled =
-        sleepTimer == null || sleepTimerEntries.values.contains(sleepTimer);
     return Row(
       mainAxisAlignment: mainAxisAlignment,
       children: [
         if (showQueue)
-          Tooltip(
-            tooltip: TooltipContainer(child: Text(context.l10n.queue)).call,
+          ZenithTooltip(
+            message: context.l10n.queue,
             child: IconButton.ghost(
               icon: const Icon(SonolythIcons.queue),
               enabled: playlist.activeTrack != null,
@@ -125,10 +111,8 @@ class PlayerActions extends HookConsumerWidget {
             ),
           ),
         if (!isLocalTrack)
-          Tooltip(
-            tooltip: TooltipContainer(
-              child: Text(context.l10n.alternative_track_sources),
-            ).call,
+          ZenithTooltip(
+            message: context.l10n.alternative_track_sources,
             child: IconButton.ghost(
               enabled: playlist.activeTrack != null,
               icon: const Icon(SonolythIcons.alternativeRoute),
@@ -157,7 +141,7 @@ class PlayerActions extends HookConsumerWidget {
               },
             ),
           ),
-        if (!kIsWeb && !isLocalTrack)
+        if (!isLocalTrack)
           if (isInQueue)
             const SizedBox(
               height: 20,
@@ -167,10 +151,8 @@ class PlayerActions extends HookConsumerWidget {
               ),
             )
           else
-            Tooltip(
-              tooltip:
-                  TooltipContainer(child: Text(context.l10n.download_track))
-                      .call,
+            ZenithTooltip(
+              message: context.l10n.download_track,
               child: IconButton.ghost(
                 icon: Icon(
                   isDownloaded ? SonolythIcons.done : SonolythIcons.download,
@@ -185,102 +167,150 @@ class PlayerActions extends HookConsumerWidget {
             !isLocalTrack &&
             authenticated.asData?.value == true)
           TrackHeartButton(track: playlist.activeTrack!),
-        AdaptivePopSheetList<Duration>(
-          tooltip: context.l10n.sleep_timer,
-          offset: Offset(0, -50 * (sleepTimerEntries.values.length + 2)),
-          headings: [
-            Text(context.l10n.sleep_timer),
-          ],
-          icon: Icon(
-            SonolythIcons.timer,
-            color: sleepTimer != null
-                ? context.theme.colorScheme.destructive
-                : null,
+        const SleepTimerButton(),
+        ...(extraActions ?? [])
+      ],
+    );
+  }
+}
+
+/// The sleep-timer popup — the presets, a custom wall-clock time and cancel —
+/// as a standalone button, so the Zenith player's small-glyph row and the
+/// desktop action bar share one implementation.
+class SleepTimerButton extends HookConsumerWidget {
+  const SleepTimerButton({
+    super.key,
+    this.iconSize,
+    this.color,
+    this.activeColor,
+    this.variance = ButtonVariance.ghost,
+  });
+
+  final double? iconSize;
+
+  /// Glyph colour while no timer is armed.
+  final Color? color;
+
+  /// Glyph colour while a timer is armed. Defaults to `destructive`, which is
+  /// what the action bar has always shown; the Zenith player passes
+  /// `foreground` — an armed timer is an *active* control there, and Zenith
+  /// marks active by brightness, not hue.
+  final Color? activeColor;
+  final AbstractButtonStyle variance;
+
+  @override
+  Widget build(BuildContext context, ref) {
+    final sleepTimer = ref.watch(sleepTimerProvider);
+    final sleepTimerNotifier = ref.watch(sleepTimerProvider.notifier);
+    final sleepTimerEntries = useMemoized(
+      () => {
+        context.l10n.mins(15): const Duration(minutes: 15),
+        context.l10n.mins(30): const Duration(minutes: 30),
+        context.l10n.hour(1): const Duration(hours: 1),
+        context.l10n.hour(2): const Duration(hours: 2),
+      },
+      [context.l10n],
+    );
+    var customHoursEnabled =
+        sleepTimer == null || sleepTimerEntries.values.contains(sleepTimer);
+
+    return AdaptivePopSheetList<Duration>(
+      tooltip: context.l10n.sleep_timer,
+      offset: Offset(0, -50 * (sleepTimerEntries.values.length + 2)),
+      headings: [
+        Text(context.l10n.sleep_timer),
+      ],
+      variance: variance,
+      icon: Icon(
+        SonolythIcons.timer,
+        size: iconSize,
+        color: sleepTimer != null
+            ? (activeColor ?? context.theme.colorScheme.destructive)
+            : color,
+      ),
+      onSelected: (value) {
+        if (value == Duration.zero) {
+          sleepTimerNotifier.cancelSleepTimer();
+        } else {
+          sleepTimerNotifier.setSleepTimer(value);
+        }
+      },
+      items: (context) => [
+        for (final entry in sleepTimerEntries.entries)
+          AdaptiveMenuButton(
+            value: entry.value,
+            enabled: sleepTimer != entry.value,
+            child: Text(entry.key),
           ),
-          onSelected: (value) {
-            if (value == Duration.zero) {
-              sleepTimerNotifier.cancelSleepTimer();
-            } else {
-              sleepTimerNotifier.setSleepTimer(value);
+        AdaptiveMenuButton(
+          enabled: customHoursEnabled,
+          onPressed: (context) async {
+            final currentTime = TimeOfDay.now();
+            final time = await showDialog<TimeOfDay?>(
+              context: context,
+              builder: (context) => HookBuilder(builder: (context) {
+                final timeRef = useRef<TimeOfDay?>(null);
+                return AlertDialog(
+                  trailing: ZenithTooltip(
+                    message: context.l10n.close,
+                    child: IconButton.ghost(
+                      size: ButtonSize.xSmall,
+                      icon: const Icon(SonolythIcons.close),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ),
+                  title: Text(
+                    ShadcnLocalizations.of(context).placeholderTimePicker,
+                  ),
+                  content: TimePickerDialog(
+                    use24HourFormat: false,
+                    initialValue: TimeOfDay.fromDateTime(
+                      DateTime.now().add(sleepTimer ?? Duration.zero),
+                    ),
+                    onChanged: (value) => timeRef.value = value,
+                  ),
+                  actions: [
+                    Button.primary(
+                      onPressed: () {
+                        Navigator.of(context).pop(timeRef.value);
+                      },
+                      child: Text(context.l10n.save),
+                    ),
+                  ],
+                );
+              }),
+            );
+
+            if (time != null) {
+              // Minutes until the picked wall-clock time; a time earlier
+              // than now means tomorrow.
+              final pickedMinutes = time.hour * 60 + time.minute;
+              final nowMinutes = currentTime.hour * 60 + currentTime.minute;
+              var deltaMinutes = pickedMinutes - nowMinutes;
+              if (deltaMinutes <= 0) deltaMinutes += 24 * 60;
+              sleepTimerNotifier.setSleepTimer(
+                Duration(minutes: deltaMinutes),
+              );
             }
           },
-          items: (context) => [
-            for (final entry in sleepTimerEntries.entries)
-              AdaptiveMenuButton(
-                value: entry.value,
-                enabled: sleepTimer != entry.value,
-                child: Text(entry.key),
-              ),
-            AdaptiveMenuButton(
-              enabled: customHoursEnabled,
-              onPressed: (context) async {
-                final currentTime = TimeOfDay.now();
-                final time = await showDialog<TimeOfDay?>(
-                  context: context,
-                  builder: (context) => HookBuilder(builder: (context) {
-                    final timeRef = useRef<TimeOfDay?>(null);
-                    return AlertDialog(
-                      trailing: IconButton.ghost(
-                        size: ButtonSize.xSmall,
-                        icon: const Icon(SonolythIcons.close),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      title: Text(
-                        ShadcnLocalizations.of(context).placeholderTimePicker,
-                      ),
-                      content: TimePickerDialog(
-                        use24HourFormat: false,
-                        initialValue: TimeOfDay.fromDateTime(
-                          DateTime.now().add(sleepTimer ?? Duration.zero),
-                        ),
-                        onChanged: (value) => timeRef.value = value,
-                      ),
-                      actions: [
-                        Button.primary(
-                          onPressed: () {
-                            Navigator.of(context).pop(timeRef.value);
-                          },
-                          child: Text(context.l10n.save),
-                        ),
-                      ],
-                    );
-                  }),
-                );
-
-                if (time != null) {
-                  // Minutes until the picked wall-clock time; a time earlier
-                  // than now means tomorrow.
-                  final pickedMinutes = time.hour * 60 + time.minute;
-                  final nowMinutes =
-                      currentTime.hour * 60 + currentTime.minute;
-                  var deltaMinutes = pickedMinutes - nowMinutes;
-                  if (deltaMinutes <= 0) deltaMinutes += 24 * 60;
-                  sleepTimerNotifier.setSleepTimer(
-                    Duration(minutes: deltaMinutes),
-                  );
-                }
-              },
-              child: Text(
-                customHoursEnabled
-                    ? context.l10n.custom_hours
-                    : sleepTimer.format(abbreviated: true),
-              ),
-            ),
-            AdaptiveMenuButton(
-              value: Duration.zero,
-              enabled: sleepTimer != Duration.zero && sleepTimer != null,
-              child: Text(
-                context.l10n.cancel,
-                style: TextStyle(
-                  color: context.theme.colorScheme.primary,
-                ),
-              ),
-            ),
-          ],
+          child: Text(
+            customHoursEnabled
+                ? context.l10n.custom_hours
+                : sleepTimer.format(abbreviated: true),
+          ),
         ),
-        ...(extraActions ?? [])
+        AdaptiveMenuButton(
+          value: Duration.zero,
+          enabled: sleepTimer != Duration.zero && sleepTimer != null,
+          child: Text(
+            context.l10n.cancel,
+            style: TextStyle(
+              color: context.theme.colorScheme.primary,
+            ),
+          ),
+        ),
       ],
     );
   }

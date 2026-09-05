@@ -1,9 +1,13 @@
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
+import 'package:sonolyth/components/ui/zenith_filter_chip.dart';
+import 'package:sonolyth/components/ui/zenith_popup_card.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/collections/official_plugin_owners.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/constrains.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/l10n/l10n.dart';
@@ -78,7 +82,10 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
     };
     final hasUpdate = updateAvailable?.asData?.value != null;
 
-    return Card(
+    // `popup_bg`: one flat fill at radius 20, no stroke. `Card` drew a border.
+    return ZenithPopupCard(
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -96,23 +103,19 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                   officialPluginOwners.contains(repoOwner);
 
               return Basic(
+                // A logo is artwork: square (`corners_aa_*` = 0), and its
+                // placeholder sits in the `colorAABgColor` well.
                 leading: snapshot.hasData
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.file(
-                          snapshot.data!,
-                          width: 36,
-                          height: 36,
-                        ),
+                    ? Image.file(
+                        snapshot.data!,
+                        width: 36,
+                        height: 36,
                       )
                     : Container(
                         height: 36,
                         width: 36,
                         alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: context.theme.colorScheme.secondary,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                        color: zenithArtWell(context.theme.colorScheme),
                         child: const Icon(SonolythIcons.plugin),
                       ),
                 title: Text(plugin.name),
@@ -127,8 +130,8 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                       children: [
                         for (final ability in plugin.abilities)
                           if (abilities.keys.contains(ability))
-                            SecondaryBadge(
-                              leading: Icon(abilities[ability]!.$2),
+                            ZenithValueChip(
+                              icon: abilities[ability]!.$2,
                               child: Text(abilities[ability]!.$1),
                             ),
                       ],
@@ -139,57 +142,38 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                         runSpacing: 8,
                         children: [
                           if (isOfficial)
-                            PrimaryBadge(
-                              leading: const Icon(SonolythIcons.done),
+                            ZenithValueChip(
+                              icon: SonolythIcons.done,
                               child: Text(context.l10n.official),
                             )
                           else ...[
                             Text(context.l10n.author_name(plugin.author)),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: context.theme.colorScheme.primary,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                spacing: 4,
-                                children: [
-                                  const Icon(SonolythIcons.warning, size: 14),
-                                  Text(
-                                    context.l10n.third_party,
-                                    style: const TextStyle(color: Colors.white),
-                                  ).xSmall
-                                ],
-                              ),
+                            // Was white text on a `primary` fill — and in
+                            // Zenith `primary` IS white, so the label was
+                            // invisible.
+                            ZenithValueChip(
+                              icon: SonolythIcons.warning,
+                              child: Text(context.l10n.third_party),
                             ),
                           ],
-                          SecondaryBadge(
-                            leading: const Icon(SonolythIcons.connect),
+                          ZenithValueChip(
+                            icon: SonolythIcons.connect,
                             child: Text(repoUrl.host),
                             onPressed: () {
                               launchUrl(repoUrl);
                             },
                           ),
-                          SecondaryBadge(
-                            child: Padding(
-                              padding: const EdgeInsets.all(1),
-                              child: Text(
-                                "${context.l10n.version}: ${plugin.version}",
-                              ),
+                          ZenithValueChip(
+                            child: Text(
+                              "${context.l10n.version}: ${plugin.version}",
                             ),
                           ),
                         ],
                       )
                   ],
                 ),
-                trailing: Tooltip(
-                  tooltip: TooltipContainer(
-                    child: Text(context.l10n.delete),
-                  ).call,
+                trailing: ZenithTooltip(
+                  message: context.l10n.delete,
                   child: IconButton.ghost(
                     onPressed: () async {
                       final accepted = await showDialog<bool>(
@@ -197,7 +181,7 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                         builder: (context) => AlertDialog(
                           title: Text(context.l10n.are_you_sure),
                           actions: [
-                            Button.outline(
+                            Button.ghost(
                               onPressed: () {
                                 Navigator.of(context).pop(false);
                               },
@@ -257,9 +241,12 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
               hasUpdate ||
               supportsScrobbling)
             Container(
+              // A sunk panel inside the card: the `colorAABgColor` well at
+              // `corners_medium`. `secondary` is the card's own colour and
+              // would vanish here.
               decoration: BoxDecoration(
-                color: context.theme.colorScheme.secondary,
-                borderRadius: BorderRadius.circular(8),
+                color: zenithArtWell(context.theme.colorScheme),
+                borderRadius: BorderRadius.circular(20),
               ),
               padding: const EdgeInsets.all(12),
               child: Column(
@@ -269,7 +256,9 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                     Row(
                       spacing: 8,
                       children: [
-                        const Icon(SonolythIcons.warning, color: Colors.yellow),
+                        Icon(SonolythIcons.warning,
+                            color:
+                                Theme.of(context).colorScheme.mutedForeground),
                         Text(context.l10n.plugin_requires_authentication),
                       ],
                     ),
@@ -282,7 +271,10 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                         subtitle: Text(
                           updateAvailable!.asData!.value!.version,
                         ),
-                        trailing: Button.primary(
+                        trailing: Button(
+                          style: zenithPositiveButton(
+                            context.theme.colorScheme,
+                          ),
                           onPressed: () {
                             showDialog(
                               context: context,
@@ -319,7 +311,10 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                 runSpacing: 8,
                 children: [
                   if (plugin.abilities.contains(PluginAbilities.metadata))
-                    Button.secondary(
+                    // Positive actions on a card: translucent 5%, see
+                    // [zenithPositiveButton].
+                    Button(
+                      style: zenithPositiveButton(context.theme.colorScheme),
                       enabled: !isDefaultMetadata,
                       onPressed: () async {
                         await pluginsNotifier.setDefaultMetadataPlugin(plugin);
@@ -331,7 +326,8 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                       ),
                     ),
                   if (plugin.abilities.contains(PluginAbilities.audioSource))
-                    Button.secondary(
+                    Button(
+                      style: zenithPositiveButton(context.theme.colorScheme),
                       enabled: !isDefaultAudioSource,
                       onPressed: () async {
                         await pluginsNotifier
@@ -354,7 +350,8 @@ class MetadataInstalledPluginItem extends HookConsumerWidget {
                   if ((isDefaultMetadata || isDefaultAudioSource) &&
                       requiresAuth &&
                       !isAuthenticated)
-                    Button.primary(
+                    Button(
+                      style: zenithPositiveButton(context.theme.colorScheme),
                       onPressed: () async {
                         await pluginSnapshot?.asData?.value?.auth
                             .authenticate();

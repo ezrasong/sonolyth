@@ -8,6 +8,7 @@ import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/services/spotiflac/deezer_crypto.dart';
 import 'package:sonolyth/services/spotiflac/providers/spotiflac_provider.dart';
 import 'package:sonolyth/services/spotiflac/zarz_client.dart';
+import 'package:sonolyth/services/spotiflac/zarz_session.dart';
 import 'package:sonolyth/utils/service_utils.dart';
 
 /// Machine-readable failure reason carried alongside the (English, technical)
@@ -16,6 +17,11 @@ import 'package:sonolyth/utils/service_utils.dart';
 enum DownloadErrorCode {
   rateLimited,
   noProviders,
+  /// Every lossless provider refused because its zarz session isn't verified.
+  /// Distinct from [noSource] so the UI can point at the fix (run the human
+  /// check in Settings) instead of reporting a generic "couldn't source",
+  /// which is what an unverified session used to look like.
+  needsVerification,
   noSource,
   emptyStream,
   httpStatus,
@@ -86,6 +92,8 @@ class NativeFlacDownloader {
     // Whether every failure so far was a rate-limit (vs a genuine no-match), so
     // the manager can pause-and-retry instead of failing the track outright.
     var rateLimited = false;
+    // Whether a provider bailed purely because lossless access isn't verified.
+    var needsVerification = false;
     // A *lossless* provider was rate-limited specifically. When true we refuse
     // to fall through to a lossy provider (YouTube/m4a): a transient limiter
     // shouldn't bake in a worse-quality copy. We bail with the rate-limit
@@ -125,6 +133,10 @@ class NativeFlacDownloader {
         if (provider.isLossless) losslessRateLimited = true;
         failures.add("${provider.displayName}: rate limited");
         resolution = null;
+      } on ZarzVerificationRequiredException {
+        needsVerification = true;
+        failures.add("${provider.displayName}: not verified");
+        resolution = null;
       } catch (e) {
         failures.add("${provider.displayName}: $e");
         resolution = null;
@@ -137,6 +149,13 @@ class NativeFlacDownloader {
       // signal that distinctly so the queue pauses and retries.
       if (rateLimited) {
         throw const SpotiFlacRateLimitException();
+      }
+      if (needsVerification) {
+        throw const SpotiFlacDownloadException(
+          "Lossless access isn't verified — run the human check in "
+          "Settings > Playback",
+          DownloadErrorCode.needsVerification,
+        );
       }
       throw SpotiFlacDownloadException(
         "Couldn't source this track — ${failures.join("; ")}",

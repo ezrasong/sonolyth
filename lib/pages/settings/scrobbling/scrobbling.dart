@@ -6,7 +6,9 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/collections/routes.gr.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
+import 'package:sonolyth/modules/settings/section_card_with_heading.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/scrobbler/scrobbler.dart';
 
@@ -28,17 +30,18 @@ class SettingsScrobblingPage extends HookConsumerWidget {
         data: ListTileThemeData(
           contentPadding: EdgeInsets.zero,
           minVerticalPadding: 0,
+          // `item_bg` — a rounded ripple mask and no stroke, like every
+          // other settings row (see `SectionCardWithHeading`).
           shape: RoundedRectangleBorder(
-            borderRadius: context.theme.borderRadiusLg,
-            side: BorderSide(
-              color: context.theme.colorScheme.border,
-              width: .5,
+            borderRadius: BorderRadius.circular(
+              SectionCardWithHeading.rowRadius,
             ),
           ),
           textColor: context.theme.colorScheme.foreground,
           iconColor: context.theme.colorScheme.foreground,
           selectedColor: context.theme.colorScheme.accent,
-          subtitleTextStyle: context.theme.typography.xSmall,
+          // `ItemTextLine2` — 11sp at `textColorPrimary`.
+          subtitleTextStyle: zenithTextLine2(context.theme.colorScheme),
         ),
         child: SafeArea(
           bottom: false,
@@ -47,10 +50,11 @@ class SettingsScrobblingPage extends HookConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.all(8),
               children: [
-                Card(
+                // No card: the row sits on the ground, as settings rows do.
+                Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: ListTile(
-                    leading: const Icon(SonolythIcons.lastFm, color: Colors.red),
+                    leading: const Icon(SonolythIcons.lastFm),
                     title: Text(
                       isConnected && username != null
                           ? username
@@ -64,7 +68,10 @@ class SettingsScrobblingPage extends HookConsumerWidget {
                             },
                             child: Text(context.l10n.logout),
                           )
-                        : Button.secondary(
+                        : Button(
+                            style: zenithPositiveButton(
+                              context.theme.colorScheme,
+                            ),
                             leading: const Icon(SonolythIcons.lastFm),
                             onPressed: () {
                               context.navigateTo(const LastFMLoginRoute());

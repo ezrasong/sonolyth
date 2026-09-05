@@ -4,11 +4,12 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
+import 'package:sonolyth/modules/player/player_overlay.dart';
 import 'package:sonolyth/modules/root/bottom_player.dart';
-import 'package:sonolyth/modules/root/sidebar/sidebar.dart';
 import 'package:sonolyth/modules/root/sonolyth_navigation_bar.dart';
 import 'package:sonolyth/hooks/configurators/use_endless_playback.dart';
 import 'package:sonolyth/modules/root/use_global_subscriptions.dart';
+import 'package:sonolyth/hooks/configurators/use_zarz_verify_prompt.dart';
 import 'package:sonolyth/provider/glance/glance.dart';
 import 'package:sonolyth/services/kv_store/kv_store.dart';
 import 'package:sonolyth/services/logger/logger.dart';
@@ -27,6 +28,7 @@ class RootAppPage extends HookConsumerWidget {
     ref.listen(glanceProvider, (_, __) {});
 
     useGlobalSubscriptions(ref);
+    useZarzVerifyPrompt(ref);
     useEndlessPlayback(ref);
 
     useEffect(() {
@@ -86,16 +88,18 @@ class RootAppPage extends HookConsumerWidget {
             SonolythNavigationBar(),
           ],
           floatingFooter: true,
-          child: Sidebar(
-            child: MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                // Reserve room for the floating footer stack (navigation bar
-                // + mini-player) so scrollables aren't covered by it.
-                padding: MediaQuery.paddingOf(context)
-                    .copyWith(bottom: 140 * context.theme.scaling),
-              ),
-              child: const AutoRouter(),
+          // No sidebar wrapper: the navbar panel is the app's navigation at
+          // every width, which is what Poweramp does (§38).
+          child: MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              // Reserve room for the floating footer stack (navigation bar
+              // + mini-player) so scrollables aren't covered by it.
+              padding: MediaQuery.paddingOf(context)
+                  .copyWith(bottom: 140 * context.theme.scaling),
             ),
+            // Dims while the player panel rises (Poweramp's list goes
+            // dark under the album-art scene).
+            child: const PlayerPageScrim(child: AutoRouter()),
           ),
         ),
       ),

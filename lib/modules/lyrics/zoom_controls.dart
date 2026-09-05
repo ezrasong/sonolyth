@@ -3,6 +3,8 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
+import 'package:sonolyth/extensions/context.dart';
 
 class ZoomControls extends HookWidget {
   final int value;
@@ -17,10 +19,15 @@ class ZoomControls extends HookWidget {
   final Axis direction;
   final String unit;
 
+  /// What the two buttons adjust ("Text size", "Lyrics delay"). A screen
+  /// reader hears "Increase text size", not two unnamed glyphs.
+  final String label;
+
   const ZoomControls({
     super.key,
     required this.value,
     required this.onChanged,
+    required this.label,
     this.min,
     this.max,
     this.interval = 10,
@@ -33,20 +40,26 @@ class ZoomControls extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final actions = [
-      IconButton.ghost(
-        icon: decreaseIcon,
-        onPressed: () {
-          if (value == min) return;
-          onChanged(value - interval);
-        },
+      ZenithTooltip(
+        message: context.l10n.decrease_x(label),
+        child: IconButton.ghost(
+          icon: decreaseIcon,
+          onPressed: () {
+            if (value == min) return;
+            onChanged(value - interval);
+          },
+        ),
       ),
       Text("$value$unit"),
-      IconButton.ghost(
-        icon: increaseIcon,
-        onPressed: () {
-          if (value == max) return;
-          onChanged(value + interval);
-        },
+      ZenithTooltip(
+        message: context.l10n.increase_x(label),
+        child: IconButton.ghost(
+          icon: increaseIcon,
+          onPressed: () {
+            if (value == max) return;
+            onChanged(value + interval);
+          },
+        ),
       ),
     ];
 

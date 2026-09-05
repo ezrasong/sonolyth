@@ -1,7 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:sonolyth/collections/formatters.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
 import 'package:sonolyth/modules/stats/common/album_item.dart';
 import 'package:sonolyth/extensions/context.dart';
@@ -48,8 +47,7 @@ class StatsAlbumsPage extends HookConsumerWidget {
               final album = albumsData[index];
               return StatsAlbumItem(
                 album: album.album,
-                info: Text(context.l10n
-                    .count_plays(compactNumberFormatter.format(album.count))),
+                info: Text(context.l10n.count_plays(album.count)),
               );
             },
           ),

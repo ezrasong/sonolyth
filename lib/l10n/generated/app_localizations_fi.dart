@@ -324,6 +324,12 @@ class AppLocalizationsFi extends AppLocalizations {
   String get next_track => 'Seuraava kappale';
 
   @override
+  String get seek_back_10s => 'Back 10 seconds';
+
+  @override
+  String get seek_forward_10s => 'Forward 10 seconds';
+
+  @override
   String get pause_playback => 'Pysäytä soittolistan toisto';
 
   @override
@@ -1031,6 +1037,12 @@ class AppLocalizationsFi extends AppLocalizations {
   String get select => 'Valitse';
 
   @override
+  String get grid_view => 'Grid view';
+
+  @override
+  String get list_view => 'List view';
+
+  @override
   String connect_client_alert(Object client) {
     return '$client ohjaa sinua';
   }
@@ -1140,6 +1152,12 @@ class AppLocalizationsFi extends AppLocalizations {
   }
 
   @override
+  String get lyrics_from_file_tags => 'From the file\'s tags';
+
+  @override
+  String get lyrics_from_lrc_file => 'From the .lrc file';
+
+  @override
   String get email => 'Sähköposti';
 
   @override
@@ -1170,8 +1188,13 @@ class AppLocalizationsFi extends AppLocalizations {
   String get user_profile => 'Käyttäjäprofiili';
 
   @override
-  String count_plays(Object count) {
-    return '$count toistoa';
+  String count_plays(int count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString toistoa';
   }
 
   @override
@@ -1202,18 +1225,27 @@ class AppLocalizationsFi extends AppLocalizations {
       '*Tämä on laskettu keskimääräisen musiikin suoratoistopalvelun 0,003–0,005 dollarin kappalekohtaisen maksun perusteella. Tämä on hypoteettinen laskelma, joka antaa käyttäjälle käsityksen siitä, kuinka paljon he olisivat maksaneet artisteille, jos he kuuntelisivat heidän kappaleitaan eri musiikin suoratoistopalveluissa.';
 
   @override
-  String count_mins(Object minutes) {
-    return '$minutes min';
+  String count_mins(int minutes) {
+    final intl.NumberFormat minutesNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String minutesString = minutesNumberFormat.format(minutes);
+
+    return '$minutesString min';
   }
 
   @override
-  String get summary_minutes => 'minuuttia';
+  String summary_minutes(int count) {
+    return 'minuuttia';
+  }
 
   @override
   String get summary_listened_to_music => 'Kuunneltu musiikkia';
 
   @override
-  String get summary_songs => 'kappaletta';
+  String summary_songs(int count) {
+    return 'kappaletta';
+  }
 
   @override
   String get summary_streamed_overall => 'Suoratoistettu yhteensä';
@@ -1222,19 +1254,25 @@ class AppLocalizationsFi extends AppLocalizations {
   String get summary_owed_to_artists => 'Maksettava artisteille\nTässä kuussa';
 
   @override
-  String get summary_artists => 'artisti';
+  String summary_artists(int count) {
+    return 'artisti';
+  }
 
   @override
   String get summary_music_reached_you => 'Musiikki saavutti sinut';
 
   @override
-  String get summary_full_albums => 'täydet albumit';
+  String summary_full_albums(int count) {
+    return 'täydet albumit';
+  }
 
   @override
   String get summary_got_your_love => 'Sai rakkautesi';
 
   @override
-  String get summary_playlists => 'soittolistat';
+  String summary_playlists(int count) {
+    return 'soittolistat';
+  }
 
   @override
   String get summary_were_on_repeat => 'Olivat toistossa';
@@ -1271,6 +1309,34 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get clear_cache_confirmation => 'Haluatko tyhjentää välimuistin?';
+
+  @override
+  String get clear_play_history => 'Clear play history';
+
+  @override
+  String get clear_play_history_description =>
+      'Everything the Stats page counts. Plays older than two years are removed on their own.';
+
+  @override
+  String get clear_play_history_confirmation =>
+      'Clear your play history? The Stats page starts again from zero.';
+
+  @override
+  String count_plays_kept(int count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString plays',
+      one: '1 play',
+      zero: 'No plays',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get export_cache_files => 'Vie välimuistitiedostot';
@@ -1612,7 +1678,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get lossless_downloads_description =>
-      'Tracks download in-app — FLAC from Qobuz and Deezer, with YouTube as a lossy fallback. Providers are tried top-to-bottom until one has the track.';
+      'Tracks download in-app as FLAC from Qobuz, Tidal and Deezer. Providers are tried top-to-bottom until one has the track; there is no lossy fallback.';
 
   @override
   String priority_count(Object count) {
@@ -1758,4 +1824,125 @@ class AppLocalizationsFi extends AppLocalizations {
   @override
   String get audio_scrobblers_description =>
       'Connect Last.fm to keep a record of what you listen to';
+
+  @override
+  String get off => 'Off';
+
+  @override
+  String get crossfade => 'Crossfade';
+
+  @override
+  String crossfade_seconds(Object seconds) {
+    return 'Tracks overlap for $seconds seconds';
+  }
+
+  @override
+  String get crossfade_off_description =>
+      'Tracks follow each other without a gap';
+
+  @override
+  String get crossfade_curve => 'Crossfade curve';
+
+  @override
+  String get crossfade_curve_description =>
+      'How the volume moves during the overlap';
+
+  @override
+  String get crossfade_curve_equal_power => 'Equal power (recommended)';
+
+  @override
+  String get crossfade_curve_linear => 'Linear';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get clear_filter => 'Clear filter';
+
+  @override
+  String increase_x(Object what) {
+    return 'Increase $what';
+  }
+
+  @override
+  String decrease_x(Object what) {
+    return 'Decrease $what';
+  }
+
+  @override
+  String get text_size => 'Text size';
+
+  @override
+  String get lyrics_delay => 'Lyrics delay';
+
+  @override
+  String get mute => 'Mute';
+
+  @override
+  String get unmute => 'Unmute';
+
+  @override
+  String get scroll_to_current_track => 'Scroll to current track';
+
+  @override
+  String get move_up => 'Move up';
+
+  @override
+  String get move_down => 'Move down';
+
+  @override
+  String get show_password => 'Show password';
+
+  @override
+  String get hide_password => 'Hide password';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get cancel_download => 'Cancel download';
+
+  @override
+  String get retry_download => 'Retry download';
+
+  @override
+  String get retry_failed_downloads => 'Retry failed downloads';
+
+  @override
+  String get clear_download_queue => 'Clear download queue';
+
+  @override
+  String get connect_to_a_device => 'Connect to a device';
+
+  @override
+  String get disconnect_device => 'Disconnect device';
+
+  @override
+  String get exit_selection => 'Exit selection';
+
+  @override
+  String get choose_folder => 'Choose folder';
+
+  @override
+  String get clear_logs => 'Clear logs';
+
+  @override
+  String get remove_image => 'Remove image';
+
+  @override
+  String get minimize => 'Minimize';
+
+  @override
+  String get maximize => 'Maximize';
+
+  @override
+  String get restore_window => 'Restore window';
+
+  @override
+  String artwork_for(Object name) {
+    return 'Artwork for $name';
+  }
+
+  @override
+  String get seek => 'Seek';
 }

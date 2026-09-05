@@ -1,17 +1,20 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:sonolyth/collections/zenith_theme.dart';
+import 'package:sonolyth/components/ui/zenith_filter_chip.dart';
+import 'package:sonolyth/components/ui/zenith_popup_card.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/fallbacks/error_box.dart';
 import 'package:sonolyth/components/form/text_form_field.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/modules/metadata_plugins/installed_plugin.dart';
@@ -21,7 +24,6 @@ import 'package:sonolyth/provider/metadata_plugin/metadata_plugin_provider.dart'
 import 'package:file_picker/file_picker.dart';
 import 'package:sonolyth/provider/metadata_plugin/utils/common.dart';
 import 'package:sonolyth/services/logger/logger.dart';
-import 'package:sonolyth/utils/platform.dart';
 import 'package:very_good_infinite_list/very_good_infinite_list.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
@@ -120,12 +122,12 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
                     HookBuilder(builder: (context) {
                       final isLoading = useState(false);
 
-                      return Tooltip(
-                        tooltip: TooltipContainer(
-                          child: Text(context
-                              .l10n.download_and_install_plugin_from_url),
-                        ).call,
-                        child: IconButton.secondary(
+                      return ZenithTooltip(
+                        message:
+                            context.l10n.download_and_install_plugin_from_url,
+                        // Header actions are bare glyphs.
+                        child: IconButton.ghost(
+                          shape: ButtonShape.circle,
                           icon: isLoading.value
                               ? const SizedBox.square(
                                   dimension: 22,
@@ -187,11 +189,10 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
                     HookBuilder(builder: (context) {
                       final isLoading = useState(false);
 
-                      return Tooltip(
-                        tooltip: TooltipContainer(
-                          child: Text(context.l10n.upload_plugin_from_file),
-                        ).call,
-                        child: IconButton.primary(
+                      return ZenithTooltip(
+                        message: context.l10n.upload_plugin_from_file,
+                        child: IconButton.ghost(
+                          shape: ButtonShape.circle,
                           icon: isLoading.value
                               ? const SizedBox.square(
                                   dimension: 22,
@@ -204,34 +205,17 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
                             try {
                               Uint8List bytes;
 
-                              if (kIsFlatpak) {
-                                final result = await openFile(
-                                  acceptedTypeGroups: [
-                                    const XTypeGroup(
-                                      label: 'Sonolyth Metadata Plugin',
-                                      extensions: ['smplug'],
-                                    ),
-                                  ],
-                                );
-                                if (result == null) return;
-                                bytes = await result.readAsBytes();
-                              } else {
-                                final result =
-                                    await FilePicker.platform.pickFiles(
-                                  type: kIsAndroid
-                                      ? FileType.any
-                                      : FileType.custom,
-                                  allowedExtensions:
-                                      kIsAndroid ? [] : ["smplug"],
-                                  withData: true,
-                                );
+                              final result =
+                                  await FilePicker.platform.pickFiles(
+                                type: FileType.any,
+                                withData: true,
+                              );
 
-                                if (result == null) return;
+                              if (result == null) return;
 
-                                final file = result.files.first;
-                                if (file.bytes == null) return;
-                                bytes = file.bytes!;
-                              }
+                              final file = result.files.first;
+                              if (file.bytes == null) return;
+                              bytes = file.bytes!;
 
                               isLoading.value = true;
                               final pluginConfig = await pluginsNotifier
@@ -273,30 +257,36 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
                 ),
               ),
               const SliverGap(12),
+              // `TopSearchCatButton` chips — the app's one category idiom;
+              // Poweramp has no tab indicator (see `library.dart`).
               SliverToBoxAdapter(
-                child: TabList(
-                  index: tabState.value,
-                  onChanged: (value) {
-                    tabState.value = value;
-                  },
+                child: Row(
+                  spacing: ZenithFilterChip.gap,
                   children: [
-                    TabItem(child: Text(context.l10n.all)),
-                    TabItem(child: Text(context.l10n.metadata)),
-                    TabItem(child: Text(context.l10n.audio_source)),
+                    for (final (index, label) in [
+                      context.l10n.all,
+                      context.l10n.metadata,
+                      context.l10n.audio_source,
+                    ].indexed)
+                      ZenithFilterChip(
+                        label: label,
+                        selected: tabState.value == index,
+                        onPressed: () => tabState.value = index,
+                      ),
                   ],
                 ),
               ),
               const SliverGap(12),
               if (plugins.asData?.value.plugins.isNotEmpty ?? false)
                 SliverToBoxAdapter(
-                  child: Row(
-                    children: [
-                      const Gap(8),
-                      Text(context.l10n.installed).h4,
-                      const Gap(8),
-                      const Expanded(child: Divider()),
-                      const Gap(8),
-                    ],
+                  // `SubheadText` — a group label recedes, and there is no
+                  // rule beside it (`colorStroke` is transparent).
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                    child: Text(
+                      context.l10n.installed,
+                      style: zenithSubhead(Theme.of(context).colorScheme),
+                    ),
                   ),
                 ),
               const SliverGap(20),
@@ -320,14 +310,12 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
               ),
               const SliverGap(12),
               SliverToBoxAdapter(
-                child: Row(
-                  children: [
-                    const Gap(8),
-                    Text(context.l10n.available_plugins).h4,
-                    const Gap(8),
-                    const Expanded(child: Divider()),
-                    const Gap(8),
-                  ],
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                  child: Text(
+                    context.l10n.available_plugins,
+                    style: zenithSubhead(Theme.of(context).colorScheme),
+                  ),
                 ),
               ),
               const SliverGap(12),
@@ -382,7 +370,10 @@ class SettingsMetadataProviderPage extends HookConsumerWidget {
                     alignment: Alignment.bottomCenter,
                     margin: const EdgeInsets.only(bottom: 20),
                     child: SafeArea(
-                      child: Card(
+                      // `popup_bg`: flat, no stroke.
+                      child: ZenithPopupCard(
+                        margin: EdgeInsets.zero,
+                        padding: const EdgeInsets.all(16),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,

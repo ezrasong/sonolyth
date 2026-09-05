@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:encrypt/encrypt.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sonolyth/models/database/database.dart';
-import 'package:sonolyth/services/wm_tools/wm_tools.dart';
 import 'package:uuid/uuid.dart';
 
 abstract class KVStoreService {
@@ -42,23 +41,6 @@ abstract class KVStoreService {
       sharedPreferences.getString('lastRoutePath');
   static Future<void> setLastRoutePath(String value) async =>
       await sharedPreferences.setString('lastRoutePath', value);
-
-  static WindowSize? get windowSize {
-    final raw = sharedPreferences.getString('windowSize');
-
-    if (raw == null) {
-      return null;
-    }
-    return WindowSize.fromJson(jsonDecode(raw));
-  }
-
-  static Future<void> setWindowSize(WindowSize value) async =>
-      await sharedPreferences.setString(
-        'windowSize',
-        jsonEncode(
-          value.toJson(),
-        ),
-      );
 
   static String get encryptionKey {
     final value = sharedPreferences.getString('encryption');

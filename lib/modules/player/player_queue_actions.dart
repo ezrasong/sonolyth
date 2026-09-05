@@ -1,7 +1,9 @@
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/constrains.dart';
+import 'package:sonolyth/extensions/context.dart';
 
 class PlayerQueueActionButton extends StatelessWidget {
   final Widget Function(BuildContext context, VoidCallback close) builder;
@@ -13,32 +15,35 @@ class PlayerQueueActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton.ghost(
-      onPressed: () {
-        final mediaQuery = MediaQuery.sizeOf(context);
+    return ZenithTooltip(
+      message: context.l10n.more_actions,
+      child: IconButton.ghost(
+        onPressed: () {
+          final mediaQuery = MediaQuery.sizeOf(context);
 
-        if (mediaQuery.lgAndUp) {
-          showDropdown(
-            context: context,
-            builder: (context) {
-              return SizedBox(
-                width: 220 * context.theme.scaling,
-                child: Card(
-                  padding: EdgeInsets.zero,
-                  child: builder(context, () => closeOverlay(context)),
-                ),
-              );
-            },
-          );
-        } else {
-          openSheet(
-            context: context,
-            builder: (context) => builder(context, () => closeSheet(context)),
-            position: OverlayPosition.bottom,
-          );
-        }
-      },
-      icon: const Icon(SonolythIcons.moreHorizontal),
+          if (mediaQuery.lgAndUp) {
+            showDropdown(
+              context: context,
+              builder: (context) {
+                return SizedBox(
+                  width: 220 * context.theme.scaling,
+                  child: Card(
+                    padding: EdgeInsets.zero,
+                    child: builder(context, () => closeOverlay(context)),
+                  ),
+                );
+              },
+            );
+          } else {
+            openSheet(
+              context: context,
+              builder: (context) => builder(context, () => closeSheet(context)),
+              position: OverlayPosition.bottom,
+            );
+          }
+        },
+        icon: const Icon(SonolythIcons.moreHorizontal),
+      ),
     );
   }
 }

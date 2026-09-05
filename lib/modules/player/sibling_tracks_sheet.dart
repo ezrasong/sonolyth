@@ -1,6 +1,7 @@
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:sonolyth/collections/zenith_motion.dart';
 import 'package:sonolyth/components/fallbacks/not_found.dart';
 import 'package:sonolyth/components/image/universal_image.dart';
 import 'package:sonolyth/components/inter_scrollbar/inter_scrollbar.dart';
@@ -66,7 +67,9 @@ class SiblingTracksSheet extends HookConsumerWidget {
                 spacing: 5,
                 children: [
                   AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
+                      duration: ZenithMotion.fade,
+                      switchInCurve: ZenithMotion.fadeCurve,
+                      switchOutCurve: ZenithMotion.fadeCurve,
                       child: Text(
                         context.l10n.alternative_track_sources,
                       ).bold()),
@@ -74,7 +77,9 @@ class SiblingTracksSheet extends HookConsumerWidget {
               ),
             ),
             AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
+              duration: ZenithMotion.scene,
+              switchInCurve: ZenithMotion.slideCurve,
+              switchOutCurve: ZenithMotion.slideCurve,
               child: sourcedTrack.isLoading
                   ? const SizedBox(
                       width: double.infinity,
@@ -84,7 +89,9 @@ class SiblingTracksSheet extends HookConsumerWidget {
             ),
             Expanded(
               child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
+                duration: ZenithMotion.fade,
+                switchInCurve: ZenithMotion.fadeCurve,
+                switchOutCurve: ZenithMotion.fadeCurve,
                 transitionBuilder: (child, animation) =>
                     FadeTransition(opacity: animation, child: child),
                 child: InterScrollbar(

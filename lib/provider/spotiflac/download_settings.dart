@@ -6,17 +6,16 @@ import 'package:sonolyth/services/spotiflac/providers/deezer_provider.dart';
 import 'package:sonolyth/services/spotiflac/providers/qobuz_provider.dart';
 import 'package:sonolyth/services/spotiflac/providers/spotiflac_provider.dart';
 import 'package:sonolyth/services/spotiflac/providers/tidal_provider.dart';
-import 'package:sonolyth/services/spotiflac/providers/youtube_provider.dart';
 
 /// All download providers Sonolyth ships natively, in default priority order.
-/// The lossless providers (Qobuz, Tidal, Deezer) come first; YouTube is
-/// intentionally last — it's the lossy audio-only fallback used only when no
-/// lossless provider has the track.
+/// Lossless only — YouTube has been removed, so a download either lands a
+/// lossless file or fails rather than silently saving a lossy transcode.
+/// Any "youtube" id left in a user's stored settings is dropped on load by the
+/// `knownIds` filter in [SpotiFlacDownloadSettings.fromJson].
 final allSpotiFlacProviders = <SpotiFlacProvider>[
   QobuzProvider(),
   TidalProvider(),
   DeezerProvider(),
-  YouTubeProvider(),
 ];
 
 const _prefsKey = "spotiflac-download-settings";
@@ -80,10 +79,9 @@ class SpotiFlacDownloadSettings {
     final storedOrder =
         (json["order"] as List?)?.map((e) => e.toString()).toList() ?? [];
     // Keep the user's stored ordering, then splice in any providers added since
-    // (e.g. Tidal) at their default position rather than dead-last: each new
-    // provider lands just before its default successor that's already present,
-    // so a new lossless source ranks above the lower-priority ones (Tidal above
-    // Deezer) instead of below the YouTube fallback.
+    // at their default position rather than dead-last: each new provider lands
+    // just before its default successor that's already present, so a new
+    // lossless source ranks above the lower-priority ones (Tidal above Deezer).
     final order = [...storedOrder.where(knownIds.contains)];
     for (final id in defaults.order) {
       if (order.contains(id)) continue;

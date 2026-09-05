@@ -1,7 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:sonolyth/collections/formatters.dart';
 import 'package:sonolyth/components/titlebar/titlebar.dart';
 import 'package:sonolyth/modules/stats/common/track_item.dart';
 import 'package:sonolyth/extensions/context.dart';
@@ -39,7 +38,6 @@ class StatsMinutesPage extends HookConsumerWidget {
         child: Skeletonizer(
           enabled: topTracks.isLoading && !topTracks.isLoadingNextPage,
           child: InfiniteList(
-            separatorBuilder: (context, index) => const Gap(8),
             onFetchData: () async {
               await topTracksNotifier.fetchMore();
             },
@@ -52,12 +50,15 @@ class StatsMinutesPage extends HookConsumerWidget {
               return StatsTrackItem(
                 track: track.track,
                 info: Text(
+                  // Multiply, *then* truncate. `.inMinutes` on one play
+                  // floors first, so every track shorter than a minute
+                  // contributed 0 no matter how often it was played — the
+                  // 30-second test tones read "0 mins" after four plays each
+                  // on the one page whose whole subject is minutes.
                   context.l10n.count_mins(
-                    compactNumberFormatter.format(
-                      track.count *
-                          Duration(milliseconds: track.track.durationMs)
-                              .inMinutes,
-                    ),
+                    Duration(
+                      milliseconds: track.count * track.track.durationMs,
+                    ).inMinutes,
                   ),
                 ),
               );

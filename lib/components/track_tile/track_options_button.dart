@@ -8,7 +8,9 @@ import 'package:sonolyth/collections/sonolyth_icons.dart';
 import 'package:sonolyth/components/image/universal_image.dart';
 import 'package:sonolyth/components/links/artist_link.dart';
 import 'package:sonolyth/components/track_tile/track_options.dart';
+import 'package:sonolyth/components/ui/zenith_tooltip.dart';
 import 'package:sonolyth/extensions/constrains.dart';
+import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/models/metadata/metadata.dart';
 
 class TrackOptionsButton extends HookConsumerWidget {
@@ -68,94 +70,97 @@ class TrackOptionsButton extends HookConsumerWidget {
       [track.album.images],
     );
 
-    return IconButton.ghost(
-      icon: const Icon(SonolythIcons.moreHorizontal),
-      onPressed: () {
-        final mediaQuery = MediaQuery.sizeOf(context);
+    return ZenithTooltip(
+      message: context.l10n.more_actions,
+      child: IconButton.ghost(
+        icon: const Icon(SonolythIcons.moreHorizontal),
+        onPressed: () {
+          final mediaQuery = MediaQuery.sizeOf(context);
 
-        if (mediaQuery.lgAndUp) {
-          final renderBox = context.findRenderObject() as RenderBox;
-          final position = RelativeRect.fromRect(
-            Rect.fromPoints(
-              renderBox.localToGlobal(Offset.zero,
-                  ancestor: context.findRenderObject()),
-              renderBox.localToGlobal(renderBox.size.bottomRight(Offset.zero),
-                  ancestor: context.findRenderObject()),
-            ),
-            Offset.zero & mediaQuery,
-          );
-          final offset = Offset(position.left, position.top);
-          showOptions(
-            context,
-            offset,
-            track,
-            userPlaylist: userPlaylist,
-            playlistId: playlistId,
-            collectionName: collectionName,
-          );
-        } else {
-          openDrawer(
-            context: context,
-            position: OverlayPosition.bottom,
-            draggable: true,
-            showDragHandle: true,
-            borderRadius: context.theme.borderRadiusMd,
-            transformBackdrop: false,
-            builder: (context) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 8.0,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 8,
-                  children: [
-                    Basic(
-                      leading: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          borderRadius: context.theme.borderRadiusMd,
-                          image: DecorationImage(
-                            fit: BoxFit.cover,
-                            image: imageProvider,
+          if (mediaQuery.lgAndUp) {
+            final renderBox = context.findRenderObject() as RenderBox;
+            final position = RelativeRect.fromRect(
+              Rect.fromPoints(
+                renderBox.localToGlobal(Offset.zero,
+                    ancestor: context.findRenderObject()),
+                renderBox.localToGlobal(renderBox.size.bottomRight(Offset.zero),
+                    ancestor: context.findRenderObject()),
+              ),
+              Offset.zero & mediaQuery,
+            );
+            final offset = Offset(position.left, position.top);
+            showOptions(
+              context,
+              offset,
+              track,
+              userPlaylist: userPlaylist,
+              playlistId: playlistId,
+              collectionName: collectionName,
+            );
+          } else {
+            openDrawer(
+              context: context,
+              position: OverlayPosition.bottom,
+              draggable: true,
+              showDragHandle: true,
+              borderRadius: context.theme.borderRadiusMd,
+              transformBackdrop: false,
+              builder: (context) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 8,
+                    children: [
+                      Basic(
+                        leading: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            borderRadius: context.theme.borderRadiusMd,
+                            image: DecorationImage(
+                              fit: BoxFit.cover,
+                              image: imageProvider,
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          track.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ).semiBold(),
+                        subtitle: Align(
+                          alignment: Alignment.centerLeft,
+                          child: ArtistLink(
+                            artists: track.artists,
+                            onOverflowArtistClick: () => context.navigateTo(
+                              TrackRoute(trackId: track.id),
+                            ),
                           ),
                         ),
                       ),
-                      title: Text(
-                        track.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ).semiBold(),
-                      subtitle: Align(
-                        alignment: Alignment.centerLeft,
-                        child: ArtistLink(
-                          artists: track.artists,
-                          onOverflowArtistClick: () => context.navigateTo(
-                            TrackRoute(trackId: track.id),
-                          ),
-                        ),
+                      const Divider(),
+                      TrackOptions(
+                        track: track,
+                        userPlaylist: userPlaylist,
+                        playlistId: playlistId,
+                        collectionName: collectionName,
+                        onTapItem: () {
+                          closeDrawer(context);
+                        },
                       ),
-                    ),
-                    const Divider(),
-                    TrackOptions(
-                      track: track,
-                      userPlaylist: userPlaylist,
-                      playlistId: playlistId,
-                      collectionName: collectionName,
-                      onTapItem: () {
-                        closeDrawer(context);
-                      },
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        }
-      },
+                    ],
+                  ),
+                );
+              },
+            );
+          }
+        },
+      ),
     );
   }
 }

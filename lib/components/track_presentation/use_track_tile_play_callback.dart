@@ -72,7 +72,8 @@ Future<void> Function(SonolythTrackObject track, int index)
                 )
               : WebSocketLoadEventData.playlist(
                   tracks: tracks,
-                  collection: options.collection as SonolythSimplePlaylistObject,
+                  collection:
+                      options.collection as SonolythSimplePlaylistObject,
                   initialIndex: initialIndex,
                 ),
         );

@@ -6,14 +6,12 @@ import 'package:sonolyth/models/metadata/metadata.dart';
 import 'package:sonolyth/provider/audio_player/audio_player.dart';
 import 'package:sonolyth/services/audio_player/audio_player.dart';
 import 'package:sonolyth/services/audio_services/mobile_audio_service.dart';
-import 'package:sonolyth/services/audio_services/windows_audio_service.dart';
 import 'package:sonolyth/utils/platform.dart';
 
 class AudioServices with WidgetsBindingObserver {
   final MobileAudioService? mobile;
-  final WindowsAudioService? smtc;
 
-  AudioServices(this.mobile, this.smtc) {
+  AudioServices(this.mobile) {
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -21,17 +19,13 @@ class AudioServices with WidgetsBindingObserver {
     Ref ref,
     AudioPlayerNotifier playback,
   ) async {
-    final mobile = kIsMobile || kIsMacOS || kIsLinux
+    final mobile = kIsMobile
         ? await AudioService.init(
             builder: () => MobileAudioService(playback, ref),
             config: AudioServiceConfig(
-              androidNotificationChannelId: switch ((
-                kIsLinux,
-                Env.releaseChannel
-              )) {
-                (true, _) => "spotube",
-                (_, ReleaseChannel.stable) => "com.ezrasong.sonolyth",
-                (_, ReleaseChannel.nightly) => "com.ezrasong.sonolyth.nightly",
+              androidNotificationChannelId: switch (Env.releaseChannel) {
+                ReleaseChannel.stable => "com.ezrasong.sonolyth",
+                ReleaseChannel.nightly => "com.ezrasong.sonolyth.nightly",
               },
               androidNotificationChannelName: 'Sonolyth',
               // White sound-wave glyph for the status bar / lock screen
@@ -41,7 +35,9 @@ class AudioServices with WidgetsBindingObserver {
               // Brand accent for the notification. Android 12+ tints the
               // small-icon chip in the shade with this; without it the chip
               // falls back to a default that renders black on most skins.
-              notificationColor: const Color(0xFF6750A4),
+              // Zenith ground (`colorBgPrimary`), so the media notification
+              // matches the app rather than the old violet seed.
+              notificationColor: const Color(0xFF0E0E0F),
               // Tapping the notification / system media card opens the app and
               // expands the player (routed via the NOTIFICATION_CLICK intent
               // filter in AndroidManifest). This same flag also wires the
@@ -60,13 +56,11 @@ class AudioServices with WidgetsBindingObserver {
             ),
           )
         : null;
-    final smtc = kIsWindows ? WindowsAudioService(ref, playback) : null;
 
-    return AudioServices(mobile, smtc);
+    return AudioServices(mobile);
   }
 
   Future<void> addTrack(SonolythTrackObject track) async {
-    await smtc?.addTrack(track);
     mobile?.addItem(MediaItem(
       id: track.id,
       album: track.album.name,
@@ -101,7 +95,6 @@ class AudioServices with WidgetsBindingObserver {
   }
 
   void dispose() {
-    smtc?.dispose();
     WidgetsBinding.instance.removeObserver(this);
   }
 }

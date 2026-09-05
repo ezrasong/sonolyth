@@ -3,10 +3,10 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sonolyth/collections/sonolyth_icons.dart';
-import 'package:sonolyth/models/database/database.dart';
 import 'package:sonolyth/modules/settings/color_scheme_picker_dialog.dart';
 import 'package:sonolyth/modules/settings/section_card_with_heading.dart';
 import 'package:sonolyth/components/adaptive/adaptive_select_tile.dart';
+import 'package:sonolyth/components/ui/zenith_filter_chip.dart';
 import 'package:sonolyth/extensions/context.dart';
 import 'package:sonolyth/provider/user_preferences/user_preferences_provider.dart';
 
@@ -30,31 +30,12 @@ class SettingsAppearanceSection extends HookConsumerWidget {
     }, []);
 
     final children = [
-      AdaptiveSelectTile<LayoutMode>(
-        secondary: const Icon(SonolythIcons.dashboard),
-        title: Text(context.l10n.layout_mode),
-        subtitle: Text(context.l10n.override_layout_settings),
-        value: preferences.layoutMode,
-        onChanged: (value) {
-          if (value != null) {
-            preferencesNotifier.setLayoutMode(value);
-          }
-        },
-        options: [
-          SelectItemButton(
-            value: LayoutMode.adaptive,
-            child: Text(context.l10n.adaptive),
-          ),
-          SelectItemButton(
-            value: LayoutMode.compact,
-            child: Text(context.l10n.compact),
-          ),
-          SelectItemButton(
-            value: LayoutMode.extended,
-            child: Text(context.l10n.extended),
-          ),
-        ],
-      ),
+      // The Layout Mode row is gone with the sidebar it drove (§38):
+      // "compact / adaptive / extended" only ever chose between the phone
+      // shell and a desktop sidebar-plus-bottom-bar that has no source in
+      // Poweramp and no desktop left to run on. Its l10n keys and the
+      // preferences column are still there — see the note on
+      // `PreferencesTable.layoutMode`.
       AdaptiveSelectTile<ThemeMode>(
         secondary: const Icon(SonolythIcons.darkMode),
         title: Text(context.l10n.theme),
@@ -94,11 +75,19 @@ class SettingsAppearanceSection extends HookConsumerWidget {
           horizontal: 15,
           vertical: 5,
         ),
-        trailing: ColorChip(
-          color: preferences.accentColorScheme,
-          name: preferences.accentColorScheme.name,
+        // The current scheme as a value chip, like every other setting value;
+        // the swatch stands where a glyph would.
+        trailing: ZenithValueChip(
+          leading: Container(
+            width: 14,
+            height: 14,
+            decoration: BoxDecoration(
+              color: preferences.accentColorScheme,
+              shape: BoxShape.circle,
+            ),
+          ),
           onPressed: pickColorScheme(),
-          isActive: false,
+          child: Text(preferences.accentColorScheme.name),
         ),
         onTap: pickColorScheme(),
       ),
