@@ -18,33 +18,35 @@ A personal fork of [Spotube](https://github.com/KRTirtho/spotube).
 
 ## What it is
 
-Sonolyth separates *where the music list comes from* from *where the audio comes from*.
+Sonolyth separates where the music list comes from and where the audio comes from.
 
-**Metadata** — your library, playlists, albums, artists and search — is served by
-plugins. Two are bundled: a patched build of the unofficial Spotify plugin, and
-MusicBrainz/ListenBrainz. Any other service can be added by writing one.
+**Metadata** covers your library, playlists, albums, artists and search, and it
+is served by plugins. Two are bundled: a patched build of the unofficial Spotify
+plugin, and MusicBrainz/ListenBrainz. Any other service can be added by writing
+one.
 
-**Audio** is lossless FLAC, from Qobuz, then Tidal, then Deezer. There is no lossy
-fallback and no YouTube: a track neither catalog carries simply does not play.
+**Audio** is lossless FLAC, from Qobuz, then Tidal, then Deezer. There is no
+lossy fallback and no YouTube, so a track neither catalog carries simply does
+not play.
 
 ## Features
 
 - **Lossless only.** FLAC from Qobuz, Tidal and Deezer, with a per-source
-  priority order you control. Nothing is transcoded and nothing falls back to a
-  lower quality without telling you.
-- **Plugin-powered metadata.** Bring any music service through a plugin; the
+  priority order you control. Nothing is transcoded and nothing drops to a lower
+  quality without telling you.
+- **Plugin-powered metadata.** Bring any music service through a plugin. The
   bundled Spotify plugin is patched to return items nested inside Spotify
   folders and to retry on rate limits (HTTP 429).
 - **Seamless playback.** Crossfade with a real overlap, gapless transitions,
-  adaptive buffering and edge-silence trimming for local files.
+  adaptive buffering, and edge-silence trimming for local files.
 - **Lyrics.** Time-synced from LRCLib, and read straight out of the file when a
   FLAC carries its own tags or an `.lrc` sits beside it.
 - **Downloads.** Tracks are saved as tagged FLAC and play offline.
-- **Local files.** Folders you add are first-class: browsed, queued and played
-  like anything else.
+- **Local files.** Folders you add are first-class, browsed and queued and
+  played like anything else.
 - **Connect.** Control playback from another device on the same network.
 - **Poweramp-style interface.** The UI is rebuilt against the Proxima "Dark
-  Zenith" skin — an achromatic, black-backed player laid out to the skin's own
+  Zenith" skin: an achromatic, black-backed player laid out to the skin's own
   measurements.
 - **No telemetry**, no diagnostics, no user-data collection. See
   [PRIVACY_POLICY.md](PRIVACY_POLICY.md).
@@ -52,14 +54,14 @@ fallback and no YouTube: a track neither catalog carries simply does not play.
 ### One thing to expect
 
 Qobuz and Tidal require a one-time human check (a Cloudflare Turnstile) before
-they will serve audio. Sonolyth attempts it silently at launch; when that is not
-enough, the player says so and offers a **Verify lossless** button that opens the
-challenge. Until it passes, streaming tracks will not play — local files and
+they will serve audio. Sonolyth attempts it silently at launch. When that is not
+enough the player says so and offers a **Verify lossless** button that opens the
+challenge. Until it passes, streaming tracks will not play. Local files and
 completed downloads are unaffected.
 
 ## Repository layout
 
-Sonolyth is a monorepo: the app and its edited Spotify metadata plugin live in
+Sonolyth is a monorepo. The app and its edited Spotify metadata plugin live in
 the same repository and are versioned together. See
 [MONOREPO.md](MONOREPO.md) for the full layout, the upstream-sync workflow, and
 how to rebuild the plugin.
@@ -74,7 +76,7 @@ sonolyth/
 
 Sonolyth targets **Android only**. The desktop and web platforms Spotube
 supports have been removed from this fork. Full setup is in the
-[contribution guide](CONTRIBUTION.md#your-first-code-contribution); the short
+[contribution guide](CONTRIBUTION.md#your-first-code-contribution). The short
 version:
 
 ```bash
@@ -83,7 +85,7 @@ dart run build_runner build --delete-conflicting-outputs
 flutter run --flavor stable -d <android-device-id>
 ```
 
-Two flavors are defined: `stable` and `nightly`, which install side by side.
+Two flavors are defined, `stable` and `nightly`, which install side by side.
 
 ## Relationship to Spotube
 
@@ -100,7 +102,7 @@ web platforms removed. App updates are pulled from upstream as described in
 
 ## Maintainer
 
-- [Ezra Song](https://github.com/ezrasong) — fork maintainer
+- [Ezra Song](https://github.com/ezrasong), fork maintainer
 
 Upstream Spotube is maintained by [Kingkor Roy
 Tirtho](https://github.com/KRTirtho) and the Spotube team.
@@ -108,8 +110,8 @@ Tirtho](https://github.com/KRTirtho) and the Spotube team.
 ## License
 
 Sonolyth inherits Spotube's [BSD-4-Clause](/LICENSE) license. Copyright for the
-upstream work remains with Kingkor Roy Tirtho and the Spotube authors; fork
-modifications are copyright Ezra Song.
+upstream work remains with Kingkor Roy Tirtho and the Spotube authors. Fork
+modifications are © Ezra Song.
 
 <details>
   <summary><h3><code>[Click to show]</code> Credits</h3></summary>
@@ -117,16 +119,16 @@ modifications are copyright Ezra Song.
 Sonolyth stands on the same open-source foundation as Spotube. Key projects and
 services:
 
-- [Flutter](https://flutter.dev), [media_kit](https://github.com/media-kit/media-kit) and [mpv](https://mpv.io) — interface and playback
-- [hetu_script](https://github.com/hetu-script/hetu-script) — the plugin runtime
-- [MusicBrainz](https://musicbrainz.org) and [ListenBrainz](https://listenbrainz.org) — open metadata and scrobbling
-- [LRCLib](https://lrclib.net) — synced lyrics
-- [SpotiFLAC-Mobile](https://github.com/zarzet/SpotiFLAC-Mobile) — the lossless source gateway
-- [drift](https://drift.simonbinder.eu) — the local database
+- [Flutter](https://flutter.dev), [media_kit](https://github.com/media-kit/media-kit) and [mpv](https://mpv.io) for the interface and playback
+- [hetu_script](https://github.com/hetu-script/hetu-script) for the plugin runtime
+- [MusicBrainz](https://musicbrainz.org) and [ListenBrainz](https://listenbrainz.org) for open metadata and scrobbling
+- [LRCLib](https://lrclib.net) for synced lyrics
+- [SpotiFLAC-Mobile](https://github.com/zarzet/SpotiFLAC-Mobile) for the lossless source gateway
+- [drift](https://drift.simonbinder.eu) for the local database
 
 The full list of third-party packages and their licenses lives in
 [`pubspec.yaml`](pubspec.yaml) and in upstream Spotube's README.
 
 </details>
 
-<div align="center"><h4>Copyright 2026 Sonolyth — a fork of Spotube</h4></div>
+<div align="center"><h4>© 2026 Sonolyth, a fork of Spotube</h4></div>
